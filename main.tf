@@ -17,7 +17,7 @@ module "platform_dns" {
 
   records = [
     {
-      name    = "cluster.gcp.platform.cosmotech.com."
+      name    = "${var.api_dns_name}."
       type    = "A"
       rrdatas = [data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip]
     }
@@ -117,7 +117,7 @@ module "keycloak" {
 
   keycloak_namespace          = "keycloak"
   keycloak_admin_user         = "admin"
-  keycloak_ingress_hostname   = "cluster.gcp.platform.cosmotech.com"
+  keycloak_ingress_hostname   = var.api_dns_name
   keycloak_postgres_user      = "keycloak"
   postgres_storage_class_name = "cosmotech-retain"
   pvc_postgres_keycloak_name  = "pvc-keycloak"
