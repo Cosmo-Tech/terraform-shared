@@ -45,25 +45,24 @@ module "namespaces" {
 module "helm_nginx" {
   source = "./modules/ingress_nginx"
 
-  sa_email               = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email
-  platform_lb_ip         = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+  platform_lb_ip         = local.lb_ip
   cluster_endpoint       = data.terraform_remote_state.terraform_cluster.outputs.cluster_endpoint
   cluster_ca_certificate = data.terraform_remote_state.terraform_cluster.outputs.cluster_ca_certificate
   depends_on             = [module.platform_dns, module.namespaces]
+  service_annotations    = local.cloud_identity
+  lb_annotations         = local.lb_annotations
 }
 
 # MODULE 2: CERT BUNDLE
 module "cert_bundle" {
   source = "./modules/cert_manager"
 
-  sa_email               = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email
+  service_annotations    = local.cloud_identity
   email                  = var.email
   cluster_endpoint       = data.terraform_remote_state.terraform_cluster.outputs.cluster_endpoint
   cluster_ca_certificate = data.terraform_remote_state.terraform_cluster.outputs.cluster_ca_certificate
-  # depends_on_ingress     = module.helm_nginx
-
-
-  depends_on = [module.namespaces]
+  api_dns_name           = var.api_dns_name
+  depends_on             = [module.namespaces]
 }
 
 module "prometheus_stack" {
@@ -71,7 +70,7 @@ module "prometheus_stack" {
 
   project_name            = "cosmotech"
   namespace               = "monitoring"
-  api_dns_name            = "cluster.gcp.platform.cosmotech.com"
+  api_dns_name            = var.api_dns_name
   tls_secret_name         = "letsencrypt-prod"
   redis_host_namespace    = "redis"
   prom_storage_class_name = "cosmotech-retain"

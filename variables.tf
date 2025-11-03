@@ -7,3 +7,5 @@ variable "region" { default = "europe-west6" }
 variable "customer_name" {}
 variable "project_name" {}
 variable "project_stage" {}
+variable "api_dns_name" {}
+variable "cloud_provider" {}

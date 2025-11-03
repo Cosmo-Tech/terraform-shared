@@ -22,7 +22,7 @@
         http: 80
         https: 443      
       annotations:
-        service.beta.kubernetes.io/google-load-balancer-ip: ${platform_lb_ip}
+        ${lb_annotations}
       labels:
         networking/traffic-allowed: "yes"      
     
@@ -58,8 +58,8 @@
     
     serviceAccount:
       create: false
-      annotations:
-        iam.gke.io/gcp-service-account: ${sa_email}
+      annotations: |
+       ${service_annotations}
 
   defaultBackend:
     podLabels:

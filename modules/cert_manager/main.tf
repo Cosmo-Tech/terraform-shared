@@ -14,6 +14,7 @@ terraform {
     }
   }
 }
+
 resource "time_sleep" "wait_certmanager_crds" {
   create_duration = "60s"
   depends_on      = [helm_release.cert_manager]
@@ -23,7 +24,7 @@ resource "time_sleep" "wait_certmanager_crds" {
 data "template_file" "cert_values" {
   template = file("${path.root}/helm-templates/certificate/cert-values.yaml")
   vars = {
-    sa_email = var.sa_email
+    service_annotations = yamlencode(var.service_annotations)
   }
 }
 
@@ -36,7 +37,8 @@ data "template_file" "clusterissuer_prod" {
 data "template_file" "certificate" {
   template = file("${path.root}/helm-templates/certificate/certificate.yaml")
   vars = {
-    email = var.email
+    email        = var.email
+    api_dns_name = var.api_dns_name
   }
 }
 

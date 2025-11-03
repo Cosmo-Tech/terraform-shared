@@ -1,0 +1,21 @@
+locals {
+  cloud_identity = (
+    var.cloud_provider == "gcp" ? { "iam.gke.io/gcp-service-account" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email } :
+    var.cloud_provider == "aws" ? { "eks.amazonaws.com/role-arn" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn } :
+    var.cloud_provider == "azure" ? { "azure.workload.identity/client-id" = data.terraform_remote_state.terraform_cluster.outputs.azure_client_id } :
+    null
+  )
+
+  lb_annotations = (
+    var.cloud_provider == "gcp" ? { "service.beta.kubernetes.io/google-load-balancer-ip" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip } :
+    var.cloud_provider == "aws" ? { "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb" } :
+    var.cloud_provider == "azure" ? { "service.beta.kubernetes.io/azure-load-balancer-resource-group" = data.terraform_remote_state.terraform_cluster.outputs.lb_resource_group } :
+    {}
+  )
+  lb_ip = (
+    var.cloud_provider == "gcp" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
+    var.cloud_provider == "aws" ? null : # AWS LB IP is dynamic, use annotation/type instead
+    var.cloud_provider == "azure" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
+    null
+  )
+}
