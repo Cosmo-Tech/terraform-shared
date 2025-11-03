@@ -1,0 +1,6 @@
+customer_name = "cosmotech"
+email         = "platform@cosmotech.com"
+project_id    = "gke-test-devops"
+project_name  = "platform"
+project_stage = "dev"
+region        = "europe-west6"

@@ -1,0 +1,80 @@
+  controller:
+    nodeSelector:
+      cosmotech.com/tier: services
+    labels:
+      networking/traffic-allowed: "yes"
+    podLabels:
+      networking/traffic-allowed: "yes"      
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+      - key: "cosmotech.com/tier"
+        operator: "Equal"
+        value: "services"
+        effect: "NoSchedule"
+    
+    service:
+      type: LoadBalancer
+      loadBalancerIP: ${platform_lb_ip}
+      ports:
+        http: 80
+        https: 443      
+      annotations:
+        service.beta.kubernetes.io/google-load-balancer-ip: ${platform_lb_ip}
+      labels:
+        networking/traffic-allowed: "yes"      
+    
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    
+    extraArgs:
+      default-ssl-certificate: "monitoring/letsencrypt-prod"
+      healthz-port: 10254
+
+    admissionWebhooks:
+      labels:
+        networking/traffic-allowed: "yes"
+      patch:
+        labels:
+          networking/traffic-allowed: "yes"
+        nodeSelector:
+          "cosmotech.com/tier": "services"
+        tolerations:
+          - key: "vendor"
+            operator: "Equal"
+            value: "cosmotech"
+            effect: "NoSchedule"
+          - key: "cosmotech.com/tier"
+            operator: "Equal"
+            value: "services"
+            effect: "NoSchedule"
+    
+    serviceAccount:
+      create: false
+      annotations:
+        iam.gke.io/gcp-service-account: ${sa_email}
+
+  defaultBackend:
+    podLabels:
+      networking/traffic-allowed: "yes"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
+    tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
