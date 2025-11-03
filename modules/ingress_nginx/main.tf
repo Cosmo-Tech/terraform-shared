@@ -4,7 +4,7 @@ data "template_file" "nginx_values" {
   vars = {
     service_annotations = yamlencode(var.service_annotations)
     lb_annotations      = yamlencode(var.lb_annotations)
-    platform_lb_ip = var.platform_lb_ip
+    platform_lb_ip      = var.platform_lb_ip
   }
 }
 

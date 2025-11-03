@@ -9,3 +9,5 @@ variable "project_name" {}
 variable "project_stage" {}
 variable "api_dns_name" {}
 variable "cloud_provider" {}
+variable "backend_state_prefix" {}
+variable "backend_state" {}
