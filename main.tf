@@ -82,7 +82,7 @@ module "prometheus_stack" {
 module "storageclass" {
   source = "./modules/storageclass"
 
-  cloud_provider          = "gcp"
+  cloud_provider          = var.cloud_provider
   deploy_storageclass     = true
   deploy_storageclass_nfs = true
 }
