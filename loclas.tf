@@ -8,8 +8,14 @@ locals {
 
   lb_annotations = (
     var.cloud_provider == "gcp" ? { "service.beta.kubernetes.io/google-load-balancer-ip" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip } :
-    var.cloud_provider == "aws" ? { "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb" } :
-    var.cloud_provider == "azure" ? { "service.beta.kubernetes.io/azure-load-balancer-resource-group" = data.terraform_remote_state.terraform_cluster.outputs.lb_resource_group } :
+    var.cloud_provider == "aws" ? {
+      "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
+      "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
+      "service.beta.kubernetes.io/aws-load-balancer-eip-allocations"                   = "eipalloc-03e2805bc83e3b481"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internet-facing"
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"                           = "subnet-02b5d6e252d7f60e7"
+    } : var.cloud_provider == "azure" ? { "service.beta.kubernetes.io/azure-load-balancer-resource-group" = data.terraform_remote_state.terraform_cluster.outputs.lb_resource_group } :
     {}
   )
   lb_ip = (

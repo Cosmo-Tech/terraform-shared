@@ -1,0 +1,176 @@
+global:
+  security:
+    allowInsecureImages: true
+externalURL: http://cluster.gcp.platform.cosmotech.com/harbor    
+exposureType: ingress
+service:
+  type: ClusterIP
+ingress:
+  core:
+    enabled: true
+    ingressClassName: nginx
+    hostname: cluster.gcp.platform.cosmotech.com
+    path: /harbor
+    pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    tls: false
+    selfSigned: false
+
+tolerations:
+  - key: vendor
+    operator: Equal
+    value: cosmotech
+    effect: NoSchedule
+persistence:
+  enabled: true
+  volumePermissions:
+    enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      existingClaim: pvc-harbor-registry
+      subPath: registry
+    jobservice:
+      existingClaim: pvc-harbor-jobservice
+      subPath: jobservice
+    chartmuseum:
+      existingClaim: pvc-harbor-chartmuseum
+      subPath: chartmuseum
+    trivy:
+      existingClaim: pvc-harbor-trivy
+      subPath: trivy
+registry:
+  storage:
+    filesystem:
+      rootdirectory: /harbor-data
+  image:
+    repository: bitnamilegacy/harbor-registry
+    tag: 2.13.2-debian-12-r2
+  server:
+    image:
+      repository: bitnamilegacy/harbor-registry
+      tag: 2.13.2-debian-12-r2
+  controller:
+    image:
+      repository: bitnamilegacy/harbor-registryctl
+      tag: 2.13.2-debian-12-r2
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+trivy:
+  enabled: true
+  image:
+    repository: bitnamilegacy/trivy
+    tag: 2.13.2-debian-12-r2
+  securityContext:
+    runAsUser: 10000
+    fsGroup: 10000
+  initContainers:
+    - name: init-cache
+      image: busybox:1.35
+      securityContext:
+        runAsUser: 0
+      command: ['sh', '-c']
+      args:
+        - |
+          mkdir -p /home/scanner/.cache/trivy
+          chown -R 10000:10000 /home/scanner/.cache/trivy
+          chmod -R 755 /home/scanner/.cache/trivy
+      volumeMounts:
+        - name: trivy
+          mountPath: /home/scanner/.cache/trivy
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+externalDatabase:
+  host: harbor-postgresql.harbor.svc.cluster.local
+  port: 5432
+  user: postgres
+  existingSecret: "${SECRET}"
+  existingSecretPasswordKey: "${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}"
+  coreDatabase: harbor_db
+  sslmode: disable
+postgresql:
+  enabled: false
+
+externalRedis:
+  host: redis-master.harbor.svc.cluster.local
+  port: 6379
+redis:
+  enabled: false
+
+portal:
+  replicas: 1
+  image:
+    repository: bitnamilegacy/harbor-portal
+    tag: 2.13.2-debian-12-r2
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+core:
+  replicas: 1
+  image:
+    repository: bitnamilegacy/harbor-core
+    tag: 2.13.2-debian-12-r2
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+jobservice:
+  replicas: 1
+  image:
+    repository: bitnamilegacy/harbor-jobservice
+    tag: 2.13.2-debian-12-r2
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+chartmuseum:
+  enabled: true
+  image:
+    repository: bitnamilegacy/harbor-chartmuseum
+    tag: 0.15.0-debian-11-r84
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+notary:
+  enabled: false
+
+exporter:
+  enabled: true
+  core:
+      host: harbor-core.harbor.svc.cluster.local
+      port: 8080  
+  image:
+    repository: bitnamilegacy/harbor-exporter
+    tag: 2.13.2-debian-12-r2
+nginx:
+  enabled: true
+  image:
+    repository: bitnamilegacy/nginx
+    tag: 1.29.0-debian-12-r0    
+
+existingSecret: "${SECRET}"
+existingSecretAdminPasswordKey: "${HARBOR_ADMIN_PASSWORD}"
+logLevel: info
+metrics:
+  enabled: true
+internalTLS:
+  enabled: false

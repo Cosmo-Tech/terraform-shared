@@ -10,20 +10,6 @@ provider "google" {
   region  = var.region
 }
 
-module "platform_dns" {
-  source       = "./modules/dns_record"
-  project_id   = "csm-dns"
-  managed_zone = "gcp-platform-cosmotech-com"
-
-  records = [
-    {
-      name    = "${var.api_dns_name}."
-      type    = "A"
-      rrdatas = [data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip]
-    }
-  ]
-}
-
 module "namespaces" {
   source = "./modules/namespace"
 
@@ -32,7 +18,8 @@ module "namespaces" {
     "cert-manager",
     "monitoring",
     "redis",
-    "keycloak"
+    "keycloak",
+    "harbor"
   ]
 
   labels = {
@@ -48,7 +35,7 @@ module "helm_nginx" {
   platform_lb_ip         = local.lb_ip
   cluster_endpoint       = data.terraform_remote_state.terraform_cluster.outputs.cluster_endpoint
   cluster_ca_certificate = data.terraform_remote_state.terraform_cluster.outputs.cluster_ca_certificate
-  depends_on             = [module.platform_dns, module.namespaces]
+  depends_on             = [module.namespaces]
   service_annotations    = local.cloud_identity
   lb_annotations         = local.lb_annotations
 }
@@ -130,4 +117,27 @@ module "keycloak" {
   keycloak_helm_chart         = "keycloak"
   keycloak_helm_chart_version = "21.3.1"
   depends_on                  = [module.namespaces]
+}
+
+module "pvc_harbor" {
+  source                        = "./modules/pvc_harbor"
+  harbor_namespace              = "harbor"
+  pvc_harbor_storage_class_name = "cosmotech-retain"
+}
+
+module "harbor" {
+  source     = "./modules/harbor"
+  depends_on = [module.pvc_harbor]
+
+  harbor_helm_repo          = "oci://registry-1.docker.io/bitnamicharts"
+  harbor_helm_chart         = "harbor"
+  harbor_helm_chart_version = "26.8.5"
+
+  postgres_helm_repo          = "https://charts.bitnami.com/bitnami"
+  postgres_helm_chart         = "postgresql"
+  postgres_helm_chart_version = "15.5.1"
+
+  redis_helm_repo          = "https://charts.bitnami.com/bitnami"
+  redis_helm_chart         = "redis"
+  redis_helm_chart_version = "17.3.14"
 }

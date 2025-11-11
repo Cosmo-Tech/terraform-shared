@@ -1,0 +1,58 @@
+# values.yaml for Bitnami Redis (single instance for Harbor)
+global:
+  security:
+    allowInsecureImages: true
+  redis:
+    password: ""
+
+architecture: "standalone" 
+
+auth:
+  enabled: false
+
+master:
+  persistence:
+    enabled: true
+    existingClaim: "pvc-harbor-redis"
+    storageClass: "cosmotech-retain"
+  volumePermissions:
+    enabled: true     
+
+  service:
+    type: ClusterIP
+    port: 6379
+
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+      
+
+replica:
+  replicaCount: 0
+  persistence:
+    enabled: false
+
+metrics:
+  enabled: true
+  image:
+    repository: bitnamilegacy/redis-exporter
+    tag: 1.45.0-debian-11-r11    
+  service:
+    type: ClusterIP    
+
+volumePermissions:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/os-shell       # legacy shell image
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+image:
+  repository: "bitnamilegacy/redis"
+  pullPolicy: IfNotPresent
