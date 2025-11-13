@@ -87,7 +87,21 @@ module "pvc_loki_stack" {
   pvc_loki_size    = "20Gi"
   depends_on       = [module.namespaces]
 }
-
+module "loki" {
+  source                           = "./modules/loki"
+  loki_helm_repo_url               = "https://grafana.github.io/helm-charts"
+  loki_retention_period            = "720h"
+  grafana_persistence_size         = "8Gi"
+  loki_max_entries_limit_per_query = "50000"
+  grafana_image_tag                = ""
+  loki_helm_chart_version          = "2.10.2"
+  loki_persistence_size            = "8Gi"
+  loki_release_name                = "loki"
+  monitoring_namespace             = "monitoring"
+  storage_class_name               = "cosmotech-retain"
+  loki_helm_chart_name             = "loki-stack"
+  depends_on = [ module.pvc_loki_stack, module.namespaces ]
+}
 module "pvc_keycloak_postgres" {
   source = "./modules/pvc_keycloak_postgres"
 
