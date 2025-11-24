@@ -1,7 +1,7 @@
 global:
   security:
     allowInsecureImages: true
-externalURL: http://cluster.gcp.platform.cosmotech.com/harbor    
+externalURL: http://assetaip-dev.azure.platform.cosmotech.com/harbor    
 exposureType: ingress
 service:
   type: ClusterIP
@@ -9,7 +9,7 @@ ingress:
   core:
     enabled: true
     ingressClassName: nginx
-    hostname: cluster.gcp.platform.cosmotech.com
+    hostname: assetaip-dev.azure.platform.cosmotech.com
     path: /harbor
     pathType: Prefix
     annotations:

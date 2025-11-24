@@ -1,4 +1,4 @@
-  crds.enabled: true
+  installCRDs: true
 
   nodeSelector:
     cosmotech.com/tier: services

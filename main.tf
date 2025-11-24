@@ -1,14 +1,14 @@
-terraform {
-  backend "gcs" {
-    bucket = "cosmotech-states"
-    prefix = "gke-test-devops/shared-state"
-  }
-}
+# terraform {
+#   backend "gcs" {
+#     bucket = "cosmotech-states"
+#     prefix = "gke-test-devops/shared-state"
+#   }
+# }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
+# provider "google" {
+#   project = var.project_id
+#   region  = var.region
+# }
 
 module "namespaces" {
   source = "./modules/namespace"
@@ -63,7 +63,7 @@ module "prometheus_stack" {
   prom_storage_class_name = "cosmotech-retain"
   helm_chart_version      = "65.1.0"
 
-  depends_on = [module.namespaces]
+  depends_on = [module.namespaces, module.storageclass]
 }
 
 module "storageclass" {
@@ -85,7 +85,7 @@ module "pvc_loki_stack" {
 
   pvc_grafana_size = "10Gi"
   pvc_loki_size    = "20Gi"
-  depends_on       = [module.namespaces]
+  depends_on       = [module.namespaces,module.storageclass]
 }
 module "loki" {
   source                           = "./modules/loki"
@@ -100,8 +100,9 @@ module "loki" {
   monitoring_namespace             = "monitoring"
   storage_class_name               = "cosmotech-retain"
   loki_helm_chart_name             = "loki-stack"
-  depends_on = [ module.pvc_loki_stack, module.namespaces ]
+  depends_on                       = [module.pvc_loki_stack, module.namespaces]
 }
+
 module "pvc_keycloak_postgres" {
   source = "./modules/pvc_keycloak_postgres"
 
@@ -110,7 +111,7 @@ module "pvc_keycloak_postgres" {
   pvc_postgres_storage_class_name = "cosmotech-retain"
   pvc_postgres_size               = "20Gi"
   pvc_postgres_access_mode        = "ReadWriteOnce"
-  depends_on                      = [module.namespaces]
+  depends_on                      = [module.namespaces, module.storageclass]
 }
 
 module "keycloak" {
@@ -137,11 +138,12 @@ module "pvc_harbor" {
   source                        = "./modules/pvc_harbor"
   harbor_namespace              = "harbor"
   pvc_harbor_storage_class_name = "cosmotech-retain"
+  depends_on = [ module.storageclass ]
 }
 
 module "harbor" {
   source     = "./modules/harbor"
-  depends_on = [module.pvc_harbor]
+  depends_on = [module.pvc_harbor,module.namespaces]
 
   harbor_helm_repo          = "oci://registry-1.docker.io/bitnamicharts"
   harbor_helm_chart         = "harbor"
