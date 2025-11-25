@@ -1,3 +1,5 @@
-.terraform
-.terraform.lock.hcl
-*.tfstate
+.*
+.env*
+.terraform*
+terraform.tfstate*
+backend.tf
