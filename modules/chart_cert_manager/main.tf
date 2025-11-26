@@ -26,7 +26,7 @@ data "template_file" "cert_values" {
 
 
 data "template_file" "clusterissuer_prod" {
-  template = file("${path.module}/kube-objects/clusterissuer.yaml")
+  template = file("${path.module}/kube_objects/clusterissuer.yaml")
   vars = {
     certificate_email = var.certificate_email
   }
@@ -34,7 +34,7 @@ data "template_file" "clusterissuer_prod" {
 
 
 data "template_file" "certificate" {
-  template = file("${path.module}/kube-objects/certificate.yaml")
+  template = file("${path.module}/kube_objects/certificate.yaml")
   vars = {
     certificate_email = var.certificate_email
     cluster_domain    = var.cluster_domain

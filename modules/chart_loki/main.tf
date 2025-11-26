@@ -48,11 +48,11 @@ resource "helm_release" "loki_stack" {
 
 resource "kubectl_manifest" "loki_role" {
   validate_schema = false
-  yaml_body       = templatefile("${path.module}/kube-objects/role.yaml", local.chart_values)
+  yaml_body       = templatefile("${path.module}/kube_objects/role.yaml", local.chart_values)
 }
 
 
 resource "kubectl_manifest" "loki_rolebinding" {
   validate_schema = false
-  yaml_body       = templatefile("${path.module}/kube-objects/rolebinding.yaml", local.chart_values)
+  yaml_body       = templatefile("${path.module}/kube_objects/rolebinding.yaml", local.chart_values)
 }
