@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Stop script if missing dependency
-required_commands="terraform aws jq"
+required_commands="terraform jq"
 for command in $required_commands; do
     if [ -z "$(command -v $command)" ]; then
         echo "error: required command not found: \e[91m$command\e[97m"
@@ -17,12 +17,10 @@ get_var_value() {
 
     cat $file | grep '=' | grep -w $variable | sed '/.*#.*/d' | sed 's|.*=.*"\(.*\)".*|\1|' | head -n 1
 }
-
 cloud_provider="$(get_var_value terraform.tfvars cloud_provider)"
 cluster_region="$(get_var_value terraform.tfvars cluster_region)"
 cluster_name="$(get_var_value terraform.tfvars cluster_name)"
 state_file_name="tfstate-shared-$cluster_name"
-
 
 
 # Clear old data

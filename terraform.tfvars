@@ -1,7 +1,7 @@
 ## VARIABLES EXAMPLE FOR AZURE
 cloud_provider        = "azure"
 cluster_region        = "westeurope"
-cluster_name          = "aks-dev-devops3"
+cluster_name          = "aks-dev-devopsmtor"
 domain_zone           = "azure.platform.cosmotech.com"
 certificate_email     = "platform@cosmotech.com"
 azure_subscription_id = "a24b131f-bd0b-42e8-872a-bded9b91ab74"
