@@ -1,10 +1,18 @@
-api_dns_name         = "cluster.gcp.platform.cosmotech.com"
-backend_state        = "gcs"
-backend_state_prefix = "gke-test-devops/cluster-state"
-cloud_provider       = "gcp"
-customer_name        = "cosmotech"
-email                = "platform@cosmotech.com"
-project_id           = "gke-test-devops"
-project_name         = "platform"
-project_stage        = "dev"
-region               = "europe-west6"
+## VARIABLES EXAMPLE FOR AZURE
+cloud_provider        = "azure"
+cluster_region        = "westeurope"
+cluster_name          = "aks-dev-devopsmtor"
+domain_zone           = "azure.platform.cosmotech.com"
+certificate_email     = "platform@cosmotech.com"
+azure_subscription_id = "a24b131f-bd0b-42e8-872a-bded9b91ab74"
+azure_entra_tenant_id = "e413b834-8be8-4822-a370-be619545cb49"
+
+
+## VARIABLES EXAMPLE FOR GCP
+# cloud_provider = "gcp"
+
+## VARIABLES EXAMPLE FOR AWS
+# cloud_provider = "aws"
+
+## VARIABLES EXAMPLE FOR BARE
+# cloud_provider = "bare"

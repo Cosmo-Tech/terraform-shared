@@ -1,0 +1,88 @@
+  installCRDs: true
+
+  nodeSelector:
+    cosmotech.com/tier: services
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    - key: "cosmotech.com/tier"
+      operator: "Equal"
+      value: "services"
+      effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  serviceAccount:
+    create: false
+    annotations: |
+      ${service_annotations}
+
+  cainjector:
+    podLabels:
+      networking/traffic-allowed: "yes"
+    nodeSelector:
+      cosmotech.com/tier: services
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+      - key: "cosmotech.com/tier"
+        operator: "Equal"
+        value: "services"
+        effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  webhook:
+    podLabels:
+      networking/traffic-allowed: "yes"
+    nodeSelector:
+      cosmotech.com/tier: services
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+      - key: "cosmotech.com/tier"
+        operator: "Equal"
+        value: "services"
+        effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  startupapicheck:
+    nodeSelector:
+      cosmotech.com/tier: services
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+      - key: "cosmotech.com/tier"
+        operator: "Equal"
+        value: "services"
+        effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
