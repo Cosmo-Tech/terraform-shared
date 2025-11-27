@@ -1,0 +1,26 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ${certificate_email}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+          podTemplate:
+            metadata:
+              labels:
+                networking/traffic-allowed: "yes"     
+            spec:
+              tolerations:
+              - key: "vendor"
+                operator: "Equal"
+                value: "cosmotech"
+                effect: "NoSchedule"
+              nodeSelector:
+                "cosmotech.com/tier": "services"
