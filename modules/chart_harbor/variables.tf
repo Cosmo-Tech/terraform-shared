@@ -56,3 +56,8 @@ variable "redis_helm_chart_version" {
   type    = string
   default = ""
 }
+
+variable "hostname" {
+  type = string
+  default = ""
+}

@@ -166,6 +166,7 @@ module "pvc_harbor" {
 
 module "chart_harbor" {
   source = "./modules/chart_harbor"
+  hostname = var.hostname
 
   harbor_helm_repo          = "oci://registry-1.docker.io/bitnamicharts"
   harbor_helm_chart         = "harbor"

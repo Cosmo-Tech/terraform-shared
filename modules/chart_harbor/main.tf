@@ -4,7 +4,7 @@ locals {
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
     HARBOR_ADMIN_PASSWORD              = "harbor_admin_password"
     SECRET                             = "harbor-config"
-
+    HOSTNAME                           = var.hostname
   }
 }
 
