@@ -165,9 +165,8 @@ module "pvc_harbor" {
 
 
 module "chart_harbor" {
-  source       = "./modules/chart_harbor"
-  cluster_name = var.cluster_name
-  domain_zone  = var.domain_zone
+  source         = "./modules/chart_harbor"
+  cluster_domain = local.cluster_domain
 
   harbor_helm_repo          = "oci://registry-1.docker.io/bitnamicharts"
   harbor_helm_chart         = "harbor"
