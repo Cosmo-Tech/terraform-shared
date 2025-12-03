@@ -56,3 +56,7 @@ variable "redis_helm_chart_version" {
   type    = string
   default = ""
 }
+variable "cluster_domain" {
+  type    = string
+  default = ""
+}

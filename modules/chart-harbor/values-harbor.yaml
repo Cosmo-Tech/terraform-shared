@@ -1,7 +1,7 @@
 global:
   security:
     allowInsecureImages: true
-externalURL: http://${CLUSTER_DOMAIN}/harbor    
+externalURL: http://${HOSTNAME}/harbor    
 exposureType: ingress
 service:
   type: ClusterIP
@@ -9,7 +9,7 @@ ingress:
   core:
     enabled: true
     ingressClassName: nginx
-    hostname: ${CLUSTER_DOMAIN}
+    hostname: ${HOSTNAME}
     path: /harbor
     pathType: Prefix
     annotations:
