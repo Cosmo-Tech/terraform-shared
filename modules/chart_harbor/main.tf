@@ -1,10 +1,11 @@
 locals {
   chart_values = {
-    POSTGRES_PASSWORD_SECRET_KEY       = "harbor_postgres_password"
-    POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
+    CLUSTER_NAME                       = var.cluster_name
+    DOMAIN_ZONE                        = var.domain_zone
     HARBOR_ADMIN_PASSWORD              = "harbor_admin_password"
+    POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
+    POSTGRES_PASSWORD_SECRET_KEY       = "harbor_postgres_password"
     SECRET                             = "harbor-config"
-    HOSTNAME                           = var.hostname
   }
 }
 

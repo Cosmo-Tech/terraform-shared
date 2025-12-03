@@ -68,8 +68,3 @@ variable "certificate_email" {
   description = "Email for Let's Encrypt"
   type        = string
 }
-
-variable "hostname" {
-  type = string
-  default = ""
-}
