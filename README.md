@@ -5,7 +5,7 @@
 *Install common resources on Kubernetes clusters required by tenants*
 
 ## Requirements
-- working Kubernetes cluster deployed from Cosmo Tech terraform-<provider> (like [terraform-azure](https://github.com/Cosmo-Tech/terraform-azure) for example)
+- working Kubernetes cluster deployed from Cosmo Tech terraform-*provider* (like [terraform-azure](https://github.com/Cosmo-Tech/terraform-azure) for example)
 - [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
     > If using Windows, Terraform must be accessible from PATH
 
@@ -34,12 +34,12 @@
 
 ## Developpers
 * modules
-    * chart_cert_manager = install Cert Manager
-    * chart_harbor = install Harbor
-    * chart_ingress_nginx = install Ingress Nginx
-    * chart_keycloak = Keycloak
-    * chart_prometheus_stack = Prometheus Stack (Prometheus/Grafana)
-    * kube_namespaces = create namespaces for all others modules
+    * *chart_cert_manager* = install Cert Manager
+    * *chart_harbor* = install Harbor
+    * *chart_ingress_nginx* = install Ingress Nginx
+    * *chart_keycloak* = Keycloak
+    * *chart_prometheus_stack* = Prometheus Stack (Prometheus/Grafana)
+    * *kube_namespaces* = create namespaces for all others modules
 * Terraform state
     * The state is stored beside the cluster Terraform state, in the current cloud s3/blob storage service (generally called `cosmotech-states` or `cosmotechstates`, depending on what the cloud provider allows in naming convention)
 * File backend.tf
