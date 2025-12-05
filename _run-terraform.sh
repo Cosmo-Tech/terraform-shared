@@ -1,13 +1,19 @@
 #!/bin/sh
 
+# Script to run terraform modules
+# Usage :
+# - ./script.sh
+
+
 # Stop script if missing dependency
-required_commands="terraform jq"
+required_commands="terraform"
 for command in $required_commands; do
     if [ -z "$(command -v $command)" ]; then
         echo "error: required command not found: \e[91m$command\e[97m"
         exit 1
     fi
 done
+
 
 # Get value of a variable declared in a given file from this pattern: variable = "value"
 # Usage: get_var_value <file> <variable>

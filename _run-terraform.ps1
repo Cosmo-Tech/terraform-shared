@@ -1,0 +1,149 @@
+
+
+# Script to run terraform modules
+# Usage :
+# - ./script.ps1
+
+
+# Stop script if missing dependency
+$required_command = 'terraform'
+foreach ($command in $required_command) {
+    if (!(Get-Command -errorAction SilentlyContinue -Name $command)) {
+        echo "error: required command not found in the PATH: $command"
+        exit
+    }
+}
+
+
+# Get value of a variable declared in a given file from this pattern: variable = "value"
+# Usage: get_var_value <file> <variable>
+function get_var_value {
+    param($File, $Variable)
+
+    $value = (cat $File | select-string $Variable | select-string '=' | select-string -Pattern '#.*' -NotMatch | select -first 1)
+    $value -replace '.*=.*\"(.*)\".*','$1'
+}
+$cloud_provider = (get_var_value 'terraform.tfvars' 'cloud_provider')
+$cluster_region = (get_var_value 'terraform.tfvars' 'cluster_region')
+$cluster_name = (get_var_value 'terraform.tfvars' 'cluster_name')
+$state_file_name = "tfstate-shared-$cluster_name"
+
+
+# Clear old data
+rm -Recurse -Confirm:$false .terraform*
+rm -Recurse -Confirm:$false terraform.tfstate*
+
+
+# The trick here is to write configuration in a dynamic file created at the begin of the
+# execution, containing the config that the concerned provider is waiting for Terraform backend.
+# Then, Terraform will automatically detects it from its .tf extension.
+$backend_file = 'backend.tf'
+switch ($cloud_provider) {
+    "azure" {
+        $state_storage_name = 'cosmotechstates'
+        echo "
+            terraform {
+                backend ""azurerm"" {
+                    resource_group_name    = ""$state_storage_name""
+                    storage_account_name   = ""$state_storage_name""
+                    container_name         = ""$state_storage_name""
+                    key                    = ""$state_file_name""
+                }
+            }
+
+            provider ""azurerm"" {
+            features {}
+                subscription_id = var.azure_subscription_id
+                tenant_id       = var.azure_entra_tenant_id
+            }
+
+            variable ""azure_subscription_id"" { type = string }
+            variable ""azure_entra_tenant_id"" { type = string }
+
+            data ""terraform_remote_state"" ""terraform_cluster"" {
+                backend = ""azurerm""
+                config = {
+                    resource_group_name  = ""$state_storage_name""
+                    storage_account_name = ""$state_storage_name""
+                    container_name       = ""$state_storage_name""
+                    key                  = ""tfstate-cluster-$cluster_name""
+                }
+            }
+
+            # Trick to get the resource group of the cluster (get it from instanciated Kubernetes nodes)
+            data ""kubernetes_nodes"" ""selected"" {
+                metadata {
+                    labels = {
+                        ""cosmotech.com/tier"" = ""db""
+                    }
+                }
+            }
+
+            data ""azurerm_public_ip"" ""lb_ip"" {
+                name                  = ""$cluster_name-lb-ip""
+                resource_group_name   = [for node in data.kubernetes_nodes.selected.nodes : node.metadata.0.labels].0[""kubernetes.azure.com/cluster""]
+            }
+
+            data ""azurerm_client_config"" ""current"" {}
+        " > $backend_file-tmp
+    }
+
+    "aws" {
+        $state_storage_name = 'cosmotech-states'
+        echo "
+            terraform {
+                backend ""s3"" {
+                    key    = ""$state_file_name""
+                    bucket = ""$state_storage_name""
+                    region = ""$cluster_region""
+                }
+            }
+
+            provider ""aws"" {
+                region = var.cluster_region
+            }
+        " > $backend_file-tmp
+    }
+
+    "gcp" {
+        $state_storage_name = 'cosmotech-states'
+        echo "
+            terraform {
+                backend ""gcs"" {
+                    bucket = ""$state_storage_name""
+                    prefix = ""$state_file_name""
+                }
+            }
+
+            provider ""google"" {
+                project = var.project_id
+                region  = var.cluster_region
+            }
+
+            variable ""project_id"" { type = string }
+
+            data ""terraform_remote_state"" ""terraform_cluster"" {
+                backend = ""gcs""
+                config = {
+                    bucket = ""$state_storage_name""
+                }
+            }
+
+            data ""google_client_config"" ""current"" {}
+        " > $backend_file-tmp
+    }
+}
+# Convert backend_file to UNIX format, otherwise Terraform will not be able to read it
+Get-Content $backend_file-tmp -raw | % {$_ -replace "`r", ""} | Set-Content -NoNewline $backend_file
+rm -Confirm:$false $backend_file-tmp
+
+
+# Deploy
+terraform fmt $backend_file
+terraform init -lock=false -upgrade -reconfigure
+terraform plan -lock=false -out .terraform.plan
+# terraform apply -lock=false .terraform.plan
+
+
+echo ''
+exit 0
