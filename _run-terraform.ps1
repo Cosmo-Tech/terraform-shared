@@ -85,7 +85,7 @@ switch ($cloud_provider) {
             }
 
             data ""azurerm_client_config"" ""current"" {}
-        " > $backend_file-tmp
+        " > $backend_file
     }
 
     "aws" {
@@ -102,7 +102,7 @@ switch ($cloud_provider) {
             provider ""aws"" {
                 region = var.cluster_region
             }
-        " > $backend_file-tmp
+        " > $backend_file
     }
 
     "gcp" {
@@ -130,12 +130,11 @@ switch ($cloud_provider) {
             }
 
             data ""google_client_config"" ""current"" {}
-        " > $backend_file-tmp
+        " > $backend_file
     }
 }
 # Convert backend_file to UNIX format, otherwise Terraform will not be able to read it
-Get-Content $backend_file-tmp -raw | % {$_ -replace "`r", ""} | Set-Content -NoNewline $backend_file
-rm -Confirm:$false $backend_file-tmp
+((Get-Content $backend_file) -join "`n") + "`n" | Set-Content -NoNewline $backend_file
 
 
 # Deploy
