@@ -1,7 +1,7 @@
 global:
   security:
     allowInsecureImages: true
-externalURL: http://${CLUSTER_DOMAIN}/harbor    
+externalURL: http://${CLUSTER_DOMAIN}
 exposureType: ingress
 service:
   type: ClusterIP
