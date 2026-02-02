@@ -40,44 +40,54 @@ locals {
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak = {
-      size = 50
-      pvc  = "pvc-keycloak"
+      size      = 50
+      pvc       = "pvc-keycloak"
+      namespace = "keycloak"
     }
     loki = {
-      size = 50
-      pvc  = "pvc-loki"
+      size      = 50
+      pvc       = "pvc-loki"
+      namespace = "monitoring"
     }
     grafana = {
-      size = 10
-      pvc  = "pvc-grafana"
+      size      = 10
+      pvc       = "pvc-grafana"
+      namespace = "monitoring"
     }
     prometheusstack = {
-      size = 100
-      pvc  = "pvc-prometheusstack"
+      size      = 100
+      pvc       = "pvc-prometheusstack"
+      namespace = "monitoring"
     }
     harbor-redis = {
-      size = 10
-      pvc  = "pvc-harbor-redis"
+      size      = 10
+      pvc       = "pvc-harbor-redis"
+      namespace = "harbor"
     }
     harbor-postgresql = {
-      size = 10
-      pvc  = "pvc-harbor-postgresql"
+      size      = 10
+      pvc       = "pvc-harbor-postgresql"
+      namespace = "harbor"
     }
     harbor-registry = {
-      size = 50
-      pvc  = "pvc-harbor-registry"
+      size      = 50
+      pvc       = "pvc-harbor-registry"
+      namespace = "harbor"
     }
     harbor-jobservice = {
-      size = 10
-      pvc  = "pvc-harbor-jobservice"
+      size      = 10
+      pvc       = "pvc-harbor-jobservice"
+      namespace = "harbor"
     }
     harbor-chartmuseum = {
-      size = 10
-      pvc  = "pvc-harbor-chartmuseum"
+      size      = 10
+      pvc       = "pvc-harbor-chartmuseum"
+      namespace = "harbor"
     }
     harbor-trivy = {
-      size = 10
-      pvc  = "pvc-harbor-trivy"
+      size      = 10
+      pvc       = "pvc-harbor-trivy"
+      namespace = "harbor"
     }
   }
 }
@@ -97,14 +107,13 @@ module "kube_namespaces" {
 }
 
 
-
 module "storage_azure" {
   # source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage?ref=ggon/compute"
 
   for_each = var.cloud_provider == "azure" ? local.persistences : {}
 
-  tenant             = ""
+  namespace          = each.value.namespace
   resource           = each.key
   size               = each.value.size
   storage_class_name = local.storage_class_name
@@ -120,7 +129,7 @@ module "storage_azure" {
 
 #   for_each = var.cloud_provider == "aws" ? local.persistences : {}
 
-#   tenant             = module.kube_namespace.tenant
+#   namespace          = each.value.namespace
 #   resource           = each.key
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
@@ -136,7 +145,7 @@ module "storage_azure" {
 
 #   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
 
-#   tenant             = module.kube_namespace.tenant
+#   namespace          = each.value.namespace
 #   resource           = each.key
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
@@ -152,7 +161,7 @@ module "storage_azure" {
 
 #   for_each = var.cloud_provider == "onprem" ? local.persistences : {}
 
-#   tenant             = module.kube_namespace.tenant
+#   namespace          = each.value.namespace
 #   resource           = each.key
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
