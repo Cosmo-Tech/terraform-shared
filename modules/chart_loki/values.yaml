@@ -13,22 +13,20 @@ loki:
     enabled: true      
     accessModes:
       - ReadWriteOnce
-    size: "${LOKI_PERSISTENCE_SIZE}"
-    storageClass: "${STORAGE_CLASS}"
-    existingClaim: "${LOKI_PVC_NAME}"
+    size: "${PERSISTENCE_LOKI_SIZE}"
+    storageClass: "${PERSISTENCE_STORAGE_CLASS}"
+    existingClaim: "${PERSISTENCE_LOKI_PVC}"
   config:
     auth_enabled: false
     table_manager:
       retention_deletes_enabled: true
-      retention_period: "${LOKI_RETENTION_PERIOD}"
+      retention_period: "720h"
     limits_config:
-      max_entries_limit_per_query: ${LOKI_MAX_ENTRIES_LIMIT_PER_QUERY}
+      max_entries_limit_per_query: "50000"
 volumePermissions:
   enabled: true      
 grafana:
   enabled: true
-  image:
-    tag: "${GRAFANA_IMAGE_TAG}"
   persistence:
     type: pvc
     enabled: true
@@ -36,9 +34,9 @@ grafana:
     enabled: true         
     accessModes:
       - ReadWriteOnce
-    size: "${GRAFANA_PERSISTENCE_SIZE}"
-    storageClassName: "${STORAGE_CLASS}"
-    existingClaim: "${GRAFANA_PVC_NAME}"
+    size: "${PERSISTENCE_GRAFANA_SIZE}"
+    storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
+    existingClaim: "${PERSISTENCE_GRAFANA_PVC}"
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -49,7 +47,7 @@ grafana:
 promtail:
   config:
     clients:
-      - url: "http://loki.${MONITORING_NAMESPACE}:3100/loki/api/v1/push"
+      - url: "http://loki.${NAMESPACE}:3100/loki/api/v1/push"
     snippets:
       pipelineStages:
         - cri: {}

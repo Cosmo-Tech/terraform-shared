@@ -5,14 +5,14 @@ global:
     auth:
       database: "keycloak_db"
       username: ${POSTGRES_USER}
-      existingSecret: ${SECRET}
+      existingSecret: ${KEYCLOAK_SECRET}
       secretKeys:
         userPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
         adminPasswordKey: ${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}
 primary:
   persistence:
     enabled: true
-    existingClaim: ${PVC_NAME}
+    existingClaim: ${PERSISTENCE_PVC}
   nodeSelector:
     "cosmotech.com/tier": "db"
   tolerations:
@@ -24,7 +24,7 @@ volumePermissions:
   enabled: true
   image:
     registry: docker.io
-    repository: bitnamilegacy/os-shell       # legacy shell image
+    repository: bitnamilegacy/os-shell
     tag: latest
     pullPolicy: IfNotPresent
     pullSecrets: []   

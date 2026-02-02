@@ -40,6 +40,7 @@
     * *chart_keycloak* = Keycloak
     * *chart_prometheus_stack* = Prometheus Stack (Prometheus/Grafana)
     * *kube_namespaces* = create namespaces for all others modules
+    * *kube_storageclass* = create a custom storage class
 * Terraform state
     * The state is stored beside the cluster Terraform state, in the current cloud s3/blob storage service (generally called `cosmotech-states` or `cosmotechstates`, depending on what the cloud provider allows in naming convention)
 * File backend.tf
