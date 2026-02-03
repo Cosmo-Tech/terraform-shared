@@ -10,13 +10,16 @@ terraform {
 
 locals {
   chart_values = {
-    NAMESPACE                 = var.namespace
-    PERSISTENCE_STORAGE_CLASS = var.pvc_storage_class
-    PERSISTENCE_LOKI_PVC      = var.pvc_loki
-    PERSISTENCE_LOKI_SIZE     = var.size_loki
-    PERSISTENCE_GRAFANA_PVC   = var.pvc_grafana
-    PERSISTENCE_GRAFANA_SIZE  = var.size_grafana
+    NAMESPACE = var.namespace
   }
+  # chart_values = {
+  #   NAMESPACE                 = var.namespace
+  #   PERSISTENCE_STORAGE_CLASS = var.pvc_storage_class
+  #   PERSISTENCE_LOKI_PVC      = var.pvc_loki
+  #   PERSISTENCE_LOKI_SIZE     = var.size_loki
+  #   PERSISTENCE_GRAFANA_PVC   = var.pvc_grafana
+  #   PERSISTENCE_GRAFANA_SIZE  = var.size_grafana
+  # }
 }
 
 
@@ -26,10 +29,10 @@ resource "time_sleep" "wait_for_cleanup" {
 
 
 resource "helm_release" "loki_stack" {
-  name         = var.loki_release_name
-  repository   = var.loki_helm_repo_url
-  chart        = var.loki_helm_chart_name
-  version      = var.loki_helm_chart_version
+  name         = var.helm_release_name
+  repository   = var.helm_repo_url
+  chart        = var.helm_chart_name
+  version      = var.helm_chart_version
   namespace    = var.namespace
   reset_values = true
 

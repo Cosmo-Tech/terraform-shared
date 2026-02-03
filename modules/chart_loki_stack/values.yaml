@@ -8,9 +8,9 @@ loki:
   nodeSelector:
     cosmotech.com/tier: "monitoring"
   persistence:
-    enabled: true
+    enabled: false
   volumePermissions:
-    enabled: true      
+    enabled: true
     accessModes:
       - ReadWriteOnce
     size: "${PERSISTENCE_LOKI_SIZE}"
@@ -22,28 +22,14 @@ loki:
       retention_deletes_enabled: true
       retention_period: "720h"
     limits_config:
-      max_entries_limit_per_query: "50000"
+      max_entries_limit_per_query: 50000
+
 volumePermissions:
   enabled: true      
+
 grafana:
-  enabled: true
-  persistence:
-    type: pvc
-    enabled: true
-  volumePermissions:
-    enabled: true         
-    accessModes:
-      - ReadWriteOnce
-    size: "${PERSISTENCE_GRAFANA_SIZE}"
-    storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
-    existingClaim: "${PERSISTENCE_GRAFANA_PVC}"
-  tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-  nodeSelector:
-    cosmotech.com/tier: "monitoring"
+  enabled: false
+
 promtail:
   config:
     clients:

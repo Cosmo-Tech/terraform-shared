@@ -7,6 +7,10 @@ variable "cloud_provider" {
   }
 }
 
+variable "storage_class" {
+  type = string
+}
+
 variable "deploy_storageclass" {
   description = "Whether to deploy the main Retain storage class"
   type        = bool

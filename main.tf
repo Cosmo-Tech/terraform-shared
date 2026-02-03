@@ -39,54 +39,54 @@ locals {
 
   storage_class_name = "cosmotech-retain"
   persistences = {
-    keycloak = {
+    keycloak-postgresql = {
       size      = 50
-      pvc       = "pvc-keycloak"
+      name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
     }
-    loki = {
-      size      = 50
-      pvc       = "pvc-loki"
-      namespace = "monitoring"
-    }
-    grafana = {
-      size      = 10
-      pvc       = "pvc-grafana"
-      namespace = "monitoring"
-    }
-    prometheusstack = {
+    # lokistack-loki = {
+    #   size      = 50
+    #   name      = "${var.cluster_name}-lokistack-loki"
+    #   namespace = "monitoring"
+    # }
+    prometheusstack-prometheus = {
       size      = 100
-      pvc       = "pvc-prometheusstack"
+      name      = "${var.cluster_name}-prometheusstack-prometheus"
+      namespace = "monitoring"
+    }
+    prometheusstack-grafana = {
+      size      = 10
+      name      = "${var.cluster_name}-prometheusstack-grafana"
       namespace = "monitoring"
     }
     harbor-redis = {
       size      = 10
-      pvc       = "pvc-harbor-redis"
+      name      = "${var.cluster_name}-harbor-redis"
       namespace = "harbor"
     }
     harbor-postgresql = {
       size      = 10
-      pvc       = "pvc-harbor-postgresql"
+      name      = "${var.cluster_name}-harbor-postgresql"
       namespace = "harbor"
     }
     harbor-registry = {
       size      = 50
-      pvc       = "pvc-harbor-registry"
+      name      = "${var.cluster_name}-harbor-registry"
       namespace = "harbor"
     }
     harbor-jobservice = {
       size      = 10
-      pvc       = "pvc-harbor-jobservice"
+      name      = "${var.cluster_name}-harbor-jobservice"
       namespace = "harbor"
     }
     harbor-chartmuseum = {
       size      = 10
-      pvc       = "pvc-harbor-chartmuseum"
+      name      = "${var.cluster_name}-harbor-chartmuseum"
       namespace = "harbor"
     }
     harbor-trivy = {
       size      = 10
-      pvc       = "pvc-harbor-trivy"
+      name      = "${var.cluster_name}-harbor-trivy"
       namespace = "harbor"
     }
   }
@@ -108,17 +108,15 @@ module "kube_namespaces" {
 
 
 module "storage_azure" {
-  # source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage?ref=ggon/compute"
+  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
 
   for_each = var.cloud_provider == "azure" ? local.persistences : {}
 
   namespace          = each.value.namespace
-  resource           = each.key
+  resource           = each.value.name
   size               = each.value.size
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
-  cluster_name       = var.cluster_name
   cloud_provider     = var.cloud_provider
 }
 
@@ -130,7 +128,7 @@ module "storage_azure" {
 #   for_each = var.cloud_provider == "aws" ? local.persistences : {}
 
 #   namespace          = each.value.namespace
-#   resource           = each.key
+#   resource           = "${var.cluster_name}-${each.key}"
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
 #   region             = var.cluster_region
@@ -146,7 +144,7 @@ module "storage_azure" {
 #   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
 
 #   namespace          = each.value.namespace
-#   resource           = each.key
+#   resource           = "${var.cluster_name}-${each.key}"
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
 #   region             = var.cluster_region
@@ -162,7 +160,7 @@ module "storage_azure" {
 #   for_each = var.cloud_provider == "onprem" ? local.persistences : {}
 
 #   namespace          = each.value.namespace
-#   resource           = each.key
+#   resource           = "${var.cluster_name}-${each.key}"
 #   size               = each.value.size
 #   storage_class_name = local.storage_class_name
 #   region             = var.cluster_region
@@ -181,6 +179,7 @@ module "storageclass" {
   source = "./modules/kube_storageclass"
 
   cloud_provider          = var.cloud_provider
+  storage_class           = local.storage_class_name
   deploy_storageclass     = true
   deploy_storageclass_nfs = true
 
@@ -236,17 +235,17 @@ module "chart_harbor" {
   redis_helm_chart_version = "17.3.14"
 
   pvc_storage_class = local.storage_class_name
-  pvc_redis         = local.persistences.harbor-redis["pvc"]
+  pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
   size_redis        = local.persistences.harbor-redis["size"]
-  pvc_postgresql    = local.persistences.harbor-postgresql["pvc"]
+  pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
   size_postgresql   = local.persistences.harbor-postgresql["size"]
-  pvc_registry      = local.persistences.harbor-registry["pvc"]
+  pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
   size_registry     = local.persistences.harbor-registry["size"]
-  pvc_jobservice    = local.persistences.harbor-jobservice["pvc"]
+  pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
   size_jobservice   = local.persistences.harbor-jobservice["size"]
-  pvc_chartmuseum   = local.persistences.harbor-chartmuseum["pvc"]
+  pvc_chartmuseum   = "pvc-${local.persistences.harbor-chartmuseum["name"]}"
   size_chartmuseum  = local.persistences.harbor-chartmuseum["size"]
-  pvc_trivy         = local.persistences.harbor-trivy["pvc"]
+  pvc_trivy         = "pvc-${local.persistences.harbor-trivy["name"]}"
   size_trivy        = local.persistences.harbor-trivy["size"]
 
   depends_on = [
@@ -263,8 +262,8 @@ module "chart_keycloak" {
 
   keycloak_ingress_hostname = local.cluster_domain
 
-  pvc               = local.persistences.keycloak["pvc"]
   pvc_storage_class = local.storage_class_name
+  pvc               = "pvc-${local.persistences.keycloak-postgresql["name"]}"
 
   keycloak_helm_repo          = "https://charts.bitnami.com/bitnami"
   keycloak_helm_chart         = "keycloak"
@@ -281,27 +280,27 @@ module "chart_keycloak" {
 }
 
 
-module "chart_loki" {
-  source = "./modules/chart_loki"
+# module "chart_loki_stack" {
+#   source = "./modules/chart_loki_stack"
 
-  namespace = "monitoring"
+#   namespace = "monitoring"
 
-  loki_helm_repo_url      = "https://grafana.github.io/helm-charts"
-  loki_release_name       = "loki"
-  loki_helm_chart_name    = "loki-stack"
-  loki_helm_chart_version = "2.10.2"
+#   helm_repo_url      = "https://grafana.github.io/helm-charts"
+#   helm_chart_name    = "loki-stack"
+#   helm_chart_version = "2.10.2"
+#   helm_release_name  = "loki"
 
-  pvc_storage_class = local.storage_class_name
-  pvc_loki          = local.persistences.loki["pvc"]
-  size_loki         = local.persistences.loki["size"]
-  pvc_grafana       = local.persistences.loki["pvc"]
-  size_grafana      = local.persistences.loki["size"]
+#   # pvc_storage_class = local.storage_class_name
+#   # pvc_loki          = "pvc-${local.persistences.lokistack-loki["name"]}"
+#   # size_loki         = local.persistences.lokistack-loki["size"]
+#   # pvc_grafana       = "pvc-${local.persistences.lokistack-grafana["name"]}"
+#   # size_grafana      = local.persistences.lokistack-grafana["size"]
 
-  depends_on = [
-    module.kube_namespaces,
-    module.storageclass,
-  ]
-}
+#   depends_on = [
+#     module.kube_namespaces,
+#     module.storageclass,
+#   ]
+# }
 
 
 module "chart_prometheus_stack" {
@@ -317,9 +316,12 @@ module "chart_prometheus_stack" {
   helm_chart_version = "65.1.0"
 
   pvc_storage_class = local.storage_class_name
-  size              = local.persistences.prometheusstack["size"]
+  # size              = 100
   # NOTE: kube-prometheus-stack 65.1.0 is not able to claim an existing PV, newers versions can handle it.
-  # pvc               = local.persistences.prometheusstack["pvc"]
+  size_prometheus = local.persistences.prometheusstack-prometheus["size"]
+  pvc_prometheus  = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  size_grafana    = local.persistences.prometheusstack-grafana["size"]
+  pvc_grafana     = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
 
   depends_on = [
     module.kube_namespaces,

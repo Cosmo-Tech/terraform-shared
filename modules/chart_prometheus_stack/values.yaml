@@ -41,6 +41,14 @@ grafana:
   enabled: true
   adminPassword: ${PROMETHEUS_ADMIN_PASSWORD}
   defaultDashboardsEnabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: "${PERSISTENCE_SIZE_GRAFANA}Gi"
+    storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
+    existingClaim: "${PERSISTENCE_PVC_GRAFANA}"
   sidecar:
     dashboards:
       multicluster:
@@ -210,14 +218,28 @@ prometheus:
         cpu: "500m"
         memory: "512Mi"
     retention: "15d"
+    # storageSpec:
+    #   volumeClaimTemplate:
+    #     spec:
+    #       storageClassName: $ {PERSISTENCE_STORAGE_CLASS}
+    #       accessModes: [ReadWriteOnce]
+    #       resources:
+    #         requests:
+    #           storage: $ {PERSISTENCE_SIZE_PROMETHEUS}
     storageSpec:
       volumeClaimTemplate:
+        metadata:
+          name: "${PERSISTENCE_PVC_PROMETHEUS}"
+          namespace: "${NAMESPACE}"
         spec:
-          storageClassName: ${PERSISTENCE_STORAGE_CLASS}
-          accessModes: [ReadWriteOnce]
+          accessModes:
+            - ReadWriteOnce
           resources:
             requests:
-              storage: ${PERSISTENCE_SIZE}
+              storage: "${PERSISTENCE_SIZE_PROMETHEUS}Gi"
+          storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
+          volumeMode: Filesystem
+          volumeName: "${PERSISTENCE_PVC_PROMETHEUS}"
   additionalServiceMonitors:
     - name: cosmotech-v1
       additionalLabels:

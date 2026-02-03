@@ -22,15 +22,6 @@ variable "helm_release_name" {
   type        = string
 }
 
-variable "size" {
-  description = "Prometheus storage resource request"
-  type        = string
-}
-
-variable "pvc_storage_class" {
-  description = "Storage class name for Prometheus PVC"
-  type        = string
-}
 
 variable "cluster_domain" {
   description = "API DNS name"
@@ -47,4 +38,25 @@ variable "prometheus_admin_password" {
   description = "Prometheus admin password (leave empty to auto-generate)"
   type        = string
   default     = ""
+}
+
+variable "pvc_storage_class" {
+  description = "Storage class name for Prometheus PVC"
+  type        = string
+}
+
+variable "size_prometheus" {
+  type = string
+}
+
+variable "pvc_prometheus" {
+  type = string
+}
+
+variable "size_grafana" {
+  type = string
+}
+
+variable "pvc_grafana" {
+  type = string
 }
