@@ -71,17 +71,11 @@ case "$(echo $cloud_provider)" in
         }
 
         # Trick to get the resource group of the cluster (get it from instanciated Kubernetes nodes)
-        data \"kubernetes_nodes\" \"selected\" {
-          metadata {
-            labels = {
-              \"cosmotech.com/tier\" = \"db\"
-            }
-          }
-        }
+        data \"kubernetes_nodes\" \"all_nodes\" {}
 
         data \"azurerm_public_ip\" \"lb_ip\" {
           name                  = \"$cluster_name-lb-ip\"
-          resource_group_name   = [for node in data.kubernetes_nodes.selected.nodes : node.metadata.0.labels].0[\"kubernetes.azure.com/cluster\"]
+          resource_group_name   = [for node in data.kubernetes_nodes.all_nodes.nodes : node.metadata.0.labels].0[\"kubernetes.azure.com/cluster\"]
         }
 
         data \"azurerm_client_config\" \"current\" {}

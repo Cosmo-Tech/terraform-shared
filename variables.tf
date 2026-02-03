@@ -20,7 +20,7 @@ locals {
     } :
     var.cloud_provider == "azure" ? {
       # "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.terraform_remote_state.terraform_cluster.outputs.node_resource_group
-      "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = [for node in data.kubernetes_nodes.selected.nodes : node.metadata.0.labels].0["kubernetes.azure.com/cluster"]
+      "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = [for node in data.kubernetes_nodes.all_nodes.nodes : node.metadata.0.labels].0["kubernetes.azure.com/cluster"]
       "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
     } :
     {}
