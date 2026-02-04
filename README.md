@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Cosmo%20Tech-%23FFB039?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/Cosmo%20Tech-%23FFB039?style=for-the-badge) ![Static Badge](https://img.shields.io/badge/Shared-%23dbdbdb?style=for-the-badge)
 
 
 # Cosmo Tech shared
@@ -29,20 +29,24 @@
             ```
 
 ## Known errors
-* None known error for now !
-    > resolution description will takes place here
+* TLS certificate: 'Kubernetes Ingress Controller Fake Certificate' default certificate is still used
+    > When using cert-manager, the rate limit imposed by Let's Encrypt has maybe be reached. It happen when too many deployments were done in a short time. Use the following commands to verify if the issue is about Let's Encrypt rate limit: \
+    > `kubectl get certificate -A` \
+    > `kubectl -n NAMESPACE_LISTED_FROM_PREVIOUS_COMMAND describe certificate letsencrypt-prod`
 
 ## Developpers
 * modules
-    * *chart_cert_manager* = install Cert Manager
-    * *chart_harbor* = install Harbor
-    * *chart_ingress_nginx* = install Ingress Nginx
-    * *chart_keycloak* = Keycloak
-    * *chart_prometheus_stack* = Prometheus Stack (Prometheus/Grafana)
-    * *kube_namespaces* = create namespaces for all others modules
+    * **terraform-shared**
+        * *chart_cert_manager* = install Cert Manager
+        * *chart_harbor* = install Harbor
+        * *chart_ingress_nginx* = install Ingress Nginx
+        * *chart_keycloak* = Keycloak
+        * *chart_prometheus_stack* = Prometheus Stack (Prometheus/Grafana)
+        * *kube_namespaces* = create namespaces for all others modules
+        * *kube_storageclass* = create a custom storage class
 * Terraform state
     * The state is stored beside the cluster Terraform state, in the current cloud s3/blob storage service (generally called `cosmotech-states` or `cosmotechstates`, depending on what the cloud provider allows in naming convention)
-* File backend.tf
+* File **backend.tf**
     * dynamically created at each run of `_run-terraform`
     * permit to have multi-cloud compatibility with Terraform
     * it instanciate the needed Terraform providers based on the variable `cloud_provider` from terraform.tfvars

@@ -2,9 +2,9 @@ production: true
 proxy: "edge"
 httpRelativePath: "/keycloak/"
 auth: 
-  existingSecret: ${SECRET}
-  adminUser: ${ADMIN_USER}
-  passwordSecretKey: ${ADMIN_PASSWORD_SECRET_KEY}
+  existingSecret: ${KEYCLOAK_SECRET}
+  adminUser: ${KEYCLOAK_ADMIN_USER}
+  passwordSecretKey: ${KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY}
 ingress:
   enabled: true
   servicePort: "http"
@@ -23,7 +23,7 @@ externalDatabase:
   database: "keycloak_db"
   host: "keycloak-postgresql.${NAMESPACE}.svc.cluster.local"
   user: ${POSTGRES_USER}
-  existingSecret: ${SECRET}
+  existingSecret: ${KEYCLOAK_SECRET}
   existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
 nodeSelector:
   "cosmotech.com/tier": "services"

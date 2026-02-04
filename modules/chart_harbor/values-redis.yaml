@@ -13,8 +13,8 @@ auth:
 master:
   persistence:
     enabled: true
-    existingClaim: "pvc-harbor-redis"
-    storageClass: "cosmotech-retain"
+    existingClaim: "${PERSISTENCE_REDIS_PVC}"
+    storageClass: "${PERSISTENCE_STORAGE_CLASS}"
   volumePermissions:
     enabled: true     
 
@@ -49,7 +49,7 @@ volumePermissions:
   enabled: true
   image:
     registry: docker.io
-    repository: bitnamilegacy/os-shell       # legacy shell image
+    repository: bitnamilegacy/os-shell
     tag: latest
     pullPolicy: IfNotPresent
     pullSecrets: []

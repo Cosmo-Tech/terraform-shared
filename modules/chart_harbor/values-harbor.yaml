@@ -29,16 +29,16 @@ persistence:
   resourcePolicy: "keep"
   persistentVolumeClaim:
     registry:
-      existingClaim: pvc-harbor-registry
+      existingClaim: "${PERSISTENCE_REGISTRY_PVC}"
       subPath: registry
     jobservice:
-      existingClaim: pvc-harbor-jobservice
+      existingClaim: "${PERSISTENCE_JOBSERVICE_PVC}"
       subPath: jobservice
     chartmuseum:
-      existingClaim: pvc-harbor-chartmuseum
+      existingClaim: "${PERSISTENCE_CHARTMUSEUM_PVC}"
       subPath: chartmuseum
     trivy:
-      existingClaim: pvc-harbor-trivy
+      existingClaim: "${PERSISTENCE_TRIVY_PVC}"
       subPath: trivy
 registry:
   storage:
@@ -90,7 +90,7 @@ trivy:
       effect: NoSchedule
 
 externalDatabase:
-  host: harbor-postgresql.harbor.svc.cluster.local
+  host: harbor-postgresql.${NAMESPACE}.svc.cluster.local
   port: 5432
   user: postgres
   existingSecret: "${SECRET}"
@@ -101,7 +101,7 @@ postgresql:
   enabled: false
 
 externalRedis:
-  host: redis-master.harbor.svc.cluster.local
+  host: redis-master.${NAMESPACE}.svc.cluster.local
   port: 6379
 redis:
   enabled: false
@@ -156,7 +156,7 @@ notary:
 exporter:
   enabled: true
   core:
-      host: harbor-core.harbor.svc.cluster.local
+      host: harbor-core.${NAMESPACE}.svc.cluster.local
       port: 8080  
   image:
     repository: bitnamilegacy/harbor-exporter

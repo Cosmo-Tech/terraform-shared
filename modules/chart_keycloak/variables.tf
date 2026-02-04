@@ -1,19 +1,8 @@
 # -----------------------------
 # General
 # -----------------------------
-variable "keycloak_namespace" {
+variable "namespace" {
   description = "Namespace for Keycloak deployment"
-  type        = string
-}
-
-variable "keycloak_secret_name" {
-  description = "Name of the Kubernetes Secret holding Keycloak config"
-  type        = string
-  default     = "keycloak-config"
-}
-
-variable "keycloak_admin_user" {
-  description = "Keycloak admin username"
   type        = string
 }
 
@@ -31,11 +20,6 @@ variable "keycloak_ingress_hostname" {
 # -----------------------------
 # PostgreSQL Config
 # -----------------------------
-variable "keycloak_postgres_user" {
-  description = "PostgreSQL username for Keycloak"
-  type        = string
-}
-
 variable "keycloak_postgres_password" {
   description = "Optional PostgreSQL user password; generated if empty"
   type        = string
@@ -48,12 +32,12 @@ variable "keycloak_postgres_admin_password" {
   default     = ""
 }
 
-variable "postgres_storage_class_name" {
+variable "pvc_storage_class" {
   description = "Storage class for Keycloak PostgreSQL PVC"
   type        = string
 }
 
-variable "pvc_postgres_keycloak_name" {
+variable "pvc" {
   description = "Existing PVC name for Keycloak PostgreSQL"
   type        = string
 }

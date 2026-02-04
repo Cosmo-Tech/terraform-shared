@@ -11,7 +11,7 @@
   primary:
     persistence:
       enabled: true
-      existingClaim: pvc-harbor-postgresql
+      existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
     nodeSelector:
       "cosmotech.com/tier": "db"
     tolerations:
@@ -24,7 +24,7 @@
     enabled: true
     image:
       registry: docker.io
-      repository: bitnamilegacy/os-shell       # legacy shell image
+      repository: bitnamilegacy/os-shell
       tag: latest
       pullPolicy: IfNotPresent
       pullSecrets: [] 
