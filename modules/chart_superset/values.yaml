@@ -1,0 +1,687 @@
+# auth:
+  # email: ""
+  # existingSecret: SECRET_NAME}"
+  # password: ""
+  # secretKey: ""
+  # username: admin
+beat:
+  affinity: {}
+  args: []
+  automountServiceAccountToken: false
+  command: []
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    enabled: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+    seLinuxOptions: {}
+    seccompProfile:
+      type: RuntimeDefault
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  customStartupProbe: {}
+  deploymentAnnotations: {}
+  enabled: false
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  initContainers: []
+  lifecycleHooks: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  networkPolicy:
+    allowExternal: true
+    allowExternalEgress: true
+    enabled: true
+    extraEgress: []
+    extraIngress: []
+  nodeAffinityPreset:
+    key: ""
+    type: ""
+    values: []
+  nodeSelector: {}
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
+  podAffinityPreset: ""
+  podAnnotations: {}
+  podAntiAffinityPreset: soft
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+    supplementalGroups: []
+    sysctls: []
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  resources: {}
+  resourcesPreset: small
+  schedulerName: ""
+  sidecars: []
+  startupProbe:
+    enabled: false
+    failureThreshold: 60
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 1
+  terminationGracePeriodSeconds: ""
+  tolerations: 
+  - effect: NoSchedule
+    key: vendor 
+    operator: Equal 
+    value: cosmotech
+  topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
+clusterDomain: cluster.local
+commonAnnotations: {}
+commonLabels: {}
+config: ""
+defaultInitContainers:
+  waitForDB:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      enabled: true
+      privileged: false
+      readOnlyRootFilesystem: false
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seLinuxOptions: {}
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: true
+    resources: {}
+    resourcesPreset: nano
+  waitForRedis:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      enabled: true
+      privileged: false
+      readOnlyRootFilesystem: false
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seLinuxOptions: {}
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: true
+    resources: {}
+    resourcesPreset: nano
+diagnosticMode:
+  args:
+  - infinity
+  command:
+  - sleep
+  enabled: false
+existingConfigmap: "${CONFIGMAP_NAME}"
+extraDeploy: []
+flower:
+  affinity: {}
+  args: []
+  auth:
+    enabled: true
+    existingSecret: ""
+    password: ""
+    username: user
+  automountServiceAccountToken: false
+  autoscaling:
+    hpa:
+      enabled: false
+      maxReplicas: ""
+      minReplicas: ""
+      targetCPU: ""
+      targetMemory: ""
+    vpa:
+      annotations: {}
+      controlledResources: []
+      enabled: false
+      maxAllowed: {}
+      minAllowed: {}
+      updatePolicy:
+        updateMode: Auto
+  command: []
+  containerPorts:
+    flower: 5555
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    enabled: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+    seLinuxOptions: {}
+    seccompProfile:
+      type: RuntimeDefault
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  customStartupProbe: {}
+  deploymentAnnotations: {}
+  enabled: false
+  extraContainerPorts: []
+  extraEnvVars:
+  - name: SUPERSET_WEBSERVER_BASEURL
+    value: "https://${CLUSTER_DOMAIN}"
+  - name: SUPERSET_WEBSERVER_PATH_PREFIX
+    value: /
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  initContainers: []
+  lifecycleHooks: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  networkPolicy:
+    addExternalClientAccess: true
+    allowExternal: true
+    allowExternalEgress: true
+    enabled: true
+    extraEgress: []
+    extraIngress: []
+    ingressNSMatchLabels: {}
+    ingressNSPodMatchLabels: {}
+    ingressPodMatchLabels: {}
+  nodeAffinityPreset:
+    key: ""
+    type: ""
+    values: []
+  nodeSelector: {}
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
+  podAffinityPreset: ""
+  podAnnotations: {}
+  podAntiAffinityPreset: soft
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+    supplementalGroups: []
+    sysctls: []
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicaCount: 1
+  resources: {}
+  resourcesPreset: small
+  schedulerName: ""
+  service:
+    annotations: {}
+    clusterIP: ""
+    externalTrafficPolicy: Cluster
+    extraPorts: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePorts:
+      flower: ""
+    ports:
+      flower: 5555
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+    type: LoadBalancer
+  sidecars: []
+  startupProbe:
+    enabled: false
+    failureThreshold: 60
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 1
+  terminationGracePeriodSeconds: ""
+  tolerations: 
+  - effect: NoSchedule
+    key: vendor 
+    operator: Equal 
+    value: cosmotech
+  topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
+fullnameOverride: ""
+global:
+  compatibility:
+    openshift:
+      adaptSecurityContext: auto
+  imagePullSecrets: []
+  imageRegistry: ""
+  storageClass: ""
+  security:
+    allowInsecureImages: true
+image:
+  debug: true
+  digest: ""
+  pullPolicy: Always
+  pullSecrets: []
+  registry: ghcr.io
+  repository: cosmo-tech/superset
+  tag: latest
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/hsts: "false"
+#    nginx.ingress.kubernetes.io/rewrite-target: /$2/
+#    nginx.ingress.kubernetes.io/use-regex: "true"
+  apiVersion: ""
+  enabled: true
+  extraHosts: []
+  extraPaths: []
+  extraRules: []
+  extraTls:
+  - hosts:
+      - "${CLUSTER_DOMAIN}"
+    secretName: letsencrypt-prod
+  path: / #superset(/|$)(.*)
+  pathType: Prefix #ImplementationSpecific
+  hostname: "${CLUSTER_DOMAIN}"
+  ingressClassName: nginx
+  secrets: []
+  selfSigned: false
+  tls: []
+init:
+  args: []
+  automountServiceAccountToken: false
+  backoffLimit: 10
+  command: []
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    enabled: true
+    privileged: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+    seLinuxOptions: {}
+    seccompProfile:
+      type: RuntimeDefault
+  enabled: true
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumes: []
+  extraVolumeMounts: []
+  hostAliases: []
+  initContainers: []
+  jobAnnotations: {}
+  networkPolicy:
+    allowExternal: true
+    allowExternalEgress: true
+    enabled: true
+    extraEgress: []
+    extraIngress: []
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+    supplementalGroups: []
+    sysctls: []
+  resources: {}
+  resourcesPreset: medium
+  sidecars: []
+kubeVersion: ""
+loadExamples: false
+nameOverride: ""
+namespaceOverride: ""
+postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
+  architecture: standalone
+  auth:
+    database: bitnami_superset
+    enablePostgresUser: true
+    existingSecret: ""
+    password: ""
+    username: bn_superset
+  enabled: true
+  primary:
+    resources: {}
+    resourcesPreset: nano
+    service:
+      ports:
+        postgresql: 5432
+redis:
+  image:
+    repository: bitnamilegacy/redis
+  architecture: standalone
+  auth:
+    enabled: true
+    existingSecret: ""
+    password: ""
+  enabled: true
+  master:
+    resources: {}
+    resourcesPreset: nano
+    service:
+      ports:
+        redis: 6379
+serviceAccount:
+  annotations: {}
+  automountServiceAccountToken: true
+  create: true
+  name: ""
+usePasswordFiles: true
+web:
+  affinity: {}
+  args: []
+  automountServiceAccountToken: false
+  autoscaling:
+    hpa:
+      enabled: false
+      maxReplicas: ""
+      minReplicas: ""
+      targetCPU: ""
+      targetMemory: ""
+    vpa:
+      annotations: {}
+      controlledResources: []
+      enabled: false
+      maxAllowed: {}
+      minAllowed: {}
+      updatePolicy:
+        updateMode: Auto
+  command: []
+  containerPorts:
+    http: 8080
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    enabled: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+    seLinuxOptions: {}
+    seccompProfile:
+      type: RuntimeDefault
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  customStartupProbe: {}
+  deploymentAnnotations: {}
+  extraContainerPorts: []
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  initContainers: []
+  lifecycleHooks: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  networkPolicy:
+    addExternalClientAccess: true
+    allowExternal: true
+    allowExternalEgress: true
+    enabled: true
+    extraEgress: []
+    extraIngress: []
+    ingressNSMatchLabels: {}
+    ingressNSPodMatchLabels: {}
+    ingressPodMatchLabels: {}
+  nodeAffinityPreset:
+    key: ""
+    type: ""
+    values: []
+  nodeSelector:
+    cosmotech.com/tier: services
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
+  podAffinityPreset: ""
+  podAnnotations: {}
+  podAntiAffinityPreset: soft
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+    supplementalGroups: []
+    sysctls: []
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicaCount: 1
+  resources: {}
+  resourcesPreset: small
+  schedulerName: ""
+  service:
+    annotations: {}
+    clusterIP: ""
+    externalTrafficPolicy: Cluster
+    extraPorts: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePorts:
+      http: ""
+    ports:
+      http: 80
+    sessionAffinity: None
+    sessionAffinityConfig: {}
+    type: LoadBalancer
+  sidecars: []
+  startupProbe:
+    enabled: false
+    failureThreshold: 60
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 1
+  terminationGracePeriodSeconds: ""
+  tolerations: 
+  - effect: NoSchedule
+    key: vendor 
+    operator: Equal 
+    value: cosmotech
+  topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
+  waitForExamples:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      enabled: true
+      privileged: false
+      readOnlyRootFilesystem: false
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seLinuxOptions: {}
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: false
+    resources: {}
+    resourcesPreset: nano
+worker:
+  affinity: {}
+  args: []
+  automountServiceAccountToken: false
+  autoscaling:
+    hpa:
+      enabled: false
+      maxReplicas: ""
+      minReplicas: ""
+      targetCPU: ""
+      targetMemory: ""
+    vpa:
+      annotations: {}
+      controlledResources: []
+      enabled: false
+      maxAllowed: {}
+      minAllowed: {}
+      updatePolicy:
+        updateMode: Auto
+  command:
+  - celery
+  - worker
+  - --concurrency=2
+  - --loglevel=INFO
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    enabled: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    runAsGroup: 1001
+    runAsNonRoot: true
+    runAsUser: 1001
+    seLinuxOptions: {}
+    seccompProfile:
+      type: RuntimeDefault
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  customStartupProbe: {}
+  deploymentAnnotations: {}
+  extraEnvVars:
+  # - name: REDIS_PASSWORD
+  #   valueFrom:
+  #     secretKeyRef:
+  #       key: redis-password
+  #       name: SECRET_NAME
+  - name: CELERY_BROKER_URL
+    value: redis://default:$(REDIS_PASSWORD)@superset-redis-master:6379/0
+  - name: CELERY_RESULT_BACKEND
+    value: redis://default:$(REDIS_PASSWORD)@superset-redis-master:6379/0
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  initContainers: []
+  lifecycleHooks: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 30
+  networkPolicy:
+    allowExternal: true
+    allowExternalEgress: true
+    enabled: true
+    extraEgress: []
+    extraIngress: []
+  nodeAffinityPreset:
+    key: ""
+    type: ""
+    values: []
+  nodeSelector:
+    cosmotech.com/tier: services
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
+  podAffinityPreset: ""
+  podAnnotations: {}
+  podAntiAffinityPreset: soft
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    fsGroupChangePolicy: Always
+    supplementalGroups: []
+    sysctls: []
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 15
+    periodSeconds: 60
+    successThreshold: 1
+    timeoutSeconds: 30
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 4
+      memory: 6Gi
+    requests:
+      cpu: 3
+      memory: 4Gi
+  resourcesPreset: large
+  schedulerName: ""
+  sidecars: []
+  startupProbe:
+    enabled: false
+    failureThreshold: 60
+    initialDelaySeconds: 15
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 30
+  terminationGracePeriodSeconds: ""
+  tolerations: 
+  - effect: NoSchedule
+    key: vendor 
+    operator: Equal 
+    value: cosmotech
+  topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
