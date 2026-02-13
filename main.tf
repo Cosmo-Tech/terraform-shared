@@ -19,8 +19,7 @@ locals {
       "service.beta.kubernetes.io/aws-load-balancer-subnets"                           = "subnet-02b5d6e252d7f60e7"
     } :
     var.cloud_provider == "azure" ? {
-      # "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.terraform_remote_state.terraform_cluster.outputs.node_resource_group
-      "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = [for node in data.kubernetes_nodes.all_nodes.nodes : node.metadata.0.labels].0["kubernetes.azure.com/cluster"]
+      "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
       "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
     } :
     {}
@@ -115,6 +114,7 @@ module "storage_azure" {
   namespace          = each.value.namespace
   resource           = each.value.name
   size               = each.value.size
+  resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
   cloud_provider     = var.cloud_provider
