@@ -1,9 +1,6 @@
-# auth:
-  # email: ""
-  # existingSecret: SECRET_NAME}"
-  # password: ""
-  # secretKey: ""
-  # username: admin
+auth:
+  existingSecret: "${SUPERSET_SECRET_NAME}"
+  username: admin
 beat:
   affinity: {}
   args: []
@@ -28,7 +25,18 @@ beat:
   customStartupProbe: {}
   deploymentAnnotations: {}
   enabled: false
-  extraEnvVars: []
+  extraEnvVars:
+    - name: SUPERSET_OAUTH_PROVIDERS
+      valueFrom:
+        configMapKeyRef:
+          key: oauth-providers
+          name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+          optional: true
+    - name: SUPERSET_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secret-key
+          name: ${SUPERSET_SECRET_KEY_NAME}
   extraEnvVarsCM: ""
   extraEnvVarsSecret: ""
   extraVolumeMounts: []
@@ -53,7 +61,8 @@ beat:
     key: ""
     type: ""
     values: []
-  nodeSelector: {}
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   pdb:
     create: false
     maxUnavailable: ""
@@ -150,8 +159,7 @@ flower:
   args: []
   auth:
     enabled: true
-    existingSecret: ""
-    password: ""
+    existingSecret: "${SUPERSET_SECRET_NAME}"
     username: user
   automountServiceAccountToken: false
   autoscaling:
@@ -197,6 +205,17 @@ flower:
     value: "https://${CLUSTER_DOMAIN}"
   - name: SUPERSET_WEBSERVER_PATH_PREFIX
     value: /
+  - name: SUPERSET_OAUTH_PROVIDERS
+    valueFrom:
+      configMapKeyRef:
+        key: oauth-providers
+        name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+        optional: true
+  - name: SUPERSET_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        key: secret-key
+        name: ${SUPERSET_SECRET_KEY_NAME}
   extraEnvVarsCM: ""
   extraEnvVarsSecret: ""
   extraVolumeMounts: []
@@ -225,7 +244,8 @@ flower:
     key: ""
     type: ""
     values: []
-  nodeSelector: {}
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   pdb:
     create: false
     maxUnavailable: ""
@@ -306,8 +326,6 @@ ingress:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/hsts: "false"
-#    nginx.ingress.kubernetes.io/rewrite-target: /$2/
-#    nginx.ingress.kubernetes.io/use-regex: "true"
   apiVersion: ""
   enabled: true
   extraHosts: []
@@ -317,8 +335,8 @@ ingress:
   - hosts:
       - "${CLUSTER_DOMAIN}"
     secretName: letsencrypt-prod
-  path: / #superset(/|$)(.*)
-  pathType: Prefix #ImplementationSpecific
+  path: /
+  pathType: Prefix
   hostname: "${CLUSTER_DOMAIN}"
   ingressClassName: nginx
   secrets: []
@@ -344,7 +362,18 @@ init:
     seccompProfile:
       type: RuntimeDefault
   enabled: true
-  extraEnvVars: []
+  extraEnvVars:
+    - name: SUPERSET_OAUTH_PROVIDERS
+      valueFrom:
+        configMapKeyRef:
+          key: oauth-providers
+          name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+          optional: true
+    - name: SUPERSET_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secret-key
+          name: ${SUPERSET_SECRET_KEY_NAME}
   extraEnvVarsCM: ""
   extraEnvVarsSecret: ""
   extraVolumes: []
@@ -380,11 +409,17 @@ postgresql:
   auth:
     database: bitnami_superset
     enablePostgresUser: true
-    existingSecret: ""
-    password: ""
+    existingSecret: "${SUPERSET_POSTGRESQL_SECRET_NAME}"
     username: bn_superset
   enabled: true
   primary:
+    nodeSelector:
+      "cosmotech.com/tier": "db"
+    tolerations:
+      - effect: NoSchedule
+        key: vendor
+        operator: Equal
+        value: cosmotech
     resources: {}
     resourcesPreset: nano
     service:
@@ -396,10 +431,18 @@ redis:
   architecture: standalone
   auth:
     enabled: true
-    existingSecret: ""
-    password: ""
+    existingSecret: "${SUPERSET_REDIS_SECRET_NAME}"
+    username: default
+    #password: ""
   enabled: true
   master:
+    nodeSelector:
+      "cosmotech.com/tier": "db"
+    tolerations:
+      - effect: NoSchedule
+        key: vendor
+        operator: Equal
+        value: cosmotech
     resources: {}
     resourcesPreset: nano
     service:
@@ -452,7 +495,18 @@ web:
   customStartupProbe: {}
   deploymentAnnotations: {}
   extraContainerPorts: []
-  extraEnvVars: []
+  extraEnvVars:
+    - name: SUPERSET_OAUTH_PROVIDERS
+      valueFrom:
+        configMapKeyRef:
+          key: oauth-providers
+          name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+          optional: true
+    - name: SUPERSET_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secret-key
+          name: ${SUPERSET_SECRET_KEY_NAME}
   extraEnvVarsCM: ""
   extraEnvVarsSecret: ""
   extraVolumeMounts: []
@@ -601,15 +655,26 @@ worker:
   customStartupProbe: {}
   deploymentAnnotations: {}
   extraEnvVars:
-  # - name: REDIS_PASSWORD
-  #   valueFrom:
-  #     secretKeyRef:
-  #       key: redis-password
-  #       name: SECRET_NAME
+  - name: REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        key: redis-password
+        name: ${SUPERSET_REDIS_SECRET_NAME}
   - name: CELERY_BROKER_URL
     value: redis://default:$(REDIS_PASSWORD)@superset-redis-master:6379/0
   - name: CELERY_RESULT_BACKEND
     value: redis://default:$(REDIS_PASSWORD)@superset-redis-master:6379/0
+  - name: SUPERSET_OAUTH_PROVIDERS
+    valueFrom:
+      configMapKeyRef:
+        key: oauth-providers
+        name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+        optional: true
+  - name: SUPERSET_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        key: secret-key
+        name: ${SUPERSET_SECRET_KEY_NAME}
   extraEnvVarsCM: ""
   extraEnvVarsSecret: ""
   extraVolumeMounts: []
