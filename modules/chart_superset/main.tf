@@ -11,6 +11,7 @@ locals {
   chart_values = {
     NAMESPACE      = var.namespace
     CLUSTER_DOMAIN = var.cluster_domain
+    SUPERSET_CLUSTER_DOMAIN = var.superset_cluster_domain
     SUPERSET_SECRET_NAME    = local.superset_secret_name
     SUPERSET_REDIS_SECRET_NAME    = local.superset_redis_secret_name
     SUPERSET_POSTGRESQL_SECRET_NAME    = local.superset_postgresql_secret_name

@@ -33,13 +33,14 @@ When applied, the module will:
 
 ## Inputs
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `namespace` | `string` | yes | Kubernetes namespace where Superset will be installed. |
-| `cluster_domain` | `string` | yes | DNS name used to build Superset URLs/ingress hostnames (passed into chart templating). |
-| `helm_repo` | `string` | yes | Helm repository URL (e.g. `https://charts.bitnami.com/bitnami`). |
-| `helm_chart` | `string` | yes | Helm chart name (e.g. `superset`). |
-| `helm_chart_version` | `string` | yes | Helm chart version to install. |
+| Name | Type | Required | Description                                                                            |
+|------|------|----------|----------------------------------------------------------------------------------------|
+| `namespace` | `string` | yes | Kubernetes namespace where Superset will be installed.                                 |
+| `superset_cluster_domain` | `string` | yes | DNS name used to build Superset URLs/ingress hostnames (passed into chart templating). |
+| `cluster_domain` | `string` | yes | DNS name used to build frame-ancestors authorized URLs (passed into chart templating). |
+| `helm_repo` | `string` | yes | Helm repository URL (e.g. `https://charts.bitnami.com/bitnami`).                       |
+| `helm_chart` | `string` | yes | Helm chart name (e.g. `superset`).                                                     |
+| `helm_chart_version` | `string` | yes | Helm chart version to install.                                                         |
 
 ---
 

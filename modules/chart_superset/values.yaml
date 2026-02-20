@@ -202,7 +202,7 @@ flower:
   extraContainerPorts: []
   extraEnvVars:
   - name: SUPERSET_WEBSERVER_BASEURL
-    value: "https://${CLUSTER_DOMAIN}"
+    value: "https://${SUPERSET_CLUSTER_DOMAIN}"
   - name: SUPERSET_WEBSERVER_PATH_PREFIX
     value: /
   - name: SUPERSET_OAUTH_PROVIDERS
@@ -333,11 +333,11 @@ ingress:
   extraRules: []
   extraTls:
   - hosts:
-      - "${CLUSTER_DOMAIN}"
+      - "${SUPERSET_CLUSTER_DOMAIN}"
     secretName: letsencrypt-prod
   path: /
   pathType: Prefix
-  hostname: "${CLUSTER_DOMAIN}"
+  hostname: "${SUPERSET_CLUSTER_DOMAIN}"
   ingressClassName: nginx
   secrets: []
   selfSigned: false

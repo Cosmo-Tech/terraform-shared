@@ -55,8 +55,8 @@ class KeycloakSecurity(SupersetSecurityManager):
 # End custom_sso_security_manager
 
 ## URLs config
-ROOT_URL = 'https://${CLUSTER_DOMAIN}'
-LOGOUT_REDIRECT_URL = 'https://${CLUSTER_DOMAIN}'
+ROOT_URL = 'https://${SUPERSET_CLUSTER_DOMAIN}'
+LOGOUT_REDIRECT_URL = 'https://${SUPERSET_CLUSTER_DOMAIN}'
 
 # Auth config
 AUTH_USER_REGISTRATION = True
@@ -168,14 +168,16 @@ CORS_OPTIONS = {
     'supports_credentials': True,
     'allow_headers': ['*'],
     'resources':['*'],
-    'origins': ["https://${CLUSTER_DOMAIN}"]
+    'origins': ["https://${SUPERSET_CLUSTER_DOMAIN}"]
 }
 
 # Talisman Config
 TALISMAN_ENABLED = True
 TALISMAN_CONFIG = {
     "content_security_policy": {
-        "frame-ancestors": ["https://${CLUSTER_DOMAIN}"]
+        "frame-ancestors": [
+          "https://${SUPERSET_CLUSTER_DOMAIN}",
+          "https://${CLUSTER_DOMAIN}"]
     },
     "force_https": False,
     "force_https_permanent": False,
