@@ -1,9 +1,9 @@
 variable "cloud_provider" {
-  description = "Target cloud provider (gcp, azure, aws, or bare)"
+  description = "Target cloud provider (gcp, azure, aws, or kob)"
   type        = string
   validation {
-    condition     = contains(["gcp", "azure", "aws", "bare"], var.cloud_provider)
-    error_message = "cloud_provider must be one of: gcp, azure, aws, or bare"
+    condition     = contains(["gcp", "azure", "aws", "kob"], var.cloud_provider)
+    error_message = "cloud_provider must be one of: gcp, azure, aws, or kob"
   }
 }
 
@@ -41,8 +41,8 @@ variable "storageclass_provisioner_aws" {
   default = "ebs.csi.aws.com"
 }
 
-variable "storageclass_provisioner_bare" {
-  description = "Provisioner for bare metal environments"
+variable "storageclass_provisioner_kob" {
+  description = "Provisioner for kob environments"
   type        = string
   default     = "kubernetes.io/no-provisioner"
 }

@@ -2,13 +2,13 @@ locals {
   is_gcp   = var.cloud_provider == "gcp"
   is_azure = var.cloud_provider == "azure"
   is_aws   = var.cloud_provider == "aws"
-  is_bare  = var.cloud_provider == "bare"
+  is_kob  = var.cloud_provider == "kob"
 }
 
 # Main Persistent Disk StorageClass
 resource "kubernetes_storage_class" "cosmotech_retain" {
   count = var.deploy_storageclass && (
-    local.is_gcp || local.is_azure || local.is_aws || local.is_bare
+    local.is_gcp || local.is_azure || local.is_aws || local.is_kob
   ) ? 1 : 0
 
   metadata {
@@ -23,7 +23,7 @@ resource "kubernetes_storage_class" "cosmotech_retain" {
     local.is_gcp ? var.storageclass_provisioner_gcp :
     local.is_azure ? var.storageclass_provisioner_azure :
     local.is_aws ? var.storageclass_provisioner_aws :
-    local.is_bare ? var.storageclass_provisioner_bare :
+    local.is_kob ? var.storageclass_provisioner_kob :
     "invalid-provisioner"
   )
 

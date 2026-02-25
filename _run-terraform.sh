@@ -34,10 +34,10 @@ rm -rf .terraform*
 rm -rf terraform.tfstate*
 
 
-# The trick here is to write configuration in a dynamic file created at the begin of the
-# execution, containing the config that the concerned provider is waiting for Terraform backend.
-# Then, Terraform will automatically detects it from its .tf extension.
+# Prepare backend and locals files
 backend_file="backend.tf"
+locals_file="locals.tf"
+
 case "$(echo $cloud_provider)" in
   'azure')
     state_storage_name='"cosmotechstates"'
@@ -47,7 +47,7 @@ case "$(echo $cloud_provider)" in
               resource_group_name    = $state_storage_name
               storage_account_name   = $state_storage_name
               container_name         = $state_storage_name
-              key                    = \"$state_file_name\"
+              key                    = \"$state_file_name\" 
             }
         }
 
@@ -81,7 +81,22 @@ case "$(echo $cloud_provider)" in
         }
 
         data \"azurerm_client_config\" \"current\" {}
-    " > $backend_file ;;
+    " > "$backend_file"
+
+    # Generate locals.tf for Azure
+    echo "locals {
+  cloud_identity = { \"azure.workload.identity/client-id\" = null }
+
+  lb_annotations = {
+    \"service.beta.kubernetes.io/azure-load-balancer-resource-group\"            = [for node in data.kubernetes_nodes.selected.nodes : node.metadata.0.labels].0[\"kubernetes.azure.com/cluster\"]
+    \"service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path\" = \"/healthz\"
+  }
+
+  lb_ip = data.azurerm_public_ip.lb_ip.ip_address
+
+  cluster_domain = \"${cluster_name}.${domain_zone}\"
+}" > "$locals_file"
+    ;;
 
   'aws')
     state_storage_name='"cosmotech-states"'
@@ -97,7 +112,26 @@ case "$(echo $cloud_provider)" in
         provider \"aws\" {
           region = var.cluster_region
         }
-    " > $backend_file ;;
+    " > "$backend_file"
+
+    # Generate locals.tf for AWS
+    echo "locals {
+  cloud_identity = { \"eks.amazonaws.com/role-arn\" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn }
+
+  lb_annotations = {
+    \"service.beta.kubernetes.io/aws-load-balancer-type\"                              = \"nlb\"
+    \"service.beta.kubernetes.io/aws-load-balancer-backend-protocol\"                  = \"tcp\"
+    \"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled\" = \"true\"
+    \"service.beta.kubernetes.io/aws-load-balancer-eip-allocations\"                   = \"eipalloc-03e2805bc83e3b481\"
+    \"service.beta.kubernetes.io/aws-load-balancer-scheme\"                            = \"internet-facing\"
+    \"service.beta.kubernetes.io/aws-load-balancer-subnets\"                           = \"subnet-02b5d6e252d7f60e7\"
+  }
+
+  lb_ip = null
+
+  cluster_domain = \"${cluster_name}.${domain_zone}\"
+}" > "$locals_file"
+    ;;
 
   'gcp')
     state_storage_name='"cosmotech-states"'
@@ -120,22 +154,48 @@ case "$(echo $cloud_provider)" in
           backend = \"gcs\"
           config = {
             bucket = $state_storage_name
-            # prefix = \"\"
+            # prefix = \"\"            
           }
         }
 
         data \"google_client_config\" \"current\" {}
-    " > $backend_file ;;
+    " > "$backend_file"
 
-  *)
-    echo "error: unknown or empty \e[91mcloud_provider\e[0m from terraform.tfvars"
-    exit
+    # Generate locals.tf for GCP
+    echo "locals {
+  cloud_identity = { \"iam.gke.io/gcp-service-account\" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email }
+
+  lb_annotations = {
+    \"service.beta.kubernetes.io/google-load-balancer-ip\" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+  }
+
+  lb_ip = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+
+  cluster_domain = \"${cluster_name}.${domain_zone}\"
+}" > "$locals_file"
     ;;
+  'kob')
+    # generate backend.tf for kob (local backend)
+    echo "terraform {
+  backend \"local\" {
+    path = \"terraform.tfstate\"
+  }
+}" > "$backend_file"  
+    # generate empty locals.tf for kob
+    echo "locals {
+  cloud_identity = {}
+  lb_annotations  = {}
+  lb_ip          = ""
+  cluster_domain  = \"${cluster_name}.${domain_zone}\"
+}" > "$locals_file"
+    ;;
+  *)
 esac
 
 
 # Deploy
-terraform fmt $backend_file
+terraform fmt "$backend_file"
+terraform fmt "$locals_file"
 terraform init -upgrade -reconfigure
 terraform plan -out .terraform.plan
 # terraform apply .terraform.plan

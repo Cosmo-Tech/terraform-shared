@@ -24,13 +24,7 @@ alertmanager:
     podMetadata:
       labels:
         networking/traffic-allowed: "yes"
-    resources:
-      requests:
-        cpu: 1
-        memory: 400Mi
-      limits:
-        cpu: 1
-        memory: 1Gi
+    resources: {}
 
 ## Windows Monitoring
 windowsMonitoring:
@@ -42,13 +36,12 @@ grafana:
   adminPassword: ${PROMETHEUS_ADMIN_PASSWORD}
   defaultDashboardsEnabled: true
   persistence:
-    type: pvc
     enabled: true
+    type: pvc
+    storageClassName: ${PERSISTENCE_STORAGE_CLASS}
     accessModes:
       - ReadWriteOnce
     size: "${PERSISTENCE_SIZE_GRAFANA}Gi"
-    storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
-    existingClaim: "${PERSISTENCE_PVC_GRAFANA}"
   sidecar:
     dashboards:
       multicluster:
@@ -165,6 +158,11 @@ kubeEtcd: { enabled: true }
 kubeScheduler: { enabled: true }
 kubeStateMetrics:
   enabled: true
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"  
 
 prometheusOperator:
   tolerations:
@@ -210,36 +208,23 @@ prometheus:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
       labels:
         app: prometheus
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "512Mi"
-      limits:
-        cpu: "500m"
-        memory: "512Mi"
+    resources: {}
     retention: "15d"
-    # storageSpec:
-    #   volumeClaimTemplate:
-    #     spec:
-    #       storageClassName: $ {PERSISTENCE_STORAGE_CLASS}
-    #       accessModes: [ReadWriteOnce]
-    #       resources:
-    #         requests:
-    #           storage: $ {PERSISTENCE_SIZE_PROMETHEUS}
     storageSpec:
       volumeClaimTemplate:
-        metadata:
-          name: "${PERSISTENCE_PVC_PROMETHEUS}"
-          namespace: "${NAMESPACE}"
         spec:
-          accessModes:
-            - ReadWriteOnce
+          storageClassName: ${PERSISTENCE_STORAGE_CLASS}
+          accessModes: [ReadWriteOnce]
           resources:
             requests:
               storage: "${PERSISTENCE_SIZE_PROMETHEUS}Gi"
-          storageClassName: "${PERSISTENCE_STORAGE_CLASS}"
-          volumeMode: Filesystem
-          volumeName: "${PERSISTENCE_PVC_PROMETHEUS}"
+    initContainers:
+        - name: volume-permissions
+          image: busybox:1.35   # or any lightweight image
+          command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
+          volumeMounts:
+            - name: prometheus-data   # match your volume name (usually the PVC mount)
+              mountPath: /prometheus            
   additionalServiceMonitors:
     - name: cosmotech-v1
       additionalLabels:
