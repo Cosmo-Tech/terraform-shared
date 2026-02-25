@@ -161,6 +161,11 @@ exporter:
   image:
     repository: bitnamilegacy/harbor-exporter
     tag: 2.13.2-debian-12-r2
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule    
 nginx:
   enabled: true
   image:
