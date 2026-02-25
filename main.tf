@@ -12,13 +12,13 @@ locals {
     #   namespace = "monitoring"
     # }
     # prometheusstack-prometheus = {
-    #   size      = 15
-    #   name      = "${var.cluster_name}-promstack-prometheus"
+    #   size      = 100
+    #   name      = "${var.cluster_name}-prometheusstack-prometheus"
     #   namespace = "monitoring"
     # }
     # prometheusstack-grafana = {
     #   size      = 10
-    #   name      = "${var.cluster_name}-promsstack-grafana"
+    #   name      = "${var.cluster_name}-prometheusstack-grafana"
     #   namespace = "monitoring"
     # }
     harbor-redis = {
@@ -55,12 +55,12 @@ locals {
   prometheusstack = {
     prometheusstack-prometheus = {
       size      = 15
-      name      = "${var.cluster_name}-promstack-prometheus"
+      name      = "${var.cluster_name}-prometheusstack-prometheus"
       namespace = "monitoring"
     }
     prometheusstack-grafana = {
       size      = 10
-      name      = "${var.cluster_name}-promsstack-grafana"
+      name      = "${var.cluster_name}-prometheusstack-grafana"
       namespace = "monitoring"
     }
   }
@@ -130,8 +130,8 @@ module "storage_azure" {
 
 
 module "storage_onprem" {
-  source = "/mnt/c/Users/EdonTafili/Desktop/terraform-onprem/modules/storage"
-  # source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
+  # source = "local/terraform-onprem/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-onprem/modules/storage"
 
   for_each = var.cloud_provider == "kob" ? local.persistences : {}
 
