@@ -26,7 +26,7 @@ data "template_file" "cert_values" {
 
 
 data "template_file" "clusterissuer_prod" {
-    count = var.cloud_provider == "kob" ? 0 : 1
+  count    = var.cloud_provider == "kob" ? 0 : 1
   template = file("${path.module}/kube_objects/clusterissuer.yaml")
   vars = {
     certificate_email = var.certificate_email
@@ -34,16 +34,16 @@ data "template_file" "clusterissuer_prod" {
 }
 
 data "template_file" "clusterissuer_onprem_prod" {
-  count = var.cloud_provider == "kob" ? 1 : 0
+  count    = var.cloud_provider == "kob" ? 1 : 0
   template = file("${path.module}/kube_objects/clusterissuer_onprem.yaml")
   vars = {
-    certificate_email = var.certificate_email
-    domain_zone       = var.domain_zone
+    certificate_email   = var.certificate_email
+    domain_zone         = var.domain_zone
     resource_group_name = var.resource_group_name
     subscription_id     = var.subscription_id
     tenant_id           = var.tenant_id
     client_id           = var.client_id
-    
+
   }
 }
 

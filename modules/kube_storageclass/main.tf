@@ -2,7 +2,7 @@ locals {
   is_gcp   = var.cloud_provider == "gcp"
   is_azure = var.cloud_provider == "azure"
   is_aws   = var.cloud_provider == "aws"
-  is_kob  = var.cloud_provider == "kob"
+  is_kob   = var.cloud_provider == "kob"
 }
 
 # Main Persistent Disk StorageClass

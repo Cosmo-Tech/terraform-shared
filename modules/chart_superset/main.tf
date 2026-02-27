@@ -1,15 +1,16 @@
 locals {
-  superset_secret_name    = "superset"
-  superset_redis_secret_name    = "superset-redis"
-  superset_postgresql_secret_name    = "superset-postgresql"
-  superset_guest_token_secret_name    = "superset-guest-token"
-  superset_guest_token    = random_password.superset_guest_token_secret.result
-  superset_secret_key_name    = "superset-secret-key"
-  superset_configmap_name = "superset-config"
+  superset_secret_name                    = "superset"
+  superset_redis_secret_name              = "superset-redis"
+  superset_postgresql_secret_name         = "superset-postgresql"
+  superset_guest_token_secret_name        = "superset-guest-token"
+  superset_guest_token                    = random_password.superset_guest_token_secret.result
+  superset_secret_key_name                = "superset-secret-key"
+  superset_configmap_name                 = "superset-config"
   superset_oauth_providers_configmap_name = "superset-oauth-providers"
 
 
   chart_values = {
+<<<<<<< HEAD
     NAMESPACE      = var.namespace
     CLUSTER_DOMAIN = var.cluster_domain
     SUPERSET_CLUSTER_DOMAIN = var.superset_cluster_domain
@@ -24,6 +25,18 @@ locals {
     SUPERSET_QUERY_TIMEOUT = var.superset_query_timeout
     SUPERSET_BUFFER_SIZE = var.superset_buffer_size
     SUPERSET_MAX_FILE_SIZE = var.superset_max_file_size
+=======
+    NAMESPACE                       = var.namespace
+    CLUSTER_DOMAIN                  = var.cluster_domain
+    SUPERSET_CLUSTER_DOMAIN         = var.superset_cluster_domain
+    SUPERSET_SECRET_NAME            = local.superset_secret_name
+    SUPERSET_REDIS_SECRET_NAME      = local.superset_redis_secret_name
+    SUPERSET_POSTGRESQL_SECRET_NAME = local.superset_postgresql_secret_name
+    CONFIGMAP_NAME                  = local.superset_configmap_name
+    OAUTH_PROVIDERS_CONFIGMAP_NAME  = local.superset_oauth_providers_configmap_name
+    SUPERSET_GUEST_TOKEN            = local.superset_guest_token
+    SUPERSET_SECRET_KEY_NAME        = local.superset_secret_key_name
+>>>>>>> 06cf557 (standardization)
   }
 }
 
@@ -41,7 +54,7 @@ resource "kubernetes_secret" "superset_secret_key_secret" {
   }
 
   data = {
-    secret-key   = random_password.superset_secret_key_value.result
+    secret-key = random_password.superset_secret_key_value.result
   }
 
   type = "Opaque"
@@ -62,7 +75,7 @@ resource "kubernetes_secret" "superset_guest_token" {
   }
 
   data = {
-    guest-token   = local.superset_guest_token
+    guest-token = local.superset_guest_token
   }
 
   type = "Opaque"
@@ -73,29 +86,29 @@ resource "kubernetes_secret" "superset_guest_token" {
 ## Superset, Postgresql, Redis secrets
 
 ## Superset
- resource "random_password" "superset_password" {
-   length  = 40
-   special = false
- }
+resource "random_password" "superset_password" {
+  length  = 40
+  special = false
+}
 
 resource "random_password" "superset_secret_key" {
   length  = 40
   special = false
 }
 
- resource "kubernetes_secret" "superset_secret" {
-   metadata {
-     name      = local.superset_secret_name
-     namespace = var.namespace
-   }
+resource "kubernetes_secret" "superset_secret" {
+  metadata {
+    name      = local.superset_secret_name
+    namespace = var.namespace
+  }
 
-   data = {
-     superset-password   = random_password.superset_password.result
-     superset-secret-key = random_password.superset_secret_key.result
-   }
+  data = {
+    superset-password   = random_password.superset_password.result
+    superset-secret-key = random_password.superset_secret_key.result
+  }
 
-   type = "Opaque"
- }
+  type = "Opaque"
+}
 ## End of Superset
 
 ## Superset <-> Postgresql
@@ -116,7 +129,7 @@ resource "kubernetes_secret" "superset_postgresql" {
   }
 
   data = {
-    password   = random_password.superset_postgresql_password.result
+    password            = random_password.superset_postgresql_password.result
     postgresql-password = random_password.superset_user_postgresql_password.result
   }
 
@@ -146,7 +159,7 @@ resource "kubernetes_secret" "superset_redis" {
 ## End of Superset, Postgresql, Redis secrets
 
 ## ConfigMap with superset_config.py
-resource "kubernetes_config_map" "superset_config_map"{
+resource "kubernetes_config_map" "superset_config_map" {
   metadata {
     name      = local.superset_configmap_name
     namespace = var.namespace
