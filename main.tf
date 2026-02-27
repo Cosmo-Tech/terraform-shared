@@ -1,4 +1,43 @@
 locals {
+  # cloud_identity = (
+  #   var.cloud_provider == "gcp" ? { "iam.gke.io/gcp-service-account" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email } :
+  #   var.cloud_provider == "aws" ? { "eks.amazonaws.com/role-arn" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn } :
+  #   var.cloud_provider == "azure" ? { "azure.workload.identity/client-id" = null } :
+  #   var.cloud_provider == "kob" ? {} :
+  #   null
+  # )
+
+  # lb_annotations = (
+  #   var.cloud_provider == "gcp" ? {
+  #     "service.beta.kubernetes.io/google-load-balancer-ip" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+  #   } :
+  #   var.cloud_provider == "aws" ? {
+  #     "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
+  #     "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
+  #     "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
+  #     "service.beta.kubernetes.io/aws-load-balancer-eip-allocations"                   = "eipalloc-03e2805bc83e3b481"
+  #     "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internet-facing"
+  #     "service.beta.kubernetes.io/aws-load-balancer-subnets"                           = "subnet-02b5d6e252d7f60e7"
+  #   } :
+  #   var.cloud_provider == "azure" ? {
+  #     "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
+  #     "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
+  #   } :
+  #   var.cloud_provider == "kob" ? {
+  #   } :
+  #   {}
+  # )
+
+  # lb_ip = (
+  #   var.cloud_provider == "gcp" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
+  #   var.cloud_provider == "aws" ? null : # AWS LB IP is dynamic, use annotation/type instead
+  #   var.cloud_provider == "azure" ? data.azurerm_public_ip.lb_ip.ip_address :
+  #   var.cloud_provider == "kob" ? null :
+  #   null
+  # )
+
+  cluster_domain = "${var.cluster_name}.${var.domain_zone}"
+
   storage_class_name = var.storage_class_name
   persistences = {
     keycloak-postgresql = {
@@ -82,19 +121,19 @@ module "kube_namespaces" {
 }
 
 
-module "storage_azure" {
-  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
+# module "storage_azure" {
+#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
 
-  for_each = var.cloud_provider == "azure" ? local.persistences : {}
+#   for_each = var.cloud_provider == "azure" ? local.persistences : {}
 
-  namespace          = each.value.namespace
-  resource           = each.value.name
-  size               = each.value.size
-  resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-  storage_class_name = local.storage_class_name
-  region             = var.cluster_region
-  cloud_provider     = var.cloud_provider
-}
+#   namespace          = each.value.namespace
+#   resource           = each.value.name
+#   size               = each.value.size
+#   resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
+#   storage_class_name = local.storage_class_name
+#   region             = var.cluster_region
+#   cloud_provider     = var.cloud_provider
+# }
 
 
 # module "storage_aws" {
@@ -129,19 +168,19 @@ module "storage_azure" {
 # }
 
 
-module "storage_onprem" {
-  # source = "local/terraform-onprem/modules/storage"
-  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-onprem/modules/storage"
+# module "storage_kob" {
+#   # source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
+#   source = "git::https://github.com/cosmo-tech/terraform-onprem//terraform-cluster/modules/storage?ref=standardization"
 
-  for_each = var.cloud_provider == "kob" ? local.persistences : {}
+#   for_each = var.cloud_provider == "kob" ? local.persistences : {}
 
-  namespace          = each.value.namespace
-  resource           = "${var.cluster_name}-${each.key}"
-  size               = each.value.size
-  storage_class_name = local.storage_class_name
-  region             = var.cluster_region
-  cloud_provider     = var.cloud_provider
-}
+#   namespace          = each.value.namespace
+#   resource           = "${var.cluster_name}-${each.key}"
+#   size               = each.value.size
+#   storage_class_name = local.storage_class_name
+#   region             = var.cluster_region
+#   cloud_provider     = var.cloud_provider
+# }
 
 
 # Timer to wait for storage to be created before continue
@@ -151,8 +190,8 @@ resource "time_sleep" "timer" {
 
 
 module "storageclass" {
-  source = "./modules/kube_storageclass"
-  count = var.cloud_provider == "kob" ? 0 : 1
+  source                  = "./modules/kube_storageclass"
+  count                   = var.cloud_provider == "kob" ? 0 : 1
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   deploy_storageclass     = true
@@ -177,34 +216,35 @@ module "chart_ingress_nginx" {
 }
 
 
-module "chart_cert_manager" {
-  source = "./modules/chart_cert_manager"
+# module "chart_cert_manager" {
+#   source = "./modules/chart_cert_manager"
 
-  service_annotations = local.cloud_identity
-  certificate_email   = var.certificate_email
-  cluster_domain      = local.cluster_domain
-  azure_dns_secret    = ""
-  resource_group_name = ""
-  subscription_id     = ""
-  tenant_id           = ""
-  client_id           = ""
-  domain_zone         = ""
-  cloud_provider      = var.cloud_provider
+#   service_annotations = local.cloud_identity
+#   certificate_email   = var.certificate_email
+#   cluster_domain      = local.cluster_domain
+#   azure_dns_secret    = ""
+#   resource_group_name = ""
+#   subscription_id     = ""
+#   tenant_id           = ""
+#   client_id           = ""
+#   domain_zone         = ""
+#   cloud_provider      = var.cloud_provider
 
-  depends_on = [
-    module.kube_namespaces
-  ]
-}
+#   depends_on = [
+#     module.kube_namespaces
+#   ]
+# }
+
 
 module "chart_superset" {
   source = "./modules/chart_superset"
 
-  namespace                   = "superset"
-  cluster_domain              = local.cluster_domain
-  superset_cluster_domain     = "superset-${local.cluster_domain}"
-  helm_repo                   = "https://charts.bitnami.com/bitnami"
-  helm_chart                  = "superset"
-  helm_chart_version          = "5.0.0"
+  namespace               = "superset"
+  cluster_domain          = local.cluster_domain
+  superset_cluster_domain = "superset-${local.cluster_domain}"
+  helm_repo               = "https://charts.bitnami.com/bitnami"
+  helm_chart              = "superset"
+  helm_chart_version      = "5.0.0"
 
   depends_on = [
     module.kube_namespaces

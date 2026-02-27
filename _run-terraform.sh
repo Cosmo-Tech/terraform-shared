@@ -35,167 +35,213 @@ rm -rf terraform.tfstate*
 
 
 # Prepare backend and locals files
-backend_file="backend.tf"
-locals_file="locals.tf"
+target_file="target.tf"
 
 case "$(echo $cloud_provider)" in
   'azure')
     state_storage_name='"cosmotechstates"'
     echo " \
-        terraform {
-            backend \"azurerm\" {
-              resource_group_name    = $state_storage_name
-              storage_account_name   = $state_storage_name
-              container_name         = $state_storage_name
-              key                    = \"$state_file_name\" 
-            }
-        }
-
-        provider \"azurerm\" {
-          features {}
-          subscription_id = var.azure_subscription_id
-          tenant_id       = var.azure_entra_tenant_id
-        }
-
-        variable \"azure_subscription_id\" { type = string }
-        variable \"azure_entra_tenant_id\" { type = string }
-
-        data \"terraform_remote_state\" \"terraform_cluster\" {
-          backend = \"azurerm\"
-          config = {
-            resource_group_name  = $state_storage_name
-            storage_account_name = $state_storage_name
-            container_name       = $state_storage_name
-            key                  = \"tfstate-cluster-$cluster_name\"
+      terraform {
+          backend \"azurerm\" {
+            resource_group_name    = $state_storage_name
+            storage_account_name   = $state_storage_name
+            container_name         = $state_storage_name
+            key                    = \"$state_file_name\"
           }
+      }
+
+      provider \"azurerm\" {
+        features {}
+        subscription_id = var.azure_subscription_id
+        tenant_id       = var.azure_entra_tenant_id
+      }
+
+      variable \"azure_subscription_id\" { type = string }
+      variable \"azure_entra_tenant_id\" { type = string }
+
+      data \"terraform_remote_state\" \"terraform_cluster\" {
+        backend = \"azurerm\"
+        config = {
+          resource_group_name  = $state_storage_name
+          storage_account_name = $state_storage_name
+          container_name       = $state_storage_name
+          key                  = \"tfstate-cluster-$cluster_name\"
         }
+      }
 
-        data "azurerm_kubernetes_cluster" "cluster" {
-          name                = \"$cluster_name\"
-          resource_group_name = \"$cluster_name\"
+      data "azurerm_kubernetes_cluster" "cluster" {
+        name                = \"$cluster_name\"
+        resource_group_name = \"$cluster_name\"
+      }
+
+      data \"azurerm_public_ip\" \"lb_ip\" {
+        name                = \"$cluster_name-lb-ip\"
+        resource_group_name = data.azurerm_kubernetes_cluster.cluster.node_resource_group
+      }
+
+      data \"azurerm_client_config\" \"current\" {}
+
+      locals {
+        cloud_identity = { \"azure.workload.identity/client-id\" = null }
+        lb_annotations = {
+          \"service.beta.kubernetes.io/azure-load-balancer-resource-group\"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
+          \"service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path\" = \"/healthz\"
         }
+        lb_ip = data.azurerm_public_ip.lb_ip.ip_address
+      }
 
-        data \"azurerm_public_ip\" \"lb_ip\" {
-          name                = \"$cluster_name-lb-ip\"
-          resource_group_name = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-        }
 
-        data \"azurerm_client_config\" \"current\" {}
-    " > "$backend_file"
+      module \"storage_azure\" {
+        source = \"git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage\"
 
-    # Generate locals.tf for Azure
-    echo "locals {
-  cloud_identity = { \"azure.workload.identity/client-id\" = null }
+        for_each = var.cloud_provider == \"azure\" ? local.persistences : {}
 
-  lb_annotations = {
-    \"service.beta.kubernetes.io/azure-load-balancer-resource-group\"            = [for node in data.kubernetes_nodes.selected.nodes : node.metadata.0.labels].0[\"kubernetes.azure.com/cluster\"]
-    \"service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path\" = \"/healthz\"
-  }
+        namespace          = each.value.namespace
+        resource           = each.value.name
+        size               = each.value.size
+        resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
+        storage_class_name = local.storage_class_name
+        region             = var.cluster_region
+        cloud_provider     = var.cloud_provider
+      }
 
-  lb_ip = data.azurerm_public_ip.lb_ip.ip_address
-
-  cluster_domain = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
+    " > "$target_file";;
 
   'aws')
     state_storage_name='"cosmotech-states"'
     echo " \
-        terraform {
-          backend \"s3\" {
-            key    = \"$state_file_name\"
-            bucket = $state_storage_name
-            region = \"$cluster_region\"
-          }
+      terraform {
+        backend \"s3\" {
+          key    = \"$state_file_name\"
+          bucket = $state_storage_name
+          region = \"$cluster_region\"
         }
+      }
 
-        provider \"aws\" {
-          region = var.cluster_region
+      provider \"aws\" {
+        region = var.cluster_region
+      }
+
+      locals {
+        cloud_identity = \"eks.amazonaws.com/role-arn\" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn }
+        lb_annotations = {
+          \"service.beta.kubernetes.io/aws-load-balancer-type\"                              = \"nlb\"
+          \"service.beta.kubernetes.io/aws-load-balancer-backend-protocol\"                  = \"tcp\"
+          \"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled\" = \"true\"
+          \"service.beta.kubernetes.io/aws-load-balancer-eip-allocations\"                   = \"eipalloc-03e2805bc83e3b481\"
+          \"service.beta.kubernetes.io/aws-load-balancer-scheme\"                            = \"internet-facing\"
+          \"service.beta.kubernetes.io/aws-load-balancer-subnets\"                           = \"subnet-02b5d6e252d7f60e7\"
         }
-    " > "$backend_file"
+        lb_ip = null
+      }
 
-    # Generate locals.tf for AWS
-    echo "locals {
-  cloud_identity = { \"eks.amazonaws.com/role-arn\" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn }
 
-  lb_annotations = {
-    \"service.beta.kubernetes.io/aws-load-balancer-type\"                              = \"nlb\"
-    \"service.beta.kubernetes.io/aws-load-balancer-backend-protocol\"                  = \"tcp\"
-    \"service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled\" = \"true\"
-    \"service.beta.kubernetes.io/aws-load-balancer-eip-allocations\"                   = \"eipalloc-03e2805bc83e3b481\"
-    \"service.beta.kubernetes.io/aws-load-balancer-scheme\"                            = \"internet-facing\"
-    \"service.beta.kubernetes.io/aws-load-balancer-subnets\"                           = \"subnet-02b5d6e252d7f60e7\"
-  }
+      module \"storage_aws\" {
+        source = \"git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage\"
 
-  lb_ip = null
+        for_each = var.cloud_provider == \"aws\" ? local.persistences : {}
 
-  cluster_domain = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
+        namespace          = each.value.namespace
+        resource           = \"\${var.cluster_name}-\${each.key}\"
+        size               = each.value.size
+        storage_class_name = local.storage_class_name
+        region             = var.cluster_region
+        cluster_name       = var.cluster_name
+        cloud_provider     = var.cloud_provider
+      }
+
+    " > "$target_file";;
 
   'gcp')
     state_storage_name='"cosmotech-states"'
     echo " \
-        terraform {
-          backend \"gcs\" {
-            bucket = $state_storage_name
-            prefix = "$state_file_name"
-          }
+      terraform {
+        backend \"gcs\" {
+          bucket = $state_storage_name
+          prefix = "$state_file_name"
         }
+      }
 
-        provider \"google\" {
-          project = var.project_id
-          region  = var.cluster_region
+      provider \"google\" {
+        project = var.project_id
+        region  = var.cluster_region
+      }
+
+      variable \"project_id\" { type = string }
+
+      data \"terraform_remote_state\" \"terraform_cluster\" {
+        backend = \"gcs\"
+        config = {
+          bucket = $state_storage_name
+          # prefix = \"\"
         }
+      }
 
-        variable \"project_id\" { type = string }
+      data \"google_client_config\" \"current\" {}
 
-        data \"terraform_remote_state\" \"terraform_cluster\" {
-          backend = \"gcs\"
-          config = {
-            bucket = $state_storage_name
-            # prefix = \"\"            
-          }
+      locals {
+        cloud_identity = { \"iam.gke.io/gcp-service-account\" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email }
+        lb_annotations = {
+          \"service.beta.kubernetes.io/google-load-balancer-ip\" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
         }
+        lb_ip = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+      }
 
-        data \"google_client_config\" \"current\" {}
-    " > "$backend_file"
+      module \"storage_gcp\" {
+        source = \"git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage\"
 
-    # Generate locals.tf for GCP
-    echo "locals {
-  cloud_identity = { \"iam.gke.io/gcp-service-account\" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email }
+        for_each = var.cloud_provider == \"gcp\" ? local.persistences : {}
 
-  lb_annotations = {
-    \"service.beta.kubernetes.io/google-load-balancer-ip\" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
-  }
+        namespace          = each.value.namespace
+        resource           = \"\${var.cluster_name}-\${each.key}\"
+        size               = each.value.size
+        storage_class_name = local.storage_class_name
+        region             = var.cluster_region
+        cluster_name       = var.cluster_name
+        cloud_provider     = var.cloud_provider
+      }
 
-  lb_ip = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
+    " > "$target_file";;
 
-  cluster_domain = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
   'kob')
-    # generate backend.tf for kob (local backend)
-    echo "terraform {
-  backend \"local\" {
-    path = \"terraform.tfstate\"
-  }
-}" > "$backend_file"  
-    # generate empty locals.tf for kob
-    echo "locals {
-  cloud_identity = {}
-  lb_annotations  = {}
-  lb_ip          = ""
-  cluster_domain  = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
+    echo " \
+      terraform {
+        backend \"local\" {
+          path = \"terraform.tfstate\"
+        }
+      }
+
+      locals {
+        cloud_identity = {}
+        lb_annotations = {}
+        lb_ip = null
+      }
+
+      module \"storage_kob\" {
+        # source = \"git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage\"
+        source = \"git::https://github.com/cosmo-tech/terraform-onprem//terraform-cluster/modules/storage?ref=standardization\"
+
+        for_each = var.cloud_provider == \"kob\" ? local.persistences : {}
+
+        namespace          = each.value.namespace
+        resource           = \"\${var.cluster_name}-\${each.key}\"
+        size               = each.value.size
+        storage_class_name = local.storage_class_name
+        region             = var.cluster_region
+        cloud_provider     = var.cloud_provider
+      }
+
+    " > "$target_file";;
+
   *)
+    echo "error: unknown or empty \e[91mcloud_provider\e[0m from terraform.tfvars"
+    exit
+    ;;
 esac
 
 
 # Deploy
-terraform fmt "$backend_file"
-terraform fmt "$locals_file"
+terraform fmt "$target_file"
 terraform init -upgrade -reconfigure
 terraform plan -out .terraform.plan
 # terraform apply .terraform.plan
