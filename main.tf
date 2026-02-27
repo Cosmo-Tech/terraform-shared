@@ -1,41 +1,4 @@
 locals {
-  # cloud_identity = (
-  #   var.cloud_provider == "gcp" ? { "iam.gke.io/gcp-service-account" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email } :
-  #   var.cloud_provider == "aws" ? { "eks.amazonaws.com/role-arn" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn } :
-  #   var.cloud_provider == "azure" ? { "azure.workload.identity/client-id" = null } :
-  #   var.cloud_provider == "kob" ? {} :
-  #   null
-  # )
-
-  # lb_annotations = (
-  #   var.cloud_provider == "gcp" ? {
-  #     "service.beta.kubernetes.io/google-load-balancer-ip" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
-  #   } :
-  #   var.cloud_provider == "aws" ? {
-  #     "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
-  #     "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
-  #     "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
-  #     "service.beta.kubernetes.io/aws-load-balancer-eip-allocations"                   = "eipalloc-03e2805bc83e3b481"
-  #     "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internet-facing"
-  #     "service.beta.kubernetes.io/aws-load-balancer-subnets"                           = "subnet-02b5d6e252d7f60e7"
-  #   } :
-  #   var.cloud_provider == "azure" ? {
-  #     "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-  #     "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
-  #   } :
-  #   var.cloud_provider == "kob" ? {
-  #   } :
-  #   {}
-  # )
-
-  # lb_ip = (
-  #   var.cloud_provider == "gcp" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
-  #   var.cloud_provider == "aws" ? null : # AWS LB IP is dynamic, use annotation/type instead
-  #   var.cloud_provider == "azure" ? data.azurerm_public_ip.lb_ip.ip_address :
-  #   var.cloud_provider == "kob" ? null :
-  #   null
-  # )
-
   cluster_domain = "${var.cluster_name}.${var.domain_zone}"
 
   storage_class_name = var.storage_class_name
@@ -119,69 +82,6 @@ module "kube_namespaces" {
     "superset"
   ]
 }
-
-
-# module "storage_azure" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "azure" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = each.value.name
-#   size               = each.value.size
-#   resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_aws" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "aws" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_gcp" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_kob" {
-#   # source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
-#   source = "git::https://github.com/cosmo-tech/terraform-onprem//terraform-cluster/modules/storage?ref=standardization"
-
-#   for_each = var.cloud_provider == "kob" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cloud_provider     = var.cloud_provider
-# }
-
 
 # Timer to wait for storage to be created before continue
 resource "time_sleep" "timer" {
