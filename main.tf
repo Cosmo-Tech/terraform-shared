@@ -227,7 +227,8 @@ module "chart_superset" {
   helm_chart_version          = "5.0.0"
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    module.chart_ingress_nginx
   ]
 }
 
