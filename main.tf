@@ -120,6 +120,7 @@ module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #   service_annotations = local.cloud_identity
 #   certificate_email   = var.certificate_email
 #   cluster_domain      = local.cluster_domain
@@ -166,6 +167,13 @@ module "chart_superset" {
   cluster_domain      = local.cluster_domain
   certificate_email   = var.certificate_email
 >>>>>>> 3548721 (cert-manager DNS 01)
+=======
+  dns_challenge_provider = var.dns_challenge_provider
+  service_annotations    = local.cloud_identity
+  cloud_provider         = var.cloud_provider
+  cluster_domain         = local.cluster_domain
+  certificate_email      = var.certificate_email
+>>>>>>> afcc3cd (fix dns challenge selection)
 
   depends_on = [
     module.kube_namespaces,
@@ -174,20 +182,20 @@ module "chart_superset" {
 }
 
 
-# module "chart_superset" {
-#   source = "./modules/chart_superset"
+module "chart_superset" {
+  source = "./modules/chart_superset"
 
-#   namespace               = "superset"
-#   cluster_domain          = local.cluster_domain
-#   superset_cluster_domain = "superset-${local.cluster_domain}"
-#   helm_repo               = "https://charts.bitnami.com/bitnami"
-#   helm_chart              = "superset"
-#   helm_chart_version      = "5.0.0"
+  namespace               = "superset"
+  cluster_domain          = local.cluster_domain
+  superset_cluster_domain = "superset-${local.cluster_domain}"
+  helm_repo               = "https://charts.bitnami.com/bitnami"
+  helm_chart              = "superset"
+  helm_chart_version      = "5.0.0"
 
-#   depends_on = [
-#     module.kube_namespaces
-#   ]
-# }
+  depends_on = [
+    module.kube_namespaces
+  ]
+}
 
 
 module "chart_harbor" {
