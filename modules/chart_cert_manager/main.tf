@@ -63,10 +63,26 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
 
 # 2. (BIS) CLUSTER ISSUER DNS-01
 # DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01/2
-data "kubernetes_secret" "dns_challenge" {
+#
+# Trick here is to duplicate the dns-challenge secret from terraform-onprem from default namespace to cert-manager namespace
+# cert-manager requires to have this secret in its namespace.
+# This is to avoid creating namespace cert-manager in terraform-onprem
+data "kubernetes_secret" "dns_challenge_terraform_onprem" {
   metadata {
-    name = "dns-challenge"
+    name      = "dns-challenge-terraform-onprem"
+    namespace = "default"
   }
+}
+
+resource "kubernetes_secret" "dns_challenge" {
+  metadata {
+    name      = "dns-challenge"
+    namespace = "cert-manager"
+  }
+
+  data = data.kubernetes_secret.dns_challenge_terraform_onprem.data
+
+  type = "Opaque"
 }
 
 data "template_file" "clusterissuer_prod_dns01_azuredns" {
@@ -75,11 +91,11 @@ data "template_file" "clusterissuer_prod_dns01_azuredns" {
   template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
   vars = {
     certificate_email   = var.certificate_email
-    client_id           = data.kubernetes_secret.dns_challenge.data["client-id"]
-    subscription_id     = data.kubernetes_secret.dns_challenge.data["subscription-id"]
-    tenant_id           = data.kubernetes_secret.dns_challenge.data["tenant-id"]
-    domain_zone         = data.kubernetes_secret.dns_challenge.data["domain-zone"]
-    resource_group_name = data.kubernetes_secret.dns_challenge.data["domain-zone-rg"]
+    client_id           = kubernetes_secret.dns_challenge.data["client-id"]
+    subscription_id     = kubernetes_secret.dns_challenge.data["subscription-id"]
+    tenant_id           = kubernetes_secret.dns_challenge.data["tenant-id"]
+    domain_zone         = kubernetes_secret.dns_challenge.data["domain-zone"]
+    resource_group_name = kubernetes_secret.dns_challenge.data["domain-zone-rg"]
   }
 }
 
