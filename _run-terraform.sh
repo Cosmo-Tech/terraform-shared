@@ -35,7 +35,7 @@ rm -rf terraform.tfstate*
 
 
 # Prepare backend and locals files
-target_file="target.tf"
+backend_file="backend.tf"
 
 case "$(echo $cloud_provider)" in
   'azure')
@@ -105,7 +105,7 @@ case "$(echo $cloud_provider)" in
         cloud_provider     = var.cloud_provider
       }
 
-    " > "$target_file";;
+    " > "$backend_file";;
 
   'aws')
     state_storage_name='"cosmotech-states"'
@@ -150,7 +150,7 @@ case "$(echo $cloud_provider)" in
         cloud_provider     = var.cloud_provider
       }
 
-    " > "$target_file";;
+    " > "$backend_file";;
 
   'gcp')
     state_storage_name='"cosmotech-states"'
@@ -201,20 +201,46 @@ case "$(echo $cloud_provider)" in
         cloud_provider     = var.cloud_provider
       }
 
-    " > "$target_file";;
+    " > "$backend_file";;
 
   'kob')
+    state_url="$(get_var_value terraform.tfvars state_host)/$state_file_name"
+
+    if [ -z $TF_HTTP_USERNAME ] || [ -z $TF_HTTP_PASSWORD ]; then
+        echo "error: empty TF_HTTP_USERNAME or TF_HTTP_PASSWORD (required for backend authentication)"
+        echo "  export TF_HTTP_USERNAME="
+        echo "  export TF_HTTP_PASSWORD="
+        exit
+    else
+        echo "found TF_HTTP_USERNAME & TF_HTTP_PASSWORD"
+    fi
+
+    export TF_CLI_ARGS="-lock=false"
+
     echo " \
       terraform {
-        backend \"local\" {
-          path = \"terraform.tfstate\"
+        # backend \"local\" {
+        #   path = \"terraform.tfstate\"
+        # }
+
+        backend \"http\" {
+          update_method = \"PUT\"
+          lock_method   = \"POST\"
+          unlock_method = \"DELETE\"
+          skip_cert_verification = true
+
+          address = \"$state_url\"
+          lock_address = \"$state_url/lock\"
+          unlock_address = \"$state_url/lock\"
         }
       }
+
+      variable \"state_host\" { type = string }
 
       locals {
         cloud_identity = {}
         lb_annotations = {}
-        lb_ip = null
+        lb_ip = \"\"
       }
 
       module \"storage_kob\" {
@@ -231,7 +257,7 @@ case "$(echo $cloud_provider)" in
         cloud_provider     = var.cloud_provider
       }
 
-    " > "$target_file";;
+    " > "$backend_file";;
 
   *)
     echo "error: unknown or empty \e[91mcloud_provider\e[0m from terraform.tfvars"
@@ -241,10 +267,10 @@ esac
 
 
 # Deploy
-terraform fmt "$target_file"
+terraform fmt "$backend_file"
 terraform init -upgrade -reconfigure
 terraform plan -out .terraform.plan
-# terraform apply .terraform.plan
+terraform apply .terraform.plan
 
 
 exit 0
