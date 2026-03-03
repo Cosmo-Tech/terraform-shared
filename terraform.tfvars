@@ -16,13 +16,13 @@
 # cloud_provider = "aws"
 
 
-# VARIABLES EXAMPLE FOR KOB
+# VARIABLES EXAMPLE FOR KOB (= On-Premise)
 cloud_provider     = "kob"
 cluster_region     = ""
 cluster_name       = "kubernetes"
 domain_zone        = "onpremise.platform.cosmotech.com"
 storage_class_name = "longhorn"
-
+state_host         = "https://cosmotechstates.onpremise.platform.cosmotech.com"
 
 ## COMMON VARIABLES EXAMPLE
 # This email can be any email, it will just be used as the contact email for Let's encrypt
