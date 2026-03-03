@@ -70,7 +70,7 @@ data "kubernetes_secret" "dns_challenge" {
 }
 
 data "template_file" "clusterissuer_prod_dns01_azuredns" {
-  count = var.cloud_provider == "kob" ? 1 : 0
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
   template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
   vars = {
