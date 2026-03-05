@@ -3,8 +3,8 @@ variable "cloud_provider" {
   type        = string
 
   validation {
-    condition     = contains(["bare", "azure", "aws", "gcp"], var.cloud_provider)
-    error_message = "Valid values for 'cloud_provider' are: \n- bare\n- azure\n- aws\n- gcp"
+    condition     = contains(["kob", "azure", "aws", "gcp"], var.cloud_provider)
+    error_message = "Valid values for 'cloud_provider' are: \n- kob\n- azure\n- aws\n- gcp"
   }
 }
 
@@ -26,4 +26,9 @@ variable "domain_zone" {
 variable "certificate_email" {
   description = "Email for Let's Encrypt"
   type        = string
+}
+
+variable "storage_class_name" {
+  description = "to specify the storage class name"
+  type = string
 }

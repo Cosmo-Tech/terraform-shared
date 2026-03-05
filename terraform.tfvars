@@ -5,6 +5,7 @@ cluster_name          = "aks-dev-devops"
 domain_zone           = "azure.platform.cosmotech.com"
 azure_subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 azure_entra_tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+storage_class_name    = "cosmotech-retain"
 
 
 ## VARIABLES EXAMPLE FOR GCP
@@ -15,8 +16,12 @@ azure_entra_tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 # cloud_provider = "aws"
 
 
-## VARIABLES EXAMPLE FOR BARE
-# cloud_provider = "bare"
+## VARIABLES EXAMPLE FOR kob
+# cloud_provider        = "kob"
+# cluster_region        = ""
+# cluster_name          = "k8s-tmp-proxmox"
+# domain_zone           = "onpremise.platform.cosmotech.com"
+# storage_class_name = "longhorn"
 
 
 ## COMMON VARIABLES EXAMPLE

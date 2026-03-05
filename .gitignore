@@ -3,3 +3,4 @@
 .terraform*
 terraform.tfstate*
 backend.tf
+locals.tf
