@@ -41,6 +41,10 @@ When applied, the module will:
 | `helm_repo` | `string` | yes | Helm repository URL (e.g. `https://charts.bitnami.com/bitnami`).                       |
 | `helm_chart` | `string` | yes | Helm chart name (e.g. `superset`).                                                     |
 | `helm_chart_version` | `string` | yes | Helm chart version to install.                                                         |
+| `superset_connect_timeout` | `string` | yes | Timeout limit defined to connect to Superset (default: 60s).                           |
+| `superset_query_timeout` | `string` | yes | Timeout limit defined to query to Superset (default: 30s).                             |
+| `superset_buffer_size` | `string` | yes | Buffer size defined for all queries in Superset (default: 16K).                        |
+| `superset_max_file_size` | `string` | yes | Maximum body size defined for all queries in Superset (default: 5m).                   |
 
 ---
 
