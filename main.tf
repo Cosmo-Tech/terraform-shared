@@ -225,6 +225,11 @@ module "chart_superset" {
   helm_repo                   = "https://charts.bitnami.com/bitnami"
   helm_chart                  = "superset"
   helm_chart_version          = "5.0.0"
+  superset_connect_timeout    = "30s"
+  superset_query_timeout      = "60s"
+  superset_buffer_size        = "16K"
+  superset_max_file_size      = "5m"
+
 
   depends_on = [
     module.kube_namespaces,
