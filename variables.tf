@@ -30,5 +30,10 @@ variable "certificate_email" {
 
 variable "storage_class_name" {
   description = "to specify the storage class name"
-  type = string
+  type        = string
+}
+
+variable "dns_challenge_provider" {
+  type    = string
+  default = null
 }

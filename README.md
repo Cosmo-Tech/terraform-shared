@@ -33,6 +33,9 @@
     > When using cert-manager, the rate limit imposed by Let's Encrypt has maybe be reached. It happen when too many deployments were done in a short time. Use the following commands to verify if the issue is about Let's Encrypt rate limit: \
     > `kubectl get certificate -A` \
     > `kubectl -n NAMESPACE_LISTED_FROM_PREVIOUS_COMMAND describe certificate letsencrypt-prod`
+* On-premise DNS: "address could not be found"
+    > A DNS record must be manually added since Terraform modules can't access private DNS servers. \
+    > Ensure an existing DNS record is pointing to the Kubernetes cluster IP.
 
 ## Developpers
 * modules
