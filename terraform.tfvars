@@ -8,15 +8,15 @@
 # storage_class_name    = "cosmotech-retain"
 
 
-## VARIABLES EXAMPLE FOR GCP
+# ## VARIABLES EXAMPLE FOR GCP
 # cloud_provider = "gcp"
 
 
-## VARIABLES EXAMPLE FOR AWS
+# ## VARIABLES EXAMPLE FOR AWS
 # cloud_provider = "aws"
 
 
-# VARIABLES EXAMPLE FOR KOB (= On-Premise)
+## VARIABLES EXAMPLE FOR KOB (= On-Premise)
 cloud_provider         = "kob"
 cluster_region         = ""
 cluster_name           = "kubernetes"
@@ -24,6 +24,7 @@ domain_zone            = "onpremise.platform.cosmotech.com"
 dns_challenge_provider = "azure"
 storage_class_name     = "longhorn"
 state_host             = "https://cosmotechstates.onpremise.platform.cosmotech.com"
+
 
 ## COMMON VARIABLES EXAMPLE
 # This email can be any email, it will just be used as the contact email for Let's encrypt
