@@ -1,7 +1,6 @@
 locals {
   cluster_domain = "${var.cluster_name}.${var.domain_zone}"
-
-  storage_class_name = var.storage_class_name
+  storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
       size      = 50

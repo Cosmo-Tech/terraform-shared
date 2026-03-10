@@ -5,7 +5,6 @@
 # domain_zone           = "azure.platform.cosmotech.com"
 # azure_subscription_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 # azure_entra_tenant_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-# storage_class_name    = "cosmotech-retain"
 
 
 # ## VARIABLES EXAMPLE FOR GCP
@@ -22,7 +21,6 @@ cluster_region         = ""
 cluster_name           = "kubernetes"
 domain_zone            = "onpremise.platform.cosmotech.com"
 dns_challenge_provider = "azure"
-storage_class_name     = "longhorn"
 state_host             = "https://cosmotechstates.onpremise.platform.cosmotech.com"
 
 
