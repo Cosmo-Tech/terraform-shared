@@ -45,5 +45,5 @@ variable "storageclass_provisioner_kob" {
   description = "Provisioner for kob environments"
   type        = string
   # default     = "kubernetes.io/no-provisioner"
-  default     = "driver.longhorn.io"
+  default = "driver.longhorn.io"
 }
