@@ -90,7 +90,6 @@ resource "time_sleep" "timer" {
 
 module "storageclass" {
   source                  = "./modules/kube_storageclass"
-  count                   = var.cloud_provider == "kob" ? 0 : 1
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   deploy_storageclass     = true
@@ -176,7 +175,11 @@ module "chart_superset" {
 
   depends_on = [
     module.kube_namespaces,
+<<<<<<< HEAD
     module.chart_ingress_nginx
+=======
+    module.chart_ingress_nginx,
+>>>>>>> 4747e38 (multiple fixes)
   ]
 }
 
@@ -258,6 +261,7 @@ module "chart_keycloak" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -281,6 +285,7 @@ module "chart_keycloak" {
 #   depends_on = [
 #     module.kube_namespaces,
 #     module.storageclass,
+#     module.chart_ingress_nginx,
 #   ]
 # }
 
@@ -308,5 +313,6 @@ module "chart_prometheus_stack" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }

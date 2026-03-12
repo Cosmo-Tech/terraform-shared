@@ -101,7 +101,7 @@ esac
 terraform fmt $target_file
 terraform init -upgrade -reconfigure
 terraform plan -out .terraform.plan
-terraform apply .terraform.plan
+# terraform apply .terraform.plan
 
 
 exit
