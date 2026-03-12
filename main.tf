@@ -117,8 +117,6 @@ module "chart_ingress_nginx" {
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #   service_annotations = local.cloud_identity
 #   certificate_email   = var.certificate_email
 #   cluster_domain      = local.cluster_domain
@@ -135,11 +133,9 @@ module "chart_cert_manager" {
 #   ]
 # }
 
-
 module "chart_superset" {
   source = "./modules/chart_superset"
 
-<<<<<<< HEAD
   namespace                   = "superset"
   cluster_domain              = local.cluster_domain
   superset_cluster_domain     = "superset-${local.cluster_domain}"
@@ -151,35 +147,9 @@ module "chart_superset" {
   superset_buffer_size        = "16K"
   superset_max_file_size      = "5m"
 
-=======
-  namespace               = "superset"
-  cluster_domain          = local.cluster_domain
-  superset_cluster_domain = "superset-${local.cluster_domain}"
-  helm_repo               = "https://charts.bitnami.com/bitnami"
-  helm_chart              = "superset"
-  helm_chart_version      = "5.0.0"
->>>>>>> 06cf557 (standardization)
-=======
-  service_annotations = local.cloud_identity
-  cloud_provider      = var.cloud_provider
-  cluster_domain      = local.cluster_domain
-  certificate_email   = var.certificate_email
->>>>>>> 3548721 (cert-manager DNS 01)
-=======
-  dns_challenge_provider = var.dns_challenge_provider
-  service_annotations    = local.cloud_identity
-  cloud_provider         = var.cloud_provider
-  cluster_domain         = local.cluster_domain
-  certificate_email      = var.certificate_email
->>>>>>> afcc3cd (fix dns challenge selection)
-
   depends_on = [
     module.kube_namespaces,
-<<<<<<< HEAD
     module.chart_ingress_nginx
-=======
-    module.chart_ingress_nginx,
->>>>>>> 4747e38 (multiple fixes)
   ]
 }
 
@@ -198,7 +168,6 @@ module "chart_superset" {
     module.kube_namespaces
   ]
 }
-
 
 module "chart_harbor" {
   source = "./modules/chart_harbor"
