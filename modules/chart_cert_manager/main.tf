@@ -75,6 +75,8 @@ data "kubernetes_secret" "dns_challenge_terraform_onprem" {
 }
 
 resource "kubernetes_secret" "dns_challenge" {
+  count = var.cloud_provider == "kob" ? 1 : 0
+
   metadata {
     name      = "dns-challenge"
     namespace = "cert-manager"
