@@ -1,41 +1,5 @@
 locals {
-  cloud_identity = (
-    var.cloud_provider == "gcp" ? { "iam.gke.io/gcp-service-account" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email } :
-    var.cloud_provider == "aws" ? { "eks.amazonaws.com/role-arn" = data.terraform_remote_state.terraform_cluster.outputs.aws_irsa_role_arn } :
-    var.cloud_provider == "azure" ? { "azure.workload.identity/client-id" = null } :
-    null
-  )
-
-  lb_annotations = (
-    var.cloud_provider == "gcp" ? {
-      "service.beta.kubernetes.io/google-load-balancer-ip" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
-    } :
-    var.cloud_provider == "aws" ? {
-      "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
-      "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
-      "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
-      "service.beta.kubernetes.io/aws-load-balancer-eip-allocations"                   = "eipalloc-03e2805bc83e3b481"
-      "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internet-facing"
-      "service.beta.kubernetes.io/aws-load-balancer-subnets"                           = "subnet-02b5d6e252d7f60e7"
-    } :
-    var.cloud_provider == "azure" ? {
-      "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-      "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
-    } :
-    {}
-  )
-
-  lb_ip = (
-    var.cloud_provider == "gcp" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
-    var.cloud_provider == "aws" ? null : # AWS LB IP is dynamic, use annotation/type instead
-    # var.cloud_provider == "azure" ? data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip :
-    # var.cloud_provider == "azure" ? data.azurerm_dns_a_record.cluster.records :
-    var.cloud_provider == "azure" ? data.azurerm_public_ip.lb_ip.ip_address :
-    null
-  )
-
-  cluster_domain = "${var.cluster_name}.${var.domain_zone}"
-
+  cluster_domain     = "${var.cluster_name}.${var.domain_zone}"
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
@@ -48,16 +12,16 @@ locals {
     #   name      = "${var.cluster_name}-lokistack-loki"
     #   namespace = "monitoring"
     # }
-    prometheusstack-prometheus = {
-      size      = 100
-      name      = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace = "monitoring"
-    }
-    prometheusstack-grafana = {
-      size      = 10
-      name      = "${var.cluster_name}-prometheusstack-grafana"
-      namespace = "monitoring"
-    }
+    # prometheusstack-prometheus = {
+    #   size      = 100
+    #   name      = "${var.cluster_name}-prometheusstack-prometheus"
+    #   namespace = "monitoring"
+    # }
+    # prometheusstack-grafana = {
+    #   size      = 10
+    #   name      = "${var.cluster_name}-prometheusstack-grafana"
+    #   namespace = "monitoring"
+    # }
     harbor-redis = {
       size      = 10
       name      = "${var.cluster_name}-harbor-redis"
@@ -69,7 +33,7 @@ locals {
       namespace = "harbor"
     }
     harbor-registry = {
-      size      = 50
+      size      = 15
       name      = "${var.cluster_name}-harbor-registry"
       namespace = "harbor"
     }
@@ -89,6 +53,18 @@ locals {
       namespace = "harbor"
     }
   }
+  prometheusstack = {
+    prometheusstack-prometheus = {
+      size      = 15
+      name      = "${var.cluster_name}-prometheusstack-prometheus"
+      namespace = "monitoring"
+    }
+    prometheusstack-grafana = {
+      size      = 10
+      name      = "${var.cluster_name}-prometheusstack-grafana"
+      namespace = "monitoring"
+    }
+  }
 }
 
 
@@ -106,70 +82,6 @@ module "kube_namespaces" {
   ]
 }
 
-
-module "storage_azure" {
-  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-
-  for_each = var.cloud_provider == "azure" ? local.persistences : {}
-
-  namespace          = each.value.namespace
-  resource           = each.value.name
-  size               = each.value.size
-  resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-  storage_class_name = local.storage_class_name
-  region             = var.cluster_region
-  cloud_provider     = var.cloud_provider
-}
-
-
-# module "storage_aws" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "aws" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_gcp" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_onprem" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "onprem" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
 # Timer to wait for storage to be created before continue
 resource "time_sleep" "timer" {
   create_duration = "30s"
@@ -177,8 +89,7 @@ resource "time_sleep" "timer" {
 
 
 module "storageclass" {
-  source = "./modules/kube_storageclass"
-
+  source                  = "./modules/kube_storageclass"
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   deploy_storageclass     = true
@@ -198,7 +109,8 @@ module "chart_ingress_nginx" {
   lb_annotations      = local.lb_annotations
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    time_sleep.timer,
   ]
 }
 
@@ -206,12 +118,15 @@ module "chart_ingress_nginx" {
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
-  service_annotations = local.cloud_identity
-  certificate_email   = var.certificate_email
-  cluster_domain      = local.cluster_domain
+  dns_challenge_provider = var.dns_challenge_provider
+  service_annotations    = local.cloud_identity
+  cloud_provider         = var.cloud_provider
+  cluster_domain         = local.cluster_domain
+  certificate_email      = var.certificate_email
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -230,10 +145,9 @@ module "chart_superset" {
   superset_buffer_size        = "16K"
   superset_max_file_size      = "5m"
 
-
   depends_on = [
     module.kube_namespaces,
-    module.chart_ingress_nginx
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -274,6 +188,7 @@ module "chart_harbor" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -299,6 +214,7 @@ module "chart_keycloak" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -322,6 +238,7 @@ module "chart_keycloak" {
 #   depends_on = [
 #     module.kube_namespaces,
 #     module.storageclass,
+#     module.chart_ingress_nginx,
 #   ]
 # }
 
@@ -336,18 +253,19 @@ module "chart_prometheus_stack" {
   helm_repo_url      = "https://prometheus-community.github.io/helm-charts"
   helm_release_name  = "kube-prometheus-stack"
   helm_chart_name    = "kube-prometheus-stack"
-  helm_chart_version = "65.1.0"
+  helm_chart_version = "81.6.2"
 
   pvc_storage_class = local.storage_class_name
   # size              = 100
   # NOTE: kube-prometheus-stack 65.1.0 is not able to claim an existing PV, newers versions can handle it.
-  size_prometheus = local.persistences.prometheusstack-prometheus["size"]
-  pvc_prometheus  = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
-  size_grafana    = local.persistences.prometheusstack-grafana["size"]
-  pvc_grafana     = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+  size_prometheus = local.prometheusstack.prometheusstack-prometheus["size"]
+  pvc_prometheus  = "pvc-${local.prometheusstack.prometheusstack-prometheus["name"]}"
+  size_grafana    = local.prometheusstack.prometheusstack-grafana["size"]
+  pvc_grafana     = "pvc-${local.prometheusstack.prometheusstack-grafana["name"]}"
 
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
