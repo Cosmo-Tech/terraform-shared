@@ -34,7 +34,7 @@ locals {
   lb_ip = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
 }
 
-module "storage" {
+module "storage_gcp" {
   source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage"
 
   for_each = var.cloud_provider == "gcp" ? local.persistences : {}

@@ -19,7 +19,7 @@ locals {
   lb_ip          = ""
 }
 
-module "storage" {
+module "storage_kob" {
   source = "git::https://github.com/cosmo-tech/terraform-onprem//terraform-cluster/modules/storage"
 
   for_each = var.cloud_provider == "kob" ? local.persistences : {}
