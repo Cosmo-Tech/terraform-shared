@@ -90,35 +90,10 @@ case "$(echo $cloud_provider)" in
     prepare_target_file "targets/$cloud_provider.target.tf" $target_file
     ;;
 
-    # Generate locals.tf for GCP
-    echo "locals {
-  cloud_identity = { \"iam.gke.io/gcp-service-account\" = data.terraform_remote_state.terraform_cluster.outputs.node_sa_email }
-
-  lb_annotations = {
-    \"service.beta.kubernetes.io/google-load-balancer-ip\" = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
-  }
-
-  lb_ip = data.terraform_remote_state.terraform_cluster.outputs.platform_lb_ip
-
-  cluster_domain = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
-  'kob')
-    # generate backend.tf for kob (local backend)
-    echo "terraform {
-  backend \"local\" {
-    path = \"terraform.tfstate\"
-  }
-}" > "$backend_file"  
-    # generate empty locals.tf for kob
-    echo "locals {
-  cloud_identity = {}
-  lb_annotations  = {}
-  lb_ip          = ""
-  cluster_domain  = \"${cluster_name}.${domain_zone}\"
-}" > "$locals_file"
-    ;;
   *)
+    echo "error: unknown or empty \e[91mcloud_provider\e[0m from terraform.tfvars"
+    exit
+    ;;
 esac
 
 

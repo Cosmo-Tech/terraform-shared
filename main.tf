@@ -109,7 +109,8 @@ module "chart_ingress_nginx" {
   lb_annotations      = local.lb_annotations
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    time_sleep.timer,
   ]
 }
 
@@ -117,21 +118,18 @@ module "chart_ingress_nginx" {
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
-#   service_annotations = local.cloud_identity
-#   certificate_email   = var.certificate_email
-#   cluster_domain      = local.cluster_domain
-#   azure_dns_secret    = ""
-#   resource_group_name = ""
-#   subscription_id     = ""
-#   tenant_id           = ""
-#   client_id           = ""
-#   domain_zone         = ""
-#   cloud_provider      = var.cloud_provider
+  dns_challenge_provider = var.dns_challenge_provider
+  service_annotations    = local.cloud_identity
+  cloud_provider         = var.cloud_provider
+  cluster_domain         = local.cluster_domain
+  certificate_email      = var.certificate_email
 
-#   depends_on = [
-#     module.kube_namespaces
-#   ]
-# }
+  depends_on = [
+    module.kube_namespaces,
+    module.chart_ingress_nginx,
+  ]
+}
+
 
 module "chart_superset" {
   source = "./modules/chart_superset"
@@ -149,25 +147,10 @@ module "chart_superset" {
 
   depends_on = [
     module.kube_namespaces,
-    module.chart_ingress_nginx
+    module.chart_ingress_nginx,
   ]
 }
 
-
-module "chart_superset" {
-  source = "./modules/chart_superset"
-
-  namespace               = "superset"
-  cluster_domain          = local.cluster_domain
-  superset_cluster_domain = "superset-${local.cluster_domain}"
-  helm_repo               = "https://charts.bitnami.com/bitnami"
-  helm_chart              = "superset"
-  helm_chart_version      = "5.0.0"
-
-  depends_on = [
-    module.kube_namespaces
-  ]
-}
 
 module "chart_harbor" {
   source = "./modules/chart_harbor"
@@ -205,6 +188,7 @@ module "chart_harbor" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
