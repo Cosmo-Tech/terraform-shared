@@ -326,6 +326,14 @@ ingress:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/hsts: "false"
+    ## Define timeout to allow long-running queries
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "${SUPERSET_CONNECT_TIMEOUT}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "${SUPERSET_QUERY_TIMEOUT}"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "${SUPERSET_QUERY_TIMEOUT}"
+    ## Define body sizes for large data file exchanges.
+    nginx.ingress.kubernetes.io/client_max_body_size: "${SUPERSET_MAX_FILE_SIZE}"
+    nginx.ingress.kubernetes.io/proxy-body-size: "${SUPERSET_MAX_FILE_SIZE}"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "${SUPERSET_BUFFER_SIZE}"
   apiVersion: ""
   enabled: true
   extraHosts: []

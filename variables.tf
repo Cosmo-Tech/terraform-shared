@@ -28,7 +28,7 @@ variable "certificate_email" {
   type        = string
 }
 
-variable "storage_class_name" {
-  description = "to specify the storage class name"
-  type = string
+variable "dns_challenge_provider" {
+  type    = string
+  default = null
 }

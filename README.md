@@ -33,6 +33,9 @@
     > When using cert-manager, the rate limit imposed by Let's Encrypt has maybe be reached. It happen when too many deployments were done in a short time. Use the following commands to verify if the issue is about Let's Encrypt rate limit: \
     > `kubectl get certificate -A` \
     > `kubectl -n NAMESPACE_LISTED_FROM_PREVIOUS_COMMAND describe certificate letsencrypt-prod`
+* On-premise DNS: "address could not be found"
+    > A DNS record must be manually added since Terraform modules can't access private DNS servers. \
+    > Ensure an existing DNS record is pointing to the Kubernetes cluster IP.
 
 ## Developpers
 * modules
@@ -40,17 +43,22 @@
         * *chart_cert_manager* = install Cert Manager
         * *chart_harbor* = install Harbor
         * *chart_ingress_nginx* = install Ingress Nginx
-        * *chart_keycloak* = Keycloak
-        * *chart_prometheus_stack* = Prometheus Stack (Prometheus/Grafana)
+        * *chart_keycloak* = install Keycloak
+        * *chart_prometheus_stack* = install Prometheus Stack (Prometheus/Grafana)
+        * *chart_superset* = install Superset
         * *kube_namespaces* = create namespaces for all others modules
         * *kube_storageclass* = create a custom storage class
 * Terraform state
     * The state is stored beside the cluster Terraform state, in the current cloud s3/blob storage service (generally called `cosmotech-states` or `cosmotechstates`, depending on what the cloud provider allows in naming convention)
-* File **backend.tf**
-    * dynamically created at each run of `_run-terraform`
-    * permit to have multi-cloud compatibility with Terraform
-    * it instanciate the needed Terraform providers based on the variable `cloud_provider` from terraform.tfvars
-    * this file is a workaround to avoid having unwanted variables related to cloud providers not targetted in current deployment
+* Scripts **_run-terraform.***
+    * Automatically detect hosting target (cloud provider name, on-premise...), and adapt the Terraform module to work with it
+    * Terraform modules can work without the scripts, but will require some additional manual steps.
+* File **target.tf**
+    * Allow to have multi-cloud compatibility with Terraform
+    * This file is dynamically created at each run of `_run-terraform`
+    * It instanciates the needed Terraform configuration based on the variable `cloud_provider` from terraform.tfvars
+        > `$TEMPLATE_` variables in files stored in `targets/` are automatically replaced with values from `terraform.tfvars`
+    * This file is a workaround to avoid having unwanted variables related to cloud providers not targetted in current deployment
 
 <br>
 <br>

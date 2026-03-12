@@ -1,5 +1,6 @@
 locals {
-  storage_class_name = var.storage_class_name
+  cluster_domain     = "${var.cluster_name}.${var.domain_zone}"
+  storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
       size      = 50
@@ -81,69 +82,6 @@ module "kube_namespaces" {
   ]
 }
 
-
-module "storage_azure" {
-  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-
-  for_each = var.cloud_provider == "azure" ? local.persistences : {}
-
-  namespace          = each.value.namespace
-  resource           = each.value.name
-  size               = each.value.size
-  resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-  storage_class_name = local.storage_class_name
-  region             = var.cluster_region
-  cloud_provider     = var.cloud_provider
-}
-
-
-# module "storage_aws" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "aws" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-# module "storage_gcp" {
-#   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
-#   # source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage"
-
-#   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
-
-#   namespace          = each.value.namespace
-#   resource           = "${var.cluster_name}-${each.key}"
-#   size               = each.value.size
-#   storage_class_name = local.storage_class_name
-#   region             = var.cluster_region
-#   cluster_name       = var.cluster_name
-#   cloud_provider     = var.cloud_provider
-# }
-
-
-module "storage_onprem" {
-  # source = "local/terraform-onprem/modules/storage"
-  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-onprem/modules/storage"
-
-  for_each = var.cloud_provider == "kob" ? local.persistences : {}
-
-  namespace          = each.value.namespace
-  resource           = "${var.cluster_name}-${each.key}"
-  size               = each.value.size
-  storage_class_name = local.storage_class_name
-  region             = var.cluster_region
-  cloud_provider     = var.cloud_provider
-}
-
-
 # Timer to wait for storage to be created before continue
 resource "time_sleep" "timer" {
   create_duration = "30s"
@@ -151,8 +89,7 @@ resource "time_sleep" "timer" {
 
 
 module "storageclass" {
-  source = "./modules/kube_storageclass"
-  count = var.cloud_provider == "kob" ? 0 : 1
+  source                  = "./modules/kube_storageclass"
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   deploy_storageclass     = true
@@ -172,7 +109,8 @@ module "chart_ingress_nginx" {
   lb_annotations      = local.lb_annotations
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    time_sleep.timer,
   ]
 }
 
@@ -180,21 +118,18 @@ module "chart_ingress_nginx" {
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
-  service_annotations = local.cloud_identity
-  certificate_email   = var.certificate_email
-  cluster_domain      = local.cluster_domain
-  azure_dns_secret    = ""
-  resource_group_name = ""
-  subscription_id     = ""
-  tenant_id           = ""
-  client_id           = ""
-  domain_zone         = ""
-  cloud_provider      = var.cloud_provider
+  dns_challenge_provider = var.dns_challenge_provider
+  service_annotations    = local.cloud_identity
+  cloud_provider         = var.cloud_provider
+  cluster_domain         = local.cluster_domain
+  certificate_email      = var.certificate_email
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    module.chart_ingress_nginx,
   ]
 }
+
 
 module "chart_superset" {
   source = "./modules/chart_superset"
@@ -205,11 +140,17 @@ module "chart_superset" {
   helm_repo                   = "https://charts.bitnami.com/bitnami"
   helm_chart                  = "superset"
   helm_chart_version          = "5.0.0"
+  superset_connect_timeout    = "30s"
+  superset_query_timeout      = "60s"
+  superset_buffer_size        = "16K"
+  superset_max_file_size      = "5m"
 
   depends_on = [
-    module.kube_namespaces
+    module.kube_namespaces,
+    module.chart_ingress_nginx,
   ]
 }
+
 
 module "chart_harbor" {
   source = "./modules/chart_harbor"
@@ -247,6 +188,7 @@ module "chart_harbor" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -272,6 +214,7 @@ module "chart_keycloak" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }
 
@@ -295,6 +238,7 @@ module "chart_keycloak" {
 #   depends_on = [
 #     module.kube_namespaces,
 #     module.storageclass,
+#     module.chart_ingress_nginx,
 #   ]
 # }
 
@@ -322,5 +266,6 @@ module "chart_prometheus_stack" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
   ]
 }

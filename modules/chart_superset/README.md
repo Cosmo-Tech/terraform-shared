@@ -41,6 +41,10 @@ When applied, the module will:
 | `helm_repo` | `string` | yes | Helm repository URL (e.g. `https://charts.bitnami.com/bitnami`).                       |
 | `helm_chart` | `string` | yes | Helm chart name (e.g. `superset`).                                                     |
 | `helm_chart_version` | `string` | yes | Helm chart version to install.                                                         |
+| `superset_connect_timeout` | `string` | yes | Timeout limit defined to connect to Superset (default: 60s).                           |
+| `superset_query_timeout` | `string` | yes | Timeout limit defined to query to Superset (default: 30s).                             |
+| `superset_buffer_size` | `string` | yes | Buffer size defined for all queries in Superset (default: 16K).                        |
+| `superset_max_file_size` | `string` | yes | Maximum body size defined for all queries in Superset (default: 5m).                   |
 
 ---
 
@@ -96,3 +100,26 @@ Example:
 If you want to add a new oauth provider, you need to:
 - Add the new provider in the `superset-oauth-providers` configmap
 - Restart the `superset-web` pod
+
+## NGINX / ingress-nginx configuration (timeouts and request sizes)
+
+This module exposes Superset through an NGINX Ingress Controller (commonly `ingress-nginx`).
+Long-running SQL queries and larger uploads/downloads may require tuning NGINX timeouts and body/buffer limits.
+
+This module already wires the following **Ingress annotations** (per Ingress resource) using the Terraform inputs documented above:
+
+- `superset_connect_timeout` → `nginx.ingress.kubernetes.io/proxy-connect-timeout`
+- `superset_query_timeout` → `nginx.ingress.kubernetes.io/proxy-read-timeout` and `nginx.ingress.kubernetes.io/proxy-send-timeout`
+- `superset_max_file_size` → `nginx.ingress.kubernetes.io/proxy-body-size` (and `client_max_body_size` where supported)
+- `superset_buffer_size` → `nginx.ingress.kubernetes.io/client-body-buffer-size`
+
+The upstream reference for available keys is:
+https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
+
+### Practical guidance
+
+- Prefer **per-Ingress annotations** (what this module does) when you want Superset-specific settings.
+- If you observe 504/499 errors on long queries, increase `superset_query_timeout`.
+- If you see `413 Request Entity Too Large`, increase `superset_max_file_size`.
+- If uploads fail with buffering-related errors, increase `superset_buffer_size`.
+
