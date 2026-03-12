@@ -12,16 +12,16 @@ locals {
     #   name      = "${var.cluster_name}-lokistack-loki"
     #   namespace = "monitoring"
     # }
-    # prometheusstack-prometheus = {
-    #   size      = 100
-    #   name      = "${var.cluster_name}-prometheusstack-prometheus"
-    #   namespace = "monitoring"
-    # }
-    # prometheusstack-grafana = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-prometheusstack-grafana"
-    #   namespace = "monitoring"
-    # }
+    prometheusstack-prometheus = {
+      size      = 100
+      name      = "${var.cluster_name}-prometheusstack-prometheus"
+      namespace = "monitoring"
+    }
+    prometheusstack-grafana = {
+      size      = 10
+      name      = "${var.cluster_name}-prometheusstack-grafana"
+      namespace = "monitoring"
+    }
     harbor-redis = {
       size      = 10
       name      = "${var.cluster_name}-harbor-redis"
@@ -33,7 +33,7 @@ locals {
       namespace = "harbor"
     }
     harbor-registry = {
-      size      = 15
+      size      = 50
       name      = "${var.cluster_name}-harbor-registry"
       namespace = "harbor"
     }
@@ -51,18 +51,6 @@ locals {
       size      = 10
       name      = "${var.cluster_name}-harbor-trivy"
       namespace = "harbor"
-    }
-  }
-  prometheusstack = {
-    prometheusstack-prometheus = {
-      size      = 15
-      name      = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace = "monitoring"
-    }
-    prometheusstack-grafana = {
-      size      = 10
-      name      = "${var.cluster_name}-prometheusstack-grafana"
-      namespace = "monitoring"
     }
   }
 }
@@ -258,10 +246,10 @@ module "chart_prometheus_stack" {
   pvc_storage_class = local.storage_class_name
   # size              = 100
   # NOTE: kube-prometheus-stack 65.1.0 is not able to claim an existing PV, newers versions can handle it.
-  size_prometheus = local.prometheusstack.prometheusstack-prometheus["size"]
-  pvc_prometheus  = "pvc-${local.prometheusstack.prometheusstack-prometheus["name"]}"
-  size_grafana    = local.prometheusstack.prometheusstack-grafana["size"]
-  pvc_grafana     = "pvc-${local.prometheusstack.prometheusstack-grafana["name"]}"
+  size_prometheus = local.persistences.prometheusstack-prometheus["size"]
+  pvc_prometheus  = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  size_grafana    = local.persistences.prometheusstack-grafana["size"]
+  pvc_grafana     = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
 
   depends_on = [
     module.kube_namespaces,

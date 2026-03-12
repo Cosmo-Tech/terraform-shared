@@ -15,13 +15,13 @@
 # cloud_provider = "aws"
 
 
-## VARIABLES EXAMPLE FOR KOB (= On-Premise)
-cloud_provider         = "kob"
-cluster_region         = ""
-cluster_name           = "kubernetes"
-domain_zone            = "onpremise.platform.cosmotech.com"
-dns_challenge_provider = "azure"
-state_host             = "https://cosmotechstates.onpremise.platform.cosmotech.com"
+# ## VARIABLES EXAMPLE FOR KOB (= On-Premise)
+# cloud_provider         = "kob"
+# cluster_region         = ""
+# cluster_name           = "kubernetes"
+# domain_zone            = "onpremise.platform.cosmotech.com"
+# dns_challenge_provider = "azure"
+# state_host             = "https://cosmotechstates.onpremise.platform.cosmotech.com"
 
 
 ## COMMON VARIABLES EXAMPLE
