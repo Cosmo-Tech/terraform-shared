@@ -93,11 +93,11 @@ data "template_file" "clusterissuer_prod_dns01_azuredns" {
   template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
   vars = {
     certificate_email   = var.certificate_email
-    client_id           = kubernetes_secret.dns_challenge.data["client-id"]
-    subscription_id     = kubernetes_secret.dns_challenge.data["subscription-id"]
-    tenant_id           = kubernetes_secret.dns_challenge.data["tenant-id"]
-    domain_zone         = kubernetes_secret.dns_challenge.data["domain-zone"]
-    resource_group_name = kubernetes_secret.dns_challenge.data["domain-zone-rg"]
+    client_id           = kubernetes_secret.dns_challenge[0].data["client-id"]
+    subscription_id     = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+    tenant_id           = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+    domain_zone         = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+    resource_group_name = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
   }
 }
 

@@ -51,7 +51,7 @@ locals {
   lb_ip = data.azurerm_public_ip.lb_ip.ip_address
 }
 
-module "storage" {
+module "storage_azure" {
   source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
 
   for_each = var.cloud_provider == "azure" ? local.persistences : {}
