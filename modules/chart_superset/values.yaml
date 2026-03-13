@@ -310,7 +310,7 @@ global:
       adaptSecurityContext: auto
   imagePullSecrets: []
   imageRegistry: ""
-  storageClass: ""
+  storageClass: "${PERSISTENCE_STORAGE_CLASS}"
   security:
     allowInsecureImages: true
 image:
@@ -433,6 +433,9 @@ postgresql:
     service:
       ports:
         postgresql: 5432
+    persistence:
+      enabled: true
+      existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
 redis:
   image:
     repository: bitnamilegacy/redis
@@ -456,6 +459,9 @@ redis:
     service:
       ports:
         redis: 6379
+    persistence:
+      enabled: true
+      existingClaim: "${PERSISTENCE_REDIS_PVC}"
 serviceAccount:
   annotations: {}
   automountServiceAccountToken: true

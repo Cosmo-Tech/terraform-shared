@@ -23,22 +23,34 @@ variable "helm_chart_version" {
 }
 
 variable "superset_connect_timeout" {
-  type = string
+  type    = string
   default = "30s"
 }
 
 variable "superset_query_timeout" {
-  type = string
+  type    = string
   default = "60s"
 }
 
 variable "superset_buffer_size" {
-  type = string
+  type    = string
   default = "16K"
 }
 
 variable "superset_max_file_size" {
-  type = string
+  type    = string
   default = "5m"
+}
+
+variable "pvc_storage_class" {
+  type    = string
+}
+
+variable "pvc_redis" {
+  type    = string
+}
+
+variable "pvc_postgresql" {
+  type    = string
 }
 
