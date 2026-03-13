@@ -52,6 +52,16 @@ locals {
       name      = "${var.cluster_name}-harbor-trivy"
       namespace = "harbor"
     }
+    superset-postgresql = {
+      size      = 10
+      name      = "${var.cluster_name}-superset-postgresql"
+      namespace = "superset"
+    }
+    superset-redis = {
+      size      = 10
+      name      = "${var.cluster_name}-superset-redis"
+      namespace = "superset"
+    }
   }
 }
 
@@ -122,16 +132,19 @@ module "chart_cert_manager" {
 module "chart_superset" {
   source = "./modules/chart_superset"
 
-  namespace                   = "superset"
-  cluster_domain              = local.cluster_domain
-  superset_cluster_domain     = "superset-${local.cluster_domain}"
-  helm_repo                   = "https://charts.bitnami.com/bitnami"
-  helm_chart                  = "superset"
-  helm_chart_version          = "5.0.0"
-  superset_connect_timeout    = "30s"
-  superset_query_timeout      = "60s"
-  superset_buffer_size        = "16K"
-  superset_max_file_size      = "5m"
+  namespace                = "superset"
+  cluster_domain           = local.cluster_domain
+  superset_cluster_domain  = "superset-${local.cluster_domain}"
+  helm_repo                = "https://charts.bitnami.com/bitnami"
+  helm_chart               = "superset"
+  helm_chart_version       = "5.0.0"
+  superset_connect_timeout = "30s"
+  superset_query_timeout   = "60s"
+  superset_buffer_size     = "16K"
+  superset_max_file_size   = "5m"
+  pvc_storage_class        = local.storage_class_name
+  pvc_redis                = "pvc-${local.persistences.superset-redis["name"]}"
+  pvc_postgresql           = "pvc-${local.persistences.superset-postgresql["name"]}"
 
   depends_on = [
     module.kube_namespaces,

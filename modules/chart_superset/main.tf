@@ -10,20 +10,23 @@ locals {
 
 
   chart_values = {
-    NAMESPACE      = var.namespace
-    CLUSTER_DOMAIN = var.cluster_domain
-    SUPERSET_CLUSTER_DOMAIN = var.superset_cluster_domain
-    SUPERSET_SECRET_NAME    = local.superset_secret_name
-    SUPERSET_REDIS_SECRET_NAME    = local.superset_redis_secret_name
-    SUPERSET_POSTGRESQL_SECRET_NAME    = local.superset_postgresql_secret_name
-    CONFIGMAP_NAME = local.superset_configmap_name
-    OAUTH_PROVIDERS_CONFIGMAP_NAME = local.superset_oauth_providers_configmap_name
-    SUPERSET_GUEST_TOKEN = local.superset_guest_token
-    SUPERSET_SECRET_KEY_NAME = local.superset_secret_key_name
-    SUPERSET_CONNECT_TIMEOUT = var.superset_connect_timeout
-    SUPERSET_QUERY_TIMEOUT = var.superset_query_timeout
-    SUPERSET_BUFFER_SIZE = var.superset_buffer_size
-    SUPERSET_MAX_FILE_SIZE = var.superset_max_file_size
+    NAMESPACE                       = var.namespace
+    CLUSTER_DOMAIN                  = var.cluster_domain
+    SUPERSET_CLUSTER_DOMAIN         = var.superset_cluster_domain
+    SUPERSET_SECRET_NAME            = local.superset_secret_name
+    SUPERSET_REDIS_SECRET_NAME      = local.superset_redis_secret_name
+    SUPERSET_POSTGRESQL_SECRET_NAME = local.superset_postgresql_secret_name
+    CONFIGMAP_NAME                  = local.superset_configmap_name
+    OAUTH_PROVIDERS_CONFIGMAP_NAME  = local.superset_oauth_providers_configmap_name
+    SUPERSET_GUEST_TOKEN            = local.superset_guest_token
+    SUPERSET_SECRET_KEY_NAME        = local.superset_secret_key_name
+    SUPERSET_CONNECT_TIMEOUT        = var.superset_connect_timeout
+    SUPERSET_QUERY_TIMEOUT          = var.superset_query_timeout
+    SUPERSET_BUFFER_SIZE            = var.superset_buffer_size
+    SUPERSET_MAX_FILE_SIZE          = var.superset_max_file_size
+    PERSISTENCE_STORAGE_CLASS       = var.pvc_storage_class
+    PERSISTENCE_REDIS_PVC           = var.pvc_redis
+    PERSISTENCE_POSTGRESQL_PVC      = var.pvc_postgresql
   }
 }
 
