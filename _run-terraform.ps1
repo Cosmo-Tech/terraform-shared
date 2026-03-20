@@ -28,6 +28,13 @@ $cluster_region = (get_var_value 'terraform.tfvars' 'cluster_region')
 $cluster_name = (get_var_value 'terraform.tfvars' 'cluster_name')
 $state_file_name = "tfstate-shared-$cluster_name"
 
+# Generate state_storage_name for Azure backend
+# Azure storage account names must be 3-24 chars, lowercase alphanumeric only
+$azure_subscription_id = (get_var_value 'terraform.tfvars' 'azure_subscription_id')
+$sub_hash = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($azure_subscription_id)) | ForEach-Object { $_.ToString("x2") }) -join ''
+$sub_hash = $sub_hash.Substring(0, 9)
+$state_storage_name = "csmstates$sub_hash"
+
 
 # Clear old data
 rm -Recurse -Confirm:$false .terraform*
