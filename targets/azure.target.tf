@@ -1,8 +1,8 @@
 terraform {
   backend "azurerm" {
-    resource_group_name  = "cosmotechstates"
-    storage_account_name = "cosmotechstates"
-    container_name       = "cosmotechstates"
+    resource_group_name  = "$TEMPLATE_state_storage_name"
+    storage_account_name = "$TEMPLATE_state_storage_name"
+    container_name       = "$TEMPLATE_state_storage_name"
     key                  = "$TEMPLATE_state_file_name"
   }
 }
@@ -19,9 +19,9 @@ variable "azure_entra_tenant_id" { type = string }
 data "terraform_remote_state" "terraform_cluster" {
   backend = "azurerm"
   config = {
-    resource_group_name  = "cosmotechstates"
-    storage_account_name = "cosmotechstates"
-    container_name       = "cosmotechstates"
+    resource_group_name  = "$TEMPLATE_state_storage_name"
+    storage_account_name = "$TEMPLATE_state_storage_name"
+    container_name       = "$TEMPLATE_state_storage_name"
     key                  = "tfstate-cluster-$TEMPLATE_cluster_name"
   }
 }
