@@ -19,7 +19,7 @@ controller:
     loadBalancerIP: ${platform_lb_ip}
     ports:
       http: 80
-      https: 443      
+      https: 443
     annotations:
       ${lb_annotations}
     labels:

@@ -37,21 +37,21 @@ locals {
       name      = "${var.cluster_name}-harbor-registry"
       namespace = "harbor"
     }
-    harbor-jobservice = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-jobservice"
-      namespace = "harbor"
-    }
-    harbor-chartmuseum = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-chartmuseum"
-      namespace = "harbor"
-    }
-    harbor-trivy = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-trivy"
-      namespace = "harbor"
-    }
+    # harbor-jobservice = {
+    #   size      = 10
+    #   name      = "${var.cluster_name}-harbor-jobservice"
+    #   namespace = "harbor"
+    # }
+    # harbor-chartmuseum = {
+    #   size      = 10
+    #   name      = "${var.cluster_name}-harbor-chartmuseum"
+    #   namespace = "harbor"
+    # }
+    # harbor-trivy = {
+    #   size      = 10
+    #   name      = "${var.cluster_name}-harbor-trivy"
+    #   namespace = "harbor"
+    # }
     superset-postgresql = {
       size      = 10
       name      = "${var.cluster_name}-superset-postgresql"
@@ -174,17 +174,11 @@ module "chart_harbor" {
 
   pvc_storage_class = local.storage_class_name
   pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
-  size_redis        = local.persistences.harbor-redis["size"]
   pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
-  size_postgresql   = local.persistences.harbor-postgresql["size"]
   pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
-  size_registry     = local.persistences.harbor-registry["size"]
-  pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
-  size_jobservice   = local.persistences.harbor-jobservice["size"]
-  pvc_chartmuseum   = "pvc-${local.persistences.harbor-chartmuseum["name"]}"
-  size_chartmuseum  = local.persistences.harbor-chartmuseum["size"]
-  pvc_trivy         = "pvc-${local.persistences.harbor-trivy["name"]}"
-  size_trivy        = local.persistences.harbor-trivy["size"]
+  # pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
+  # pvc_chartmuseum   = "pvc-${local.persistences.harbor-chartmuseum["name"]}"
+  # pvc_trivy         = "pvc-${local.persistences.harbor-trivy["name"]}"
 
   depends_on = [
     module.kube_namespaces,

@@ -8,17 +8,11 @@ locals {
     SECRET                             = "harbor-config"
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_REDIS_PVC              = var.pvc_redis
-    # PERSISTENCE_REDIS_SIZE       = var.size_redis
-    PERSISTENCE_POSTGRESQL_PVC = var.pvc_postgresql
-    # PERSISTENCE_POSTGRESQL_SIZE  = var.size_postgresql
-    PERSISTENCE_REGISTRY_PVC = var.pvc_registry
-    # PERSISTENCE_REGISTRY_SIZE    = var.size_registry
-    PERSISTENCE_JOBSERVICE_PVC = var.pvc_jobservice
-    # PERSISTENCE_JOBSERVICE_SIZE  = var.size_jobservice
-    PERSISTENCE_CHARTMUSEUM_PVC = var.pvc_chartmuseum
-    # PERSISTENCE_CHARTMUSEUM_SIZE = var.size_chartmuseum
-    PERSISTENCE_TRIVY_PVC = var.pvc_trivy
-    # PERSISTENCE_TRIVY_SIZE       = var.size_trivy
+    PERSISTENCE_POSTGRESQL_PVC         = var.pvc_postgresql
+    PERSISTENCE_REGISTRY_PVC           = var.pvc_registry
+    # PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
+    # PERSISTENCE_CHARTMUSEUM_PVC        = var.pvc_chartmuseum
+    # PERSISTENCE_TRIVY_PVC              = var.pvc_trivy
   }
 }
 

@@ -251,3 +251,5 @@ prometheus-node-exporter:
       relabelings: []
   rbac:
     pspEnabled: false
+  nodeSelector:
+    "cosmotech.com/tier": "services"

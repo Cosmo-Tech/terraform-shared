@@ -46,3 +46,7 @@ volumePermissions:
 image:
   repository: "bitnamilegacy/redis"
   pullPolicy: IfNotPresent
+
+common:
+  resources:
+    preset: "small"
