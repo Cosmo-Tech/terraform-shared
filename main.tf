@@ -3,7 +3,7 @@ locals {
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
-      size      = 50
+      size      = 10
       name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
     }

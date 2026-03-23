@@ -20,6 +20,7 @@ primary:
       operator: "Equal"
       value: "cosmotech"
       effect: "NoSchedule"
+  resourcesPreset: "nano"
 volumePermissions:
   enabled: true
   image:
@@ -27,6 +28,7 @@ volumePermissions:
     repository: bitnamilegacy/os-shell
     tag: latest
     pullPolicy: IfNotPresent
-    pullSecrets: []   
+    pullSecrets: []
+  resourcesPreset: "nano"
 image:
   repository: "bitnamilegacy/postgresql"
