@@ -2,14 +2,10 @@ namespace: ${NAMESPACE}
 name: cosmotech-api-latest
 labels:
   networking/traffic-allowed: "yes"
-
 defaultRules:
   create: true
-
 kubernetesServiceMonitors:
   enabled: true
-
-## Alertmanager Configuration
 alertmanager:
   enabled: true
   alertmanagerSpec:
@@ -25,12 +21,8 @@ alertmanager:
       labels:
         networking/traffic-allowed: "yes"
     resources: {}
-
-## Windows Monitoring
 windowsMonitoring:
   enabled: false
-
-## Grafana Configuration
 grafana:
   enabled: true
   adminPassword: ${PROMETHEUS_ADMIN_PASSWORD}
@@ -239,11 +231,8 @@ prometheus:
       selector:
         matchLabels:
           app.kubernetes.io/instance: cosmotech-api-v1
-
-## Node Exporter
 nodeExporter:
   enabled: true
-
 prometheus-node-exporter:
   podLabels:
     jobLabel: node-exporter

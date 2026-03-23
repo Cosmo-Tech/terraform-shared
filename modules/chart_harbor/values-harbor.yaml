@@ -55,6 +55,8 @@ registry:
     image:
       repository: bitnamilegacy/harbor-registryctl
       tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal
@@ -83,6 +85,8 @@ trivy:
       volumeMounts:
         - name: trivy
           mountPath: /home/scanner/.cache/trivy
+  nodeSelector:
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal
@@ -122,6 +126,8 @@ core:
   image:
     repository: bitnamilegacy/harbor-core
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   tolerations:
     - key: vendor
       operator: Equal
@@ -133,6 +139,8 @@ jobservice:
   image:
     repository: bitnamilegacy/harbor-jobservice
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal
@@ -144,6 +152,8 @@ chartmuseum:
   image:
     repository: bitnamilegacy/harbor-chartmuseum
     tag: 0.15.0-debian-11-r84
+  nodeSelector:
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal
