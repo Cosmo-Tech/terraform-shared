@@ -35,7 +35,6 @@ sub_hash="$(echo -n "$azure_subscription_id" | sha256sum | cut -c1-9)"
 state_storage_name="csmstates${sub_hash}"
 
 
-
 # Clear old data
 rm -rf .terraform*
 rm -rf terraform.tfstate*
@@ -109,6 +108,15 @@ terraform fmt $target_file
 terraform init -upgrade -reconfigure
 terraform plan -out .terraform.plan
 # terraform apply .terraform.plan
+
+option_apply='--apply'
+if [ "$(echo $1)" = "$option_apply" ]; then
+  terraform apply .terraform.plan
+else
+  echo ''
+  echo "\e[97mTerraform plan can be applied with:"
+  echo "  $0 $option_apply"
+fi
 
 
 exit
