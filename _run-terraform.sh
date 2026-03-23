@@ -28,12 +28,6 @@ cluster_region="$(get_var_value terraform.tfvars cluster_region)"
 cluster_name="$(get_var_value terraform.tfvars cluster_name)"
 state_file_name="tfstate-shared-$cluster_name"
 
-# Generate state_storage_name for Azure backend
-# Azure storage account names must be 3-24 chars, lowercase alphanumeric only
-azure_subscription_id="$(get_var_value terraform.tfvars azure_subscription_id)"
-sub_hash="$(echo -n "$azure_subscription_id" | sha256sum | cut -c1-9)"
-state_storage_name="csmstates${sub_hash}"
-
 
 # Clear old data
 rm -rf .terraform*
@@ -68,6 +62,10 @@ target_file='target.tf'
 # Then, Terraform will automatically detects it from its .tf extension.
 case "$(echo $cloud_provider)" in
   'azure')
+    azure_subscription_id="$(get_var_value terraform.tfvars azure_subscription_id)"
+    sub_hash="$(echo -n "$azure_subscription_id" | sha256sum | cut -c1-9)"
+    state_storage_name="csmstates${sub_hash}"
+
     prepare_target_file "targets/$cloud_provider.target.tf" $target_file
     ;;
 
