@@ -28,13 +28,6 @@ $cluster_region = (get_var_value 'terraform.tfvars' 'cluster_region')
 $cluster_name = (get_var_value 'terraform.tfvars' 'cluster_name')
 $state_file_name = "tfstate-shared-$cluster_name"
 
-# Generate state_storage_name for Azure backend
-# Azure storage account names must be 3-24 chars, lowercase alphanumeric only
-$azure_subscription_id = (get_var_value 'terraform.tfvars' 'azure_subscription_id')
-$sub_hash = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($azure_subscription_id)) | ForEach-Object { $_.ToString("x2") }) -join ''
-$sub_hash = $sub_hash.Substring(0, 9)
-$state_storage_name = "csmstates$sub_hash"
-
 
 # Clear old data
 rm -Recurse -Confirm:$false .terraform*
@@ -69,6 +62,11 @@ $target_file = 'target.tf'
 # Then, Terraform will automatically detects it from its .tf extension.
 switch ([string]$cloud_provider) {
     "azure" {
+        $azure_subscription_id = (get_var_value 'terraform.tfvars' 'azure_subscription_id')
+        $sub_hash = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($azure_subscription_id)) | ForEach-Object { $_.ToString("x2") }) -join ''
+        $sub_hash = $sub_hash.Substring(0, 9)
+        $state_storage_name = "csmstates$sub_hash"
+
         prepare_target_file "targets/$cloud_provider.target.tf" $target_file
     }
 
@@ -85,8 +83,8 @@ switch ([string]$cloud_provider) {
 
         if (([string]::IsNullOrEmpty($TF_HTTP_USERNAME)) -or ([string]::IsNullOrEmpty($TF_HTTP_PASSWORD))) {
             echo "error: empty TF_HTTP_USERNAME or TF_HTTP_PASSWORD (required for backend authentication)"
-            echo '  $TF_HTTP_USERNAME = ""'
-            echo '  $TF_HTTP_PASSWORD = ""'
+            echo '  $Env:TF_HTTP_USERNAME = ""'
+            echo '  $Env:TF_HTTP_PASSWORD = ""'
             exit
         } else {
             echo "found TF_HTTP_USERNAME & TF_HTTP_PASSWORD"
@@ -109,6 +107,15 @@ terraform fmt $target_file
 terraform init -lock=false -upgrade -reconfigure
 terraform plan -lock=false -out .terraform.plan
 # terraform apply -lock=false .terraform.plan
+
+$option_apply = '--apply'
+if ($args[0] -eq $option_apply) {
+    terraform apply -lock=false .terraform.plan
+} else {
+    echo ''
+    echo "Terraform plan can be applied with:"
+    echo "  $0 $option_apply"
+}
 
 
 echo ''

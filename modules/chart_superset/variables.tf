@@ -43,14 +43,14 @@ variable "superset_max_file_size" {
 }
 
 variable "pvc_storage_class" {
-  type    = string
+  type = string
 }
 
 variable "pvc_redis" {
-  type    = string
+  type = string
 }
 
 variable "pvc_postgresql" {
-  type    = string
+  type = string
 }
 

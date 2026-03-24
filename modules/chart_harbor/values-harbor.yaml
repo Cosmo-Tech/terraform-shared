@@ -16,7 +16,6 @@ ingress:
       kubernetes.io/ingress.class: nginx
     tls: false
     selfSigned: false
-
 tolerations:
   - key: vendor
     operator: Equal
@@ -31,15 +30,15 @@ persistence:
     registry:
       existingClaim: "${PERSISTENCE_REGISTRY_PVC}"
       subPath: registry
-    jobservice:
-      existingClaim: "${PERSISTENCE_JOBSERVICE_PVC}"
-      subPath: jobservice
-    chartmuseum:
-      existingClaim: "${PERSISTENCE_CHARTMUSEUM_PVC}"
-      subPath: chartmuseum
-    trivy:
-      existingClaim: "${PERSISTENCE_TRIVY_PVC}"
-      subPath: trivy
+    # jobservice:
+    #   existingClaim: "PERSISTENCE_JOBSERVICE_PVC}"
+    #   subPath: jobservice
+    # chartmuseum:
+    #   existingClaim: "PERSISTENCE_CHARTMUSEUM_PVC}"
+    #   subPath: chartmuseum
+    # trivy:
+    #   existingClaim: "PERSISTENCE_TRIVY_PVC}"
+    #   subPath: trivy
 registry:
   storage:
     filesystem:
@@ -51,10 +50,14 @@ registry:
     image:
       repository: bitnamilegacy/harbor-registry
       tag: 2.13.2-debian-12-r2
+    resourcesPreset: "nano"
   controller:
     image:
       repository: bitnamilegacy/harbor-registryctl
       tag: 2.13.2-debian-12-r2
+    resourcesPreset: "nano"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal
@@ -62,32 +65,35 @@ registry:
       effect: NoSchedule
 
 trivy:
-  enabled: true
-  image:
-    repository: bitnamilegacy/trivy
-    tag: 2.13.2-debian-12-r2
-  securityContext:
-    runAsUser: 10000
-    fsGroup: 10000
-  initContainers:
-    - name: init-cache
-      image: busybox:1.35
-      securityContext:
-        runAsUser: 0
-      command: ['sh', '-c']
-      args:
-        - |
-          mkdir -p /home/scanner/.cache/trivy
-          chown -R 10000:10000 /home/scanner/.cache/trivy
-          chmod -R 755 /home/scanner/.cache/trivy
-      volumeMounts:
-        - name: trivy
-          mountPath: /home/scanner/.cache/trivy
-  tolerations:
-    - key: vendor
-      operator: Equal
-      value: cosmotech
-      effect: NoSchedule
+  enabled: false
+  # image:
+  #   repository: bitnamilegacy/trivy
+  #   tag: 2.13.2-debian-12-r2
+  # securityContext:
+  #   runAsUser: 10000
+  #   fsGroup: 10000
+  # initContainers:
+  #   - name: init-cache
+  #     image: busybox:1.35
+  #     securityContext:
+  #       runAsUser: 0
+  #     command: ['sh', '-c']
+  #     args:
+  #       - |
+  #         mkdir -p /home/scanner/.cache/trivy
+  #         chown -R 10000:10000 /home/scanner/.cache/trivy
+  #         chmod -R 755 /home/scanner/.cache/trivy
+  #     volumeMounts:
+  #       - name: trivy
+  #         mountPath: /home/scanner/.cache/trivy
+  # nodeSelector:
+  #   "cosmotech.com/tier": "db"
+  # tolerations:
+  #   - key: vendor
+  #     operator: Equal
+  #     value: cosmotech
+  #     effect: NoSchedule
+  # resourcesPreset: "nano"
 
 externalDatabase:
   host: harbor-postgresql.${NAMESPACE}.svc.cluster.local
@@ -111,44 +117,55 @@ portal:
   image:
     repository: bitnamilegacy/harbor-portal
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   tolerations:
     - key: vendor
       operator: Equal
       value: cosmotech
       effect: NoSchedule
+  resourcesPreset: "nano"
 
 core:
   replicas: 1
   image:
     repository: bitnamilegacy/harbor-core
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   tolerations:
     - key: vendor
       operator: Equal
       value: cosmotech
       effect: NoSchedule
+  resourcesPreset: "nano"
 
 jobservice:
   replicas: 1
   image:
     repository: bitnamilegacy/harbor-jobservice
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   tolerations:
     - key: vendor
       operator: Equal
       value: cosmotech
       effect: NoSchedule
+  resourcesPreset: "nano"
 
 chartmuseum:
-  enabled: true
-  image:
-    repository: bitnamilegacy/harbor-chartmuseum
-    tag: 0.15.0-debian-11-r84
-  tolerations:
-    - key: vendor
-      operator: Equal
-      value: cosmotech
-      effect: NoSchedule
+  enabled: false
+  # image:
+  #   repository: bitnamilegacy/harbor-chartmuseum
+  #   tag: 0.15.0-debian-11-r84
+  # nodeSelector:
+  #   "cosmotech.com/tier": "db"
+  # tolerations:
+  #   - key: vendor
+  #     operator: Equal
+  #     value: cosmotech
+  #     effect: NoSchedule
 
 notary:
   enabled: false
@@ -161,16 +178,21 @@ exporter:
   image:
     repository: bitnamilegacy/harbor-exporter
     tag: 2.13.2-debian-12-r2
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   tolerations:
     - key: vendor
       operator: Equal
       value: cosmotech
-      effect: NoSchedule    
+      effect: NoSchedule
+  resourcesPreset: "nano"
+
 nginx:
   enabled: true
   image:
     repository: bitnamilegacy/nginx
-    tag: 1.29.0-debian-12-r0    
+    tag: 1.29.0-debian-12-r0
+  resourcesPreset: "nano"
 
 existingSecret: "${SECRET}"
 existingSecretAdminPasswordKey: "${HARBOR_ADMIN_PASSWORD}"

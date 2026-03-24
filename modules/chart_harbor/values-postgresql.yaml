@@ -1,32 +1,32 @@
-  global:
-    security:
-      allowInsecureImages: true
-    postgresql:
-      auth:
-        database: harbor_db
-        existingSecret: ${SECRET}
-        secretKeys:
-          adminPasswordKey: ${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}
-
-  primary:
-    persistence:
-      enabled: true
-      existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
-    nodeSelector:
-      "cosmotech.com/tier": "db"
-    tolerations:
-      - key: "vendor"
-        operator: "Equal"
-        value: "cosmotech"
-        effect: "NoSchedule"
- 
-  volumePermissions:
+global:
+  security:
+    allowInsecureImages: true
+  postgresql:
+    auth:
+      database: harbor_db
+      existingSecret: ${SECRET}
+      secretKeys:
+        adminPasswordKey: ${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}
+primary:
+  persistence:
     enabled: true
-    image:
-      registry: docker.io
-      repository: bitnamilegacy/os-shell
-      tag: latest
-      pullPolicy: IfNotPresent
-      pullSecrets: [] 
+    existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  resourcesPreset: "nano"
+volumePermissions:
+  enabled: true
   image:
-    repository: "bitnamilegacy/postgresql"
+    registry: docker.io
+    repository: bitnamilegacy/os-shell
+    tag: latest
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  resourcesPreset: "nano"
+image:
+  repository: "bitnamilegacy/postgresql"

@@ -4,47 +4,40 @@ global:
     allowInsecureImages: true
   redis:
     password: ""
-
 architecture: "standalone" 
-
 auth:
   enabled: false
-
 master:
   persistence:
     enabled: true
     existingClaim: "${PERSISTENCE_REDIS_PVC}"
     storageClass: "${PERSISTENCE_STORAGE_CLASS}"
   volumePermissions:
-    enabled: true     
-
+    enabled: true
   service:
     type: ClusterIP
     port: 6379
-
   nodeSelector:
-    "cosmotech.com/tier": "services"
-
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: "vendor"
       operator: "Equal"
       value: "cosmotech"
       effect: "NoSchedule"
-      
-
+  resourcesPreset: "nano"
 replica:
   replicaCount: 0
   persistence:
     enabled: false
-
+  resourcesPreset: "nano"
 metrics:
   enabled: true
   image:
     repository: bitnamilegacy/redis-exporter
-    tag: 1.45.0-debian-11-r11    
+    tag: 1.45.0-debian-11-r11
   service:
-    type: ClusterIP    
-
+    type: ClusterIP
+  resourcesPreset: "nano"
 volumePermissions:
   enabled: true
   image:
@@ -53,6 +46,7 @@ volumePermissions:
     tag: latest
     pullPolicy: IfNotPresent
     pullSecrets: []
+  resourcesPreset: "nano"
 image:
   repository: "bitnamilegacy/redis"
   pullPolicy: IfNotPresent
