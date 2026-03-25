@@ -30,9 +30,9 @@ persistence:
     registry:
       existingClaim: "${PERSISTENCE_REGISTRY_PVC}"
       subPath: registry
-    # jobservice:
-    #   existingClaim: "PERSISTENCE_JOBSERVICE_PVC}"
-    #   subPath: jobservice
+    jobservice:
+      existingClaim: "${PERSISTENCE_JOBSERVICE_PVC}"
+      subPath: jobservice
     # chartmuseum:
     #   existingClaim: "PERSISTENCE_CHARTMUSEUM_PVC}"
     #   subPath: chartmuseum
@@ -146,7 +146,7 @@ jobservice:
     repository: bitnamilegacy/harbor-jobservice
     tag: 2.13.2-debian-12-r2
   nodeSelector:
-    "cosmotech.com/tier": "services"
+    "cosmotech.com/tier": "db"
   tolerations:
     - key: vendor
       operator: Equal

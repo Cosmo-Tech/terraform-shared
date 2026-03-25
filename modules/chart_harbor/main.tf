@@ -10,7 +10,7 @@ locals {
     PERSISTENCE_REDIS_PVC              = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC         = var.pvc_postgresql
     PERSISTENCE_REGISTRY_PVC           = var.pvc_registry
-    # PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
+    PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
     # PERSISTENCE_CHARTMUSEUM_PVC        = var.pvc_chartmuseum
     # PERSISTENCE_TRIVY_PVC              = var.pvc_trivy
   }
