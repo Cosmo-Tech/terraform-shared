@@ -81,9 +81,9 @@ variable "pvc_registry" {
   type = string
 }
 
-# variable "pvc_jobservice" {
-#   type = string
-# }
+variable "pvc_jobservice" {
+  type = string
+}
 
 # variable "pvc_chartmuseum" {
 #   type = string

@@ -13,11 +13,26 @@ terraform {
 
 variable "state_host" { type = string }
 
+data "kubernetes_resource" "metallb_pool" {
+  api_version = "metallb.io/v1beta1"
+  kind        = "IPAddressPool"
+  metadata {
+    name      = "cosmo-pool"
+    namespace = "metallb-system"
+  }
+}
+
 locals {
   cloud_identity = {}
-  lb_annotations = {}
-  lb_ip          = ""
+
+  lb_annotations = {
+    "metallb.universe.tf/address-pool" = "cosmo-pool"
+  }
+
+  # Get the IP from the L2Advertisement of Metallb
+  lb_ip = split("/", data.kubernetes_resource.metallb_pool.object.spec.addresses[0])[0]
 }
+
 
 module "storage_kob" {
   source = "git::https://github.com/cosmo-tech/terraform-onprem//terraform-cluster/modules/storage"

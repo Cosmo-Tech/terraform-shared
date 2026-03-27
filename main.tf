@@ -33,15 +33,15 @@ locals {
       namespace = "harbor"
     }
     harbor-registry = {
-      size      = 50
+      size      = 30
       name      = "${var.cluster_name}-harbor-registry"
       namespace = "harbor"
     }
-    # harbor-jobservice = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-harbor-jobservice"
-    #   namespace = "harbor"
-    # }
+    harbor-jobservice = {
+      size      = 10
+      name      = "${var.cluster_name}-harbor-jobservice"
+      namespace = "harbor"
+    }
     # harbor-chartmuseum = {
     #   size      = 10
     #   name      = "${var.cluster_name}-harbor-chartmuseum"
@@ -176,7 +176,7 @@ module "chart_harbor" {
   pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
   pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
   pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
-  # pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
+  pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
   # pvc_chartmuseum   = "pvc-${local.persistences.harbor-chartmuseum["name"]}"
   # pvc_trivy         = "pvc-${local.persistences.harbor-trivy["name"]}"
 
