@@ -1,10 +1,9 @@
-data "template_file" "nginx_values" {
-  template = file("${path.module}/values.yaml")
-  vars = {
+locals {
+  nginx_values = templatefile("${path.module}/values.yaml", {
     service_annotations = yamlencode(var.service_annotations)
     lb_annotations      = yamlencode(var.lb_annotations)
     platform_lb_ip      = var.platform_lb_ip
-  }
+  })
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -15,5 +14,5 @@ resource "helm_release" "nginx_ingress" {
   namespace        = "ingress-nginx"
   create_namespace = true
 
-  values = [data.template_file.nginx_values.rendered]
+  values = [local.nginx_values]
 }
