@@ -20,8 +20,7 @@ controller:
     ports:
       http: 80
       https: 443
-    annotations:
-      ${lb_annotations}
+    annotations: {}
     labels:
       networking/traffic-allowed: "yes"
   resources:
@@ -53,8 +52,7 @@ controller:
           effect: "NoSchedule"
   serviceAccount:
     create: false
-    annotations: |
-      ${service_annotations}
+    annotations: {}
 defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
