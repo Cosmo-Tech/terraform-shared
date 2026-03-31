@@ -1,0 +1,19 @@
+# https://github.com/aureq/cert-manager-webhook-ovh/blob/main/charts/cert-manager-webhook-ovh/values.yaml
+groupName: ${dns_challenge_provider_webhook_ovh_group_name}
+certManager:
+  namespace: cert-manager
+  serviceAccountName: cert-manager
+issuers:
+  - name: letsencrypt-prod
+    create: false
+podLabels:
+  networking/traffic-allowed: "yes"
+nodeSelector:
+  cosmotech.com/tier: services
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

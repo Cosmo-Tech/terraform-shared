@@ -20,8 +20,9 @@
 # cluster_region         = ""
 # cluster_name           = "kob-dev-devops"
 # domain_zone            = "onpremise.platform.cosmotech.com"
-# dns_challenge_provider = "azure"
 # state_host             = "https://cosmotechstates.onpremise.platform.cosmotech.com"
+## DNS01 challenge provider can be "azure", "ovh"
+# dns_challenge_provider = "azure"
 
 
 ## COMMON VARIABLES EXAMPLE
