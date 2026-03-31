@@ -18,8 +18,8 @@ resource "time_sleep" "wait_certmanager_crds" {
 
 
 # 1. CERT-MANAGER
-data "template_file" "cert_values" {
-  template = file("${path.module}/values.yaml")
+data "template_file" "chart_values_cert_manager" {
+  template = file("${path.module}/values-cert_manager.yaml")
   vars = {
     service_annotations = yamlencode(var.service_annotations)
   }
@@ -34,7 +34,32 @@ resource "helm_release" "cert_manager" {
   create_namespace = true
 
   values = [
-    data.template_file.cert_values.rendered
+    data.template_file.chart_values_cert_manager.rendered
+  ]
+}
+
+# 1. (ADDITIONAL) CERT-MANAGER webhook chart for OVH
+data "template_file" "chart_values_webhook_ovh" {
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
+
+  template = file("${path.module}/values-cert_manager_webhook_ovh.yaml")
+  vars = {
+    group_name = kubernetes_secret.dns_challenge[0].data["groupName"]
+  }
+}
+
+resource "helm_release" "cert_manager_webhook_ovh" {
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
+
+  name             = "cert-manager-webhook-ovh"
+  repository       = "https://aureq.github.io/cert-manager-webhook-ovh/"
+  chart            = "cert-manager-webhook-ovh"
+  version          = "0.9.5"
+  namespace        = "cert-manager"
+  create_namespace = true
+
+  values = [
+    data.template_file.chart_values_webhook_ovh[0].rendered
   ]
 }
 
@@ -67,6 +92,14 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
 # Trick here is to duplicate the dns-challenge secret from terraform-onprem from default namespace to cert-manager namespace
 # cert-manager requires to have this secret in its namespace.
 # This is to avoid creating namespace cert-manager in terraform-onprem
+#
+# Workflow is:
+# -> [terraform-onprem] create DNS01 challenge requirements (examples: API keys, Azure App registration etc...)
+# -> [terraform-onprem] create a secret in default/dns-challenge-terraform-onprem which contains the needed values to run a DNS01 challenge on the given provider
+# -> [terraform-shared] create the cert-manager namespace
+# -> [terraform-shared] copy the secret default/dns-challenge-terraform-onprem to cert-manager/default/dns-challenge
+# -> [terraform-shared] create ClusterIssuer with specifics provider values stored in the cert-manager/default/dns-challenge
+# -> [terraform-shared] run cert-manager to get a certificate
 data "kubernetes_secret" "dns_challenge_terraform_onprem" {
   metadata {
     name      = "dns-challenge-terraform-onprem"
@@ -87,6 +120,7 @@ resource "kubernetes_secret" "dns_challenge" {
   type = "Opaque"
 }
 
+# ------ AZURE DNS ------
 data "template_file" "clusterissuer_prod_dns01_azuredns" {
   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
@@ -102,7 +136,7 @@ data "template_file" "clusterissuer_prod_dns01_azuredns" {
 }
 
 resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
-  count = var.cloud_provider == "kob" ? 1 : 0
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
   yaml_body = data.template_file.clusterissuer_prod_dns01_azuredns[0].rendered
 
@@ -110,6 +144,32 @@ resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
     helm_release.cert_manager
   ]
 }
+# ------ AZURE DNS ------
+
+# ------ WEBHOOK OVH ------
+data "template_file" "clusterissuer_prod_dns01_webhook_ovh" {
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
+
+  template = file("${path.module}/kube_objects/clusterissuer.dns01.webhook.ovh.yaml")
+  vars = {
+    certificate_email  = var.certificate_email
+    group_name         = kubernetes_secret.dns_challenge[0].data["groupName"]
+    application_key    = kubernetes_secret.dns_challenge[0].data["applicationKey"]
+    application_secret = kubernetes_secret.dns_challenge[0].data["applicationSecret"]
+    consumer_key       = kubernetes_secret.dns_challenge[0].data["consumerKey"]
+  }
+}
+
+resource "kubectl_manifest" "letsencrypt_prod_dns01_webhook_ovh" {
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
+
+  yaml_body = data.template_file.clusterissuer_prod_dns01_webhook_ovh[0].rendered
+
+  depends_on = [
+    helm_release.cert_manager
+  ]
+}
+# ------ WEBHOOK OVH ------
 
 
 # 3. CERTIFICATE
@@ -120,22 +180,29 @@ data "template_file" "certificate" {
   }
 }
 
+# depends on HTTP01
 resource "kubectl_manifest" "certificate" {
   count = var.cloud_provider == "kob" ? 0 : 1
 
   yaml_body = data.template_file.certificate.rendered
 
-  depends_on = [
-    kubectl_manifest.letsencrypt_prod_http01[0]
-  ]
+  depends_on = [kubectl_manifest.letsencrypt_prod_http01[0]]
 }
 
+# depends on DNS01 AzureDNS
 resource "kubectl_manifest" "certificate_dns01_azuredns" {
-  count = var.cloud_provider == "kob" ? 1 : 0
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
   yaml_body = data.template_file.certificate.rendered
 
-  depends_on = [
-    kubectl_manifest.letsencrypt_prod_dns01_azuredns[0]
-  ]
+  depends_on = [kubectl_manifest.letsencrypt_prod_dns01_azuredns[0]]
+}
+
+# depends on DNS01 Webhook OVH
+resource "kubectl_manifest" "certificate_dns01_webhook_ovh" {
+  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
+
+  yaml_body = data.template_file.certificate.rendered
+
+  depends_on = [kubectl_manifest.letsencrypt_prod_dns01_webhook_ovh[0]]
 }
