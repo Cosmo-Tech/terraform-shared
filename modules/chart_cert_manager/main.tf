@@ -17,7 +17,7 @@ resource "time_sleep" "wait_certmanager_crds" {
 }
 
 
-# 1. CERT-MANAGER
+# 1-0. CERT-MANAGER
 data "template_file" "chart_values_cert_manager" {
   template = file("${path.module}/values-cert_manager.yaml")
   vars = {
@@ -38,13 +38,16 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
-# 1. (ADDITIONAL) CERT-MANAGER webhook chart for OVH
+
+# 1-1. (SITUATIONAL) CERT-MANAGER ADDITIONAL CONFIG FOR SPECIFICS PROVIDERS
+# - OVH: install Helm Chart cert-manager-webhooks-ovh
 data "template_file" "chart_values_webhook_ovh" {
   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "ovh") ? 1 : 0
 
   template = file("${path.module}/values-cert_manager_webhook_ovh.yaml")
   vars = {
-    group_name = kubernetes_secret.dns_challenge[0].data["groupName"]
+    group_name        = kubernetes_secret.dns_challenge[0].data["groupName"]
+    certificate_email = var.certificate_email
   }
 }
 
@@ -61,11 +64,13 @@ resource "helm_release" "cert_manager_webhook_ovh" {
   values = [
     data.template_file.chart_values_webhook_ovh[0].rendered
   ]
+
+  depends_on = [helm_release.cert_manager]
 }
 
 
 # 2. (MAIN) CLUSTER ISSUER HTTP-01
-# HTTP-01 challenges : https://cert-manager.io/docs/configuration/acme/http01/
+# HTTP-01 challenges : https://cert-manager.io/docs/configuration/acme/http01
 data "template_file" "clusterissuer_prod_http01" {
   count = var.cloud_provider == "kob" ? 0 : 1
 
@@ -87,7 +92,7 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
 
 
 # 2. (BIS) CLUSTER ISSUER DNS-01
-# DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01/2
+# DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01
 #
 # Trick here is to duplicate the dns-challenge secret from terraform-onprem from default namespace to cert-manager namespace
 # cert-manager requires to have this secret in its namespace.
@@ -95,9 +100,10 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
 #
 # Workflow is:
 # -> [terraform-onprem] create DNS01 challenge requirements (examples: API keys, Azure App registration etc...)
-# -> [terraform-onprem] create a secret in default/dns-challenge-terraform-onprem which contains the needed values to run a DNS01 challenge on the given provider
+# -> [terraform-onprem] create a secret in default/dns-challenge-terraform-onprem which contains the needed values to run a DNS01 challenge with the given provider
 # -> [terraform-shared] create the cert-manager namespace
 # -> [terraform-shared] copy the secret default/dns-challenge-terraform-onprem to cert-manager/default/dns-challenge
+# -> [terraform-shared] optionnally install custom webhooks
 # -> [terraform-shared] create ClusterIssuer with specifics provider values stored in the cert-manager/default/dns-challenge
 # -> [terraform-shared] run cert-manager to get a certificate
 data "kubernetes_secret" "dns_challenge_terraform_onprem" {

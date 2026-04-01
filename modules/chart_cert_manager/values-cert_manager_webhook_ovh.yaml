@@ -6,14 +6,27 @@ certManager:
 issuers:
   - name: letsencrypt-prod
     create: false
-podLabels:
-  networking/traffic-allowed: "yes"
-nodeSelector:
-  cosmotech.com/tier: services
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+    kind: ClusterIssuer
+    acmeServerUrl: https://acme-v02.api.letsencrypt.org/directory
+    email: ${certificate_email}
+    ovhEndpointName: ovh-eu
+    ovhAuthenticationMethod: application
+    ovhAuthenticationRef:
+      applicationKeyRef:
+        name: dns-challenge
+        key: applicationKey
+      applicationSecretRef:
+        name: dns-challenge
+        key: applicationSecret
+
+# podLabels:
+#   networking/traffic-allowed: "yes"
+# nodeSelector:
+#   cosmotech.com/tier: services
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
