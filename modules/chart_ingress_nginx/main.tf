@@ -1,10 +1,22 @@
-data "template_file" "nginx_values" {
+
+data "template_file" "nginx_values_static" {
   template = file("${path.module}/values.yaml")
   vars = {
-    service_annotations = yamlencode(var.service_annotations)
-    lb_annotations      = yamlencode(var.lb_annotations)
-    platform_lb_ip      = var.platform_lb_ip
+    platform_lb_ip = var.platform_lb_ip
   }
+}
+
+locals {
+  nginx_values_dynamic = yamlencode({
+    controller = {
+      service = {
+        annotations = var.lb_annotations
+      }
+      serviceAccount = {
+        annotations = var.service_annotations
+      }
+    }
+  })
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -15,5 +27,5 @@ resource "helm_release" "nginx_ingress" {
   namespace        = "ingress-nginx"
   create_namespace = true
 
-  values = [data.template_file.nginx_values.rendered]
+  values = [data.template_file.nginx_values_static.rendered, local.nginx_values_dynamic]
 }
