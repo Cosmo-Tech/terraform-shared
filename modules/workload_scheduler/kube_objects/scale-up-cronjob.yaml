@@ -1,0 +1,152 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-up
+  namespace: ${NAMESPACE}
+spec:
+  schedule: ${SCALE_UP_CRON_SCHEDULE}
+  timeZone: ${SCALER_TIME_ZONE}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: scaler-sa
+          restartPolicy: OnFailure
+
+          containers:
+          - name: scaler
+            image: alpine/k8s:1.29.2
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              STATE_FILE=/data/replica-state.json
+
+              if [ ! -f "$STATE_FILE" ]; then
+                echo "State file missing"
+                exit 1
+              fi
+
+              echo "Restoring StatefulSets..."
+              jq -c '.[] | select(.kind=="StatefulSet")' $STATE_FILE | while read -r row; do
+                ns=$(echo "$row" | jq -r '.namespace')
+                name=$(echo "$row" | jq -r '.name')
+                replicas=$(echo "$row" | jq -r '.replicas')
+
+                kubectl scale statefulset "$name" -n "$ns" --replicas="$replicas" || true
+              done
+
+              echo "Waiting for StatefulSets..."
+              sleep 60
+
+              echo "Restoring Deployments..."
+              jq -c '.[] | select(.kind=="Deployment")' $STATE_FILE | while read -r row; do
+                ns=$(echo "$row" | jq -r '.namespace')
+                name=$(echo "$row" | jq -r '.name')
+                replicas=$(echo "$row" | jq -r '.replicas')
+
+                kubectl scale deployment "$name" -n "$ns" --replicas="$replicas" || true
+              done
+
+              echo "Initial restore done."
+
+              echo "Waiting for pods to stabilize (10 min)..."
+              sleep 600
+
+              # Extract ONLY namespaces from state file (IMPORTANT FIX)
+              NAMESPACES=$(jq -r '.[] | .namespace' $STATE_FILE | sort -u)
+
+              if [ -z "$NAMESPACES" ]; then
+                echo "No namespaces found in state file"
+                exit 0
+              fi
+
+              for round in 1 2 3; do
+                echo "Health check round $round..."
+
+                for ns in $NAMESPACES; do
+
+                  case "$ns" in
+                    kube-system|kube-public|kube-node-lease|calico-system|tigera-operator)
+                      continue
+                      ;;
+                  esac
+
+                  # ONLY pods from this namespace (NO cluster-wide scan)
+                  kubectl get pods -n "$ns" -o json | jq -c '.items[]' | while read -r pod; do
+
+                    name=$(echo "$pod" | jq -r '.metadata.name')
+
+                    phase=$(echo "$pod" | jq -r '.status.phase')
+
+                    ready=$(echo "$pod" | jq -r '
+                      [.status.containerStatuses[]?.ready] | all // false
+                    ')
+
+                    restarts=$(echo "$pod" | jq -r '
+                      [.status.containerStatuses[]?.restartCount] | add // 0
+                    ')
+
+                    waiting_reason=$(echo "$pod" | jq -r '
+                      [.status.containerStatuses[]?.state.waiting.reason] 
+                      | map(select(. != null)) 
+                      | .[0] // empty
+                    ')
+
+                    unhealthy=false
+
+                    if [ "$phase" != "Running" ] && [ "$phase" != "Succeeded" ]; then
+                      unhealthy=true
+                    fi
+
+                    if [ "$ready" != "true" ]; then
+                      unhealthy=true
+                    fi
+
+                    if [ "$restarts" -gt 3 ]; then
+                      unhealthy=true
+                    fi
+
+                    if echo "$waiting_reason" | grep -qE "CrashLoopBackOff|ImagePullBackOff|CreateContainerError"; then
+                      unhealthy=true
+                    fi
+
+                    if [ "$unhealthy" = true ]; then
+                      echo "Unhealthy pod: $ns/$name | phase=$phase ready=$ready restarts=$restarts reason=$waiting_reason"
+
+                      owner_kind=$(echo "$pod" | jq -r '.metadata.ownerReferences[0].kind // empty')
+                      owner_name=$(echo "$pod" | jq -r '.metadata.ownerReferences[0].name // empty')
+
+                      # SAFE RECOVERY
+                      if [ "$restarts" -gt 2 ] || [ -n "$waiting_reason" ]; then
+                        echo "Deleting pod $ns/$name"
+                        kubectl delete pod "$name" -n "$ns" --grace-period=10 || true
+                      fi
+
+                      if [ "$owner_kind" = "ReplicaSet" ]; then
+                        deploy=$(echo "$owner_name" | sed 's/-[a-z0-9]\{9,10\}$//')
+                        kubectl rollout restart deployment -n "$ns" "$deploy" || true
+
+                      elif [ "$owner_kind" = "StatefulSet" ]; then
+                        kubectl rollout restart statefulset -n "$ns" "$owner_name" || true
+                      fi
+                    fi
+
+                  done
+                done
+
+                sleep 60
+              done
+
+              echo "Done (restore + self-heal)"
+
+            volumeMounts:
+            - name: state
+              mountPath: /data
+
+          volumes:
+          - name: state
+            persistentVolumeClaim:
+              claimName: replica-state-pvc
