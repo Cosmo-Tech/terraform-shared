@@ -10,11 +10,11 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: scaler-sa
+          serviceAccountName: workload-scheduler
           restartPolicy: OnFailure
 
           containers:
-          - name: scaler
+          - name: workload-scheduler-scaler
             image: alpine/k8s:1.29.2
             command:
             - /bin/sh
@@ -149,4 +149,4 @@ spec:
           volumes:
           - name: state
             persistentVolumeClaim:
-              claimName: replica-state-pvc
+              claimName: pvc-workload-scheduler-scaler-replicas-states

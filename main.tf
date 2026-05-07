@@ -86,10 +86,12 @@ resource "time_sleep" "timer" {
   create_duration = "30s"
 }
 
+
 module "workload_scheduler" {
   source                    = "./modules/workload_scheduler"
   enable_workload_scheduler = local.enable_workload_scheduler
 }
+
 
 module "storageclass" {
   source                  = "./modules/kube_storageclass"

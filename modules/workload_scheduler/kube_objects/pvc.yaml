@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: replica-state-pvc
+  name: pvc-workload-scheduler-scaler-replicas-states
   namespace: ${NAMESPACE}
 spec:
   accessModes:
