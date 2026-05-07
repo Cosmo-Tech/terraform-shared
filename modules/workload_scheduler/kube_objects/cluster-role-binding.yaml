@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: workload-scheduler
+  name: ${MAIN_NAME}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: workload-scheduler
+  name: ${MAIN_NAME}
 subjects:
 - kind: ServiceAccount
-  name: workload-scheduler
+  name: ${MAIN_NAME}
   namespace: default
