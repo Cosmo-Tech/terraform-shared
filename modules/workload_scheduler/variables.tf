@@ -13,13 +13,13 @@ variable "scaler_time_zone" {
 variable "scale_up_cron_schedule" {
   type        = string
   description = "Cron expression for scaling workloads up"
-  default     = "0 09 * * 1-5"
+  default     = "0 05 * * 1-5"
 }
 
 variable "scale_down_cron_schedule" {
   type        = string
   description = "Cron expression for scaling workloads down"
-  default     = "0 18 * * 1-5"
+  default     = "0 19 * * 1-5"
 }
 
 variable "enable_workload_scheduler" {

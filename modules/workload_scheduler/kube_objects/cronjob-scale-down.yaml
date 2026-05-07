@@ -10,11 +10,11 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: scaler-sa
+          serviceAccountName: ${MAIN_NAME}
           restartPolicy: OnFailure
           containers:
-          - name: scaler
-            image: alpine/k8s:1.29.2
+          - name: ${MAIN_NAME}-scaler
+            image: ${SCALER_IMAGE_TAG}
             command:
             - /bin/sh
             - -c
@@ -22,8 +22,6 @@ spec:
               set -e
 
               STATE_FILE=/data/replica-state.json
-
-              EXCLUDED_NAMESPACES="kube-system kube-public kube-node-lease calico-system tigera-operator"
 
               echo "Saving state..."
 
@@ -68,4 +66,4 @@ spec:
           volumes:
           - name: state
             persistentVolumeClaim:
-              claimName: replica-state-pvc
+              claimName: pvc-${MAIN_NAME}-scaler-replica-state
