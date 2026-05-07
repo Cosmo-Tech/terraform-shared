@@ -14,7 +14,7 @@ locals {
     SCALER_TIME_ZONE         = var.scaler_time_zone
     SCALE_UP_CRON_SCHEDULE   = var.scale_up_cron_schedule
     SCALE_DOWN_CRON_SCHEDULE = var.scale_down_cron_schedule
-    SCALER_IMAGE_TAG         = "alpine/k8s:1.29.2"
+    SCALER_IMAGE_TAG         = "alpine/k8s:1.36.0"
   }
 }
 
