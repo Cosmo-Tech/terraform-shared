@@ -1,6 +1,7 @@
 locals {
-  cluster_domain     = "${var.cluster_name}.${var.domain_zone}"
-  storage_class_name = "cosmotech-retain"
+  cluster_domain            = "${var.cluster_name}.${var.domain_zone}"
+  storage_class_name        = "cosmotech-retain"
+  enable_workload_scheduler = true
   persistences = {
     keycloak-postgresql = {
       size      = 10
@@ -83,6 +84,12 @@ module "kube_namespaces" {
 # Timer to wait for storage to be created before continue
 resource "time_sleep" "timer" {
   create_duration = "30s"
+}
+
+
+module "workload_scheduler" {
+  source                    = "./modules/workload_scheduler"
+  enable_workload_scheduler = local.enable_workload_scheduler
 }
 
 

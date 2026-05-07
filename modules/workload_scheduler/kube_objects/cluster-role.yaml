@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ${MAIN_NAME}
+rules:
+# Read workloads
+- apiGroups: ["apps"]
+  resources:
+    - deployments
+    - statefulsets
+  verbs: ["get", "list", "watch", "patch", "update"]
+
+# Scale workloads
+- apiGroups: ["apps"]
+  resources:
+    - deployments/scale
+    - statefulsets/scale
+  verbs: ["get", "update", "patch"]
+
+# Read namespaces
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+
+# Read pods (no delete needed anymore)
+- apiGroups: [""]
+  resources:
+    - pods
+  verbs: ["get", "list", "watch", "delete"]

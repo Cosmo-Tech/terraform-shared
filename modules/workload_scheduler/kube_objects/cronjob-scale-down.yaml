@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-down
+  namespace: ${NAMESPACE}
+spec:
+  schedule: ${SCALE_DOWN_CRON_SCHEDULE}
+  timeZone: ${SCALER_TIME_ZONE}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: ${MAIN_NAME}
+          restartPolicy: OnFailure
+          containers:
+          - name: ${MAIN_NAME}-scaler
+            image: ${SCALER_IMAGE_TAG}
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              STATE_FILE=/data/replica-state.json
+
+              echo "Saving state..."
+
+              kubectl get deploy,statefulset -A -o json | jq '
+              [
+                .items[]
+                | select(.metadata.namespace as $ns
+                    | ($ns != "kube-system"
+                       and $ns != "kube-public"
+                       and $ns != "kube-node-lease"
+                       and $ns != "calico-system"
+                       and $ns != "tigera-operator"))
+                | {
+                    namespace: .metadata.namespace,
+                    kind: .kind,
+                    name: .metadata.name,
+                    replicas: (.spec.replicas // 1)
+                  }
+              ]' > $STATE_FILE
+
+              echo "Scaling down..."
+
+              for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+
+                case "$ns" in
+                  kube-system|kube-public|kube-node-lease|calico-system|tigera-operator)
+                    echo "Skipping $ns"
+                    continue
+                    ;;
+                esac
+
+                kubectl scale deployment --all -n "$ns" --replicas=0 || true
+                kubectl scale statefulset --all -n "$ns" --replicas=0 || true
+              done
+
+              echo "Done."
+
+            volumeMounts:
+            - name: state
+              mountPath: /data
+
+          volumes:
+          - name: state
+            persistentVolumeClaim:
+              claimName: pvc-${MAIN_NAME}-scaler-replica-state
