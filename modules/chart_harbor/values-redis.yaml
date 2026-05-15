@@ -24,10 +24,14 @@ replica:
   persistence:
     enabled: false
   resourcesPreset: "nano"
+image:
+  repository: cosmotech/redis-server-iamguarded
+  pullPolicy: IfNotPresent
 metrics:
   enabled: true
   image:
     repository: cosmotech/prometheus-redis-exporter-iamguarded
+    pullPolicy: IfNotPresent
   service:
     type: ClusterIP
   resourcesPreset: "nano"
@@ -37,9 +41,6 @@ volumePermissions:
     repository: cosmotech/os-shell-iamguarded
     tag: latest
     pullPolicy: IfNotPresent
-image:
-  repository: cosmotech/redis-server-iamguarded
-  pullPolicy: IfNotPresent
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:

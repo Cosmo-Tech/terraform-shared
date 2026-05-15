@@ -149,8 +149,10 @@ module "chart_cert_manager" {
   chart_release    = "cert-manager"
 
   dns_challenge_provider = var.dns_challenge_provider
+  # service_annotations    = local.cloud_identity
   # service_annotations    = tostring(local.cloud_identity)
-  service_annotations = replace(replace(jsonencode(local.cloud_identity), "\"", ""), ":", "=")
+  # service_annotations = replace(replace(jsonencode(local.cloud_identity), "\"", ""), ":", "=")
+  service_annotations = yamlencode(local.cloud_identity)
   cloud_provider      = var.cloud_provider
   cluster_domain      = local.cluster_domain
   certificate_email   = var.certificate_email
@@ -179,6 +181,8 @@ module "chart_harbor" {
   chart_postgresql_name       = var.harbor_postgresql_chart_name
   chart_postgresql_tag        = var.harbor_postgresql_chart_tag
   chart_postgresql_release    = "harbor-postgresql"
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.harbor_postgresql_image_tag
 
   chart_redis_repository = var.harbor_redis_chart_repository
   chart_redis_name       = var.harbor_redis_chart_name
@@ -218,6 +222,8 @@ module "chart_keycloak" {
   chart_postgresql_name       = var.keycloak_postgresql_chart_name
   chart_postgresql_tag        = var.keycloak_postgresql_chart_tag
   chart_postgresql_release    = "keycloak-postgresql"
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.keycloak_postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
   pvc               = "pvc-${local.persistences.keycloak-postgresql["name"]}"
@@ -273,6 +279,9 @@ module "chart_superset" {
   chart_name       = var.superset_chart_name
   chart_tag        = var.superset_chart_tag
   chart_release    = "superset"
+
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.superset_postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
   pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"

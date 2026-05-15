@@ -37,15 +37,18 @@ registry:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/harbor-registry-iamguarded
+    pullPolicy: IfNotPresent
   server:
     image:
       registry: ${IMAGE_REGISTRY}
       repository: cosmotech/harbor-registry-iamguarded
+      pullPolicy: IfNotPresent
     resourcesPreset: "nano"
   controller:
     image:
       registry: ${IMAGE_REGISTRY}
       repository: cosmotech/harbor-registryctl-iamguarded
+      pullPolicy: IfNotPresent
     resourcesPreset: "nano"
   nodeSelector:
     "cosmotech.com/tier": "db"
@@ -77,6 +80,7 @@ portal:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/harbor-portal-iamguarded
+    pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -91,6 +95,7 @@ core:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/harbor-core-iamguarded
+    pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -105,6 +110,7 @@ jobservice:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/harbor-jobservice-iamguarded
+    pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "db"
   tolerations:
@@ -122,6 +128,7 @@ exporter:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/harbor-exporter-iamguarded
+    pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -145,6 +152,7 @@ nginx:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/nginx-iamguarded
+    pullPolicy: IfNotPresent
   resourcesPreset: "nano"
 
 existingSecret: "${SECRET}"

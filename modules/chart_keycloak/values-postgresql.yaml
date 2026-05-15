@@ -12,8 +12,9 @@ primary:
   resourcesPreset: nano
 image:
   # registry: ${IMAGE_REGISTRY}
-  repository: cosmotech/postgres-iamguarded
-  tag: "16"
+  repository: ${POSTGRESQL_IMAGE_REPOSITORY}
+  tag: ${POSTGRESQL_IMAGE_TAG}
+  pullPolicy: IfNotPresent
 volumePermissions:
   enabled: true
   image:

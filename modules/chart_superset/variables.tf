@@ -66,3 +66,10 @@ variable "pvc_postgresql" {
   type = string
 }
 
+variable "postgresql_image_repository" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}

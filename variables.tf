@@ -47,4 +47,3 @@ variable "image_registry_auth_secret_source_namespace" {
   type    = string
   default = "default"
 }
-  

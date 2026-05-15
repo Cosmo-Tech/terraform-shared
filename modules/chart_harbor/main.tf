@@ -13,6 +13,8 @@ locals {
     PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
     IMAGE_REGISTRY                     = var.image_registry
     IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
+    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
   }
 }
 

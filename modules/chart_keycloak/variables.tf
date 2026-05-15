@@ -81,3 +81,11 @@ variable "pvc" {
   description = "Existing PVC name for Keycloak PostgreSQL"
   type        = string
 }
+
+variable "postgresql_image_repository" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}

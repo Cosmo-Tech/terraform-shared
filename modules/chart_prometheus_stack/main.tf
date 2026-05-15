@@ -12,6 +12,8 @@ locals {
     PERSISTENCE_PVC_PROMETHEUS  = var.pvc_prometheus
     PROMETHEUS_ADMIN_PASSWORD   = local.prometheus_admin_password
     REDIS_ADMIN_PASSWORD        = local.redis_admin_password
+    IMAGE_REGISTRY              = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET  = var.image_registry_auth_secret
   }
 }
 

@@ -21,6 +21,7 @@ variable "harbor_chart_tag" { default = "27.0.3" }
 variable "harbor_postgresql_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "harbor_postgresql_chart_name" { default = "postgresql" }
 variable "harbor_postgresql_chart_tag" { default = "17.1.0" }
+variable "harbor_postgresql_image_tag" { default = "16" }
 
 variable "harbor_redis_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "harbor_redis_chart_name" { default = "redis" }
@@ -46,12 +47,13 @@ variable "keycloak_chart_tag" { default = "25.3.2" }
 variable "keycloak_postgresql_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "keycloak_postgresql_chart_name" { default = "postgresql" }
 variable "keycloak_postgresql_chart_tag" { default = "17.1.0" }
+variable "keycloak_postgresql_image_tag" { default = "16" }
 
 
 # kube-prometheus-stack
 variable "prometheusstack_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
-variable "prometheusstack_chart_tag" { default = "85.0.3" }
+variable "prometheusstack_chart_tag" { default = "85.1.0" }
 # variable "prometheusstack_chart_repository" { default = "https://prometheus-community.github.io/helm-charts" }
 # variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
 # variable "prometheusstack_chart_tag" { default = "81.6.2" }
@@ -61,3 +63,8 @@ variable "prometheusstack_chart_tag" { default = "85.0.3" }
 variable "superset_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "superset_chart_name" { default = "superset" }
 variable "superset_chart_tag" { default = "5.0.0" }
+variable "superset_postgresql_image_tag" { default = "17" }
+
+
+# Global
+variable "postgresql_image_repository" { default = "cosmotech/postgres-iamguarded" }

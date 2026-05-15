@@ -1,5 +1,6 @@
 locals {
-  keycloak_secret_name                    = "keycloak-config"
+  keycloak_secret_name_config             = "keycloak-config"
+  keycloak_secret_name_crt                = "keycloak-crt"
   keycloak_admin_user                     = "admin"
   keycloak_admin_password_secret          = "keycloak_admin_password"
   keycloak_postgres_user                  = "keycloak"
@@ -11,7 +12,7 @@ locals {
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_PVC                    = var.pvc
-    KEYCLOAK_SECRET                    = local.keycloak_secret_name
+    KEYCLOAK_SECRET                    = local.keycloak_secret_name_config
     KEYCLOAK_ADMIN_USER                = local.keycloak_admin_user
     KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_admin_password_secret
     POSTGRES_USER                      = local.keycloak_postgres_user
@@ -19,6 +20,8 @@ locals {
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
     IMAGE_REGISTRY                     = var.image_registry
     IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
+    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
   }
 }
 
@@ -41,7 +44,7 @@ resource "random_password" "keycloak_postgres_admin_password" {
 
 resource "kubernetes_secret" "keycloak_config" {
   metadata {
-    name      = local.keycloak_secret_name
+    name      = local.keycloak_secret_name_config
     namespace = var.namespace
     labels = {
       "app" = "keycloak"

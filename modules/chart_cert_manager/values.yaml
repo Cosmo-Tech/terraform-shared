@@ -46,6 +46,7 @@ cainjector:
       memory: 512Mi
   image:
     repository: cosmotech/cert-manager-cainjector-iamguarded
+    pullPolicy: IfNotPresent
 
 controller:
   podLabels:
@@ -70,6 +71,11 @@ controller:
       memory: 512Mi
   image:
     repository: cosmotech/cert-manager-controller-iamguarded
+    pullPolicy: IfNotPresent
+  acmesolver:
+    image:
+      repository: cosmotech/cert-manager-acmesolver-iamguarded
+      pullPolicy: IfNotPresent
 
 webhook:
   podLabels:
@@ -94,6 +100,7 @@ webhook:
       memory: 512Mi
   image:
     repository: cosmotech/cert-manager-webhook-iamguarded
+    pullPolicy: IfNotPresent
 
 startupapicheck:
   nodeSelector:

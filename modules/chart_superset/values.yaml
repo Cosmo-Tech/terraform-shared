@@ -307,7 +307,7 @@ fullnameOverride: ""
 image:
   debug: true
   digest: ""
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   pullSecrets: []
   registry: ghcr.io
   repository: cosmo-tech/superset
@@ -404,7 +404,9 @@ namespaceOverride: ""
 postgresql:
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/postgresql
+    repository: ${POSTGRESQL_IMAGE_REPOSITORY}
+    tag: ${POSTGRESQL_IMAGE_TAG}
+    pullPolicy: IfNotPresent
   architecture: standalone
   auth:
     database: bitnami_superset
@@ -432,6 +434,7 @@ redis:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: cosmotech/redis
+    pullPolicy: IfNotPresent
   architecture: standalone
   auth:
     enabled: true
@@ -766,3 +769,4 @@ global:
   # imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
     - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+  org: cosmotech

@@ -114,3 +114,11 @@ variable "pvc_registry" {
 variable "pvc_jobservice" {
   type = string
 }
+
+variable "postgresql_image_repository" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}
