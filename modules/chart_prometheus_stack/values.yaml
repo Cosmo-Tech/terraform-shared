@@ -2,10 +2,13 @@ namespace: ${NAMESPACE}
 name: cosmotech-api-latest
 labels:
   networking/traffic-allowed: "yes"
+
 defaultRules:
   create: true
+
 kubernetesServiceMonitors:
   enabled: true
+
 alertmanager:
   enabled: true
   alertmanagerSpec:
@@ -21,8 +24,10 @@ alertmanager:
       labels:
         networking/traffic-allowed: "yes"
     resources: {}
+
 windowsMonitoring:
   enabled: false
+
 grafana:
   enabled: true
   adminPassword: ${PROMETHEUS_ADMIN_PASSWORD}
@@ -46,12 +51,20 @@ grafana:
           enabled: false
         etcd:
           enabled: false
+      image:
+        registry: ${IMAGE_REGISTRY}
+        repository: cosmotech/k8s-sidecar
+        tag: latest
     datasources:
       alertmanager:
         enabled: true
         uid: alertmanager
         handleGrafanaManagedAlerts: false
         implementation: prometheus
+      image:
+        registry: ${IMAGE_REGISTRY}
+        repository: cosmotech/k8s-sidecar
+        tag: latest
   grafana.ini:
     server:
       domain: ${COSMOTECH_CLUSTER_DOMAIN}
@@ -133,6 +146,17 @@ grafana:
         url: "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/grafana/customer_success/v1/customer_success.json"
       csm_api:
         url: "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/grafana/cosmotech_api/v1/cosmotech_api.json"
+  downloadDashboardsImage:
+    repository: cosmotech/os-shell-iamguarded
+    tag: latest
+  initChownData:
+    image:
+      repository: cosmotech/os-shell-iamguarded
+      tag: latest
+  image::
+    repository: grafana/grafana-iamguarded
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -149,7 +173,7 @@ coreDns: { enabled: true }
 kubeEtcd: { enabled: true }
 kubeScheduler: { enabled: true }
 kubeStateMetrics:
-  enabled: true
+  enabled: false
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -175,6 +199,10 @@ prometheusOperator:
           operator: "Equal"
           value: "cosmotech"
           effect: "NoSchedule"
+      image:
+        repository: cosmotech/kube-webhook-certgen
+        tag: latest
+        pullPolicy: IfNotPresent
 
 prometheus:
   enabled: true
@@ -211,12 +239,12 @@ prometheus:
             requests:
               storage: "${PERSISTENCE_SIZE_PROMETHEUS}Gi"
     initContainers:
-        - name: volume-permissions
-          image: busybox:1.35   # or any lightweight image
-          command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
-          volumeMounts:
-            - name: prometheus-data   # match your volume name (usually the PVC mount)
-              mountPath: /prometheus            
+      - name: volume-permissions
+        image: cosmotech/os-shell-iamguarded
+        command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
+        volumeMounts:
+          - name: prometheus-data   # match your volume name (usually the PVC mount)
+            mountPath: /prometheus
   additionalServiceMonitors:
     - name: cosmotech-v1
       additionalLabels:
@@ -231,8 +259,10 @@ prometheus:
       selector:
         matchLabels:
           app.kubernetes.io/instance: cosmotech-api-v1
+
 nodeExporter:
   enabled: true
+
 prometheus-node-exporter:
   podLabels:
     jobLabel: node-exporter
@@ -251,5 +281,14 @@ prometheus-node-exporter:
       relabelings: []
   rbac:
     pspEnabled: false
+  image:
+    repository: cosmotech/prometheus-node-exporter-iamguarded
+    tag: latest
+    distroless: false
   nodeSelector:
     "cosmotech.com/tier": "services"
+
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

@@ -32,3 +32,18 @@ variable "dns_challenge_provider" {
   type    = string
   default = null
 }
+
+variable "image_registry_username" {
+  type    = string
+  default = null
+}
+
+variable "image_registry_password" {
+  type    = string
+  default = null
+}
+
+variable "image_registry_auth_secret_source_namespace" {
+  type    = string
+  default = "default"
+}

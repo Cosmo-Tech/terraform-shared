@@ -20,17 +20,21 @@ resource "time_sleep" "wait_certmanager_crds" {
 # 1. CERT-MANAGER
 data "template_file" "cert_values" {
   template = file("${path.module}/values.yaml")
+
   vars = {
-    service_annotations = yamlencode(var.service_annotations)
+    SERVICE_ANNOTATIONS        = var.service_annotations
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
   }
 }
 
 resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "1.11.0"
-  namespace        = "cert-manager"
+  namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
+
   create_namespace = true
 
   values = [
@@ -46,7 +50,8 @@ data "template_file" "clusterissuer_prod_http01" {
 
   template = file("${path.module}/kube_objects/clusterissuer.http01.yaml")
   vars = {
-    certificate_email = var.certificate_email
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
   }
 }
 
@@ -92,12 +97,13 @@ data "template_file" "clusterissuer_prod_dns01_azuredns" {
 
   template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
   vars = {
-    certificate_email   = var.certificate_email
-    client_id           = kubernetes_secret.dns_challenge[0].data["client-id"]
-    subscription_id     = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-    tenant_id           = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-    domain_zone         = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-    resource_group_name = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
+    SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+    TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+    DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+    DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
   }
 }
 

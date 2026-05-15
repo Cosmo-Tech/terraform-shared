@@ -8,11 +8,6 @@ locals {
       name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
     }
-    # lokistack-loki = {
-    #   size      = 50
-    #   name      = "${var.cluster_name}-lokistack-loki"
-    #   namespace = "monitoring"
-    # }
     prometheusstack-prometheus = {
       size      = 100
       name      = "${var.cluster_name}-prometheusstack-prometheus"
@@ -43,16 +38,6 @@ locals {
       name      = "${var.cluster_name}-harbor-jobservice"
       namespace = "harbor"
     }
-    # harbor-chartmuseum = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-harbor-chartmuseum"
-    #   namespace = "harbor"
-    # }
-    # harbor-trivy = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-harbor-trivy"
-    #   namespace = "harbor"
-    # }
     superset-postgresql = {
       size      = 10
       name      = "${var.cluster_name}-superset-postgresql"
@@ -67,6 +52,17 @@ locals {
 }
 
 
+module "registry_authentication" {
+  source = "./modules/registry_authentication"
+
+  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
+  image_registry                              = var.image_registry
+  image_registry_auth_secret                  = var.image_registry_auth_secret
+  image_registry_username                     = var.image_registry_username
+  image_registry_password                     = var.image_registry_password
+}
+
+
 module "kube_namespaces" {
   source = "./modules/kube_namespaces"
 
@@ -74,27 +70,46 @@ module "kube_namespaces" {
     "ingress-nginx",
     "cert-manager",
     "monitoring",
-    "redis",
     "keycloak",
     "harbor",
     "superset"
   ]
+
+  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
+  image_registry                              = var.image_registry
+  image_registry_auth_secret                  = var.image_registry_auth_secret
+
+  depends_on = [
+    module.registry_authentication,
+  ]
 }
 
-# Timer to wait for storage to be created before continue
+
+# Timer to wait for storage to be created before continue.
+# Also used a general gateway before install next modules.
 resource "time_sleep" "timer" {
   create_duration = "30s"
+
+  depends_on = [
+    module.registry_authentication,
+  ]
 }
 
 
 module "workload_scheduler" {
-  source                    = "./modules/workload_scheduler"
+  source = "./modules/workload_scheduler"
+
   enable_workload_scheduler = local.enable_workload_scheduler
+
+  depends_on = [
+    time_sleep.timer,
+  ]
 }
 
 
 module "storageclass" {
-  source                  = "./modules/kube_storageclass"
+  source = "./modules/kube_storageclass"
+
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   deploy_storageclass     = true
@@ -123,35 +138,24 @@ module "chart_ingress_nginx" {
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
 
+  namespace = "cert-manager"
+
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
+
+  chart_repository = var.certmanager_chart_repository
+  chart_name       = var.certmanager_chart_name
+  chart_tag        = var.certmanager_chart_tag
+  chart_release    = "cert-manager"
+
   dns_challenge_provider = var.dns_challenge_provider
-  service_annotations    = local.cloud_identity
-  cloud_provider         = var.cloud_provider
-  cluster_domain         = local.cluster_domain
-  certificate_email      = var.certificate_email
-
-  depends_on = [
-    module.kube_namespaces,
-    module.chart_ingress_nginx,
-  ]
-}
-
-
-module "chart_superset" {
-  source = "./modules/chart_superset"
-
-  namespace                = "superset"
-  cluster_domain           = local.cluster_domain
-  superset_cluster_domain  = "superset-${local.cluster_domain}"
-  helm_repo                = "https://charts.bitnami.com/bitnami"
-  helm_chart               = "superset"
-  helm_chart_version       = "5.0.0"
-  superset_connect_timeout = "30s"
-  superset_query_timeout   = "60s"
-  superset_buffer_size     = "16K"
-  superset_max_file_size   = "5m"
-  pvc_storage_class        = local.storage_class_name
-  pvc_redis                = "pvc-${local.persistences.superset-redis["name"]}"
-  pvc_postgresql           = "pvc-${local.persistences.superset-postgresql["name"]}"
+  # service_annotations    = local.cloud_identity
+  # service_annotations    = tostring(local.cloud_identity)
+  # service_annotations = replace(replace(jsonencode(local.cloud_identity), "\"", ""), ":", "=")
+  service_annotations = yamlencode(local.cloud_identity)
+  cloud_provider      = var.cloud_provider
+  cluster_domain      = local.cluster_domain
+  certificate_email   = var.certificate_email
 
   depends_on = [
     module.kube_namespaces,
@@ -165,27 +169,33 @@ module "chart_harbor" {
 
   namespace = "harbor"
 
-  cluster_domain = local.cluster_domain
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
 
-  harbor_helm_repo          = "oci://registry-1.docker.io/bitnamicharts"
-  harbor_helm_chart         = "harbor"
-  harbor_helm_chart_version = "26.8.5"
+  chart_harbor_repository = var.harbor_chart_repository
+  chart_harbor_name       = var.harbor_chart_name
+  chart_harbor_tag        = var.harbor_chart_tag
+  chart_harbor_release    = "harbor"
 
-  postgres_helm_repo          = "https://charts.bitnami.com/bitnami"
-  postgres_helm_chart         = "postgresql"
-  postgres_helm_chart_version = "15.5.1"
+  chart_postgresql_repository = var.harbor_postgresql_chart_repository
+  chart_postgresql_name       = var.harbor_postgresql_chart_name
+  chart_postgresql_tag        = var.harbor_postgresql_chart_tag
+  chart_postgresql_release    = "harbor-postgresql"
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.harbor_postgresql_image_tag
 
-  redis_helm_repo          = "https://charts.bitnami.com/bitnami"
-  redis_helm_chart         = "redis"
-  redis_helm_chart_version = "17.3.14"
+  chart_redis_repository = var.harbor_redis_chart_repository
+  chart_redis_name       = var.harbor_redis_chart_name
+  chart_redis_tag        = var.harbor_redis_chart_tag
+  chart_redis_release    = "harbor-redis"
 
   pvc_storage_class = local.storage_class_name
   pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
   pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
   pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
   pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
-  # pvc_chartmuseum   = "pvc-${local.persistences.harbor-chartmuseum["name"]}"
-  # pvc_trivy         = "pvc-${local.persistences.harbor-trivy["name"]}"
+
+  cluster_domain = local.cluster_domain
 
   depends_on = [
     module.kube_namespaces,
@@ -200,18 +210,25 @@ module "chart_keycloak" {
 
   namespace = "keycloak"
 
-  keycloak_ingress_hostname = local.cluster_domain
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
+
+  chart_keycloak_repository = var.keycloak_chart_repository
+  chart_keycloak_name       = var.keycloak_chart_name
+  chart_keycloak_tag        = var.keycloak_chart_tag
+  chart_keycloak_release    = "keycloak"
+
+  chart_postgresql_repository = var.keycloak_postgresql_chart_repository
+  chart_postgresql_name       = var.keycloak_postgresql_chart_name
+  chart_postgresql_tag        = var.keycloak_postgresql_chart_tag
+  chart_postgresql_release    = "keycloak-postgresql"
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.keycloak_postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
   pvc               = "pvc-${local.persistences.keycloak-postgresql["name"]}"
 
-  keycloak_helm_repo          = "https://charts.bitnami.com/bitnami"
-  keycloak_helm_chart         = "keycloak"
-  keycloak_helm_chart_version = "21.3.1"
-
-  postgres_helm_repo          = "https://charts.bitnami.com/bitnami"
-  postgres_helm_chart         = "postgresql"
-  postgres_helm_chart_version = "15.5.1"
+  keycloak_ingress_hostname = local.cluster_domain
 
   depends_on = [
     module.kube_namespaces,
@@ -221,53 +238,65 @@ module "chart_keycloak" {
 }
 
 
-# module "chart_loki_stack" {
-#   source = "./modules/chart_loki_stack"
-
-#   namespace = "monitoring"
-
-#   helm_repo_url      = "https://grafana.github.io/helm-charts"
-#   helm_chart_name    = "loki-stack"
-#   helm_chart_version = "2.10.2"
-#   helm_release_name  = "loki"
-
-#   # pvc_storage_class = local.storage_class_name
-#   # pvc_loki          = "pvc-${local.persistences.lokistack-loki["name"]}"
-#   # size_loki         = local.persistences.lokistack-loki["size"]
-#   # pvc_grafana       = "pvc-${local.persistences.lokistack-grafana["name"]}"
-#   # size_grafana      = local.persistences.lokistack-grafana["size"]
-
-#   depends_on = [
-#     module.kube_namespaces,
-#     module.storageclass,
-#     module.chart_ingress_nginx,
-#   ]
-# }
-
-
 module "chart_prometheus_stack" {
   source = "./modules/chart_prometheus_stack"
 
   namespace = "monitoring"
 
-  cluster_domain = local.cluster_domain
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
 
-  helm_repo_url      = "https://prometheus-community.github.io/helm-charts"
-  helm_release_name  = "kube-prometheus-stack"
-  helm_chart_name    = "kube-prometheus-stack"
-  helm_chart_version = "81.6.2"
+  chart_repository = var.prometheusstack_chart_repository
+  chart_name       = var.prometheusstack_chart_name
+  chart_tag        = var.prometheusstack_chart_tag
+  chart_release    = "kube-prometheus-stack"
 
   pvc_storage_class = local.storage_class_name
-  # size              = 100
-  # NOTE: kube-prometheus-stack 65.1.0 is not able to claim an existing PV, newers versions can handle it.
-  size_prometheus = local.persistences.prometheusstack-prometheus["size"]
-  pvc_prometheus  = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
-  size_grafana    = local.persistences.prometheusstack-grafana["size"]
-  pvc_grafana     = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+  size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
+  pvc_prometheus    = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  size_grafana      = local.persistences.prometheusstack-grafana["size"]
+  pvc_grafana       = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+
+  cluster_domain = local.cluster_domain
 
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
+    module.chart_ingress_nginx,
+  ]
+}
+
+
+module "chart_superset" {
+  source = "./modules/chart_superset"
+
+  namespace = "superset"
+
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
+
+  chart_repository = var.superset_chart_repository
+  chart_name       = var.superset_chart_name
+  chart_tag        = var.superset_chart_tag
+  chart_release    = "superset"
+
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.superset_postgresql_image_tag
+
+  pvc_storage_class = local.storage_class_name
+  pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"
+  pvc_postgresql    = "pvc-${local.persistences.superset-postgresql["name"]}"
+
+  cluster_domain          = local.cluster_domain
+  superset_cluster_domain = "superset-${local.cluster_domain}"
+
+  superset_connect_timeout = "30s"
+  superset_query_timeout   = "60s"
+  superset_buffer_size     = "16K"
+  superset_max_file_size   = "5m"
+
+  depends_on = [
+    module.kube_namespaces,
     module.chart_ingress_nginx,
   ]
 }

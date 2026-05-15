@@ -2,6 +2,72 @@ variable "namespace" {
   type = string
 }
 
+variable "image_registry" {
+  type = string
+}
+
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+
+# -- Harbor itself
+variable "chart_harbor_repository" {
+  type = string
+}
+
+variable "chart_harbor_name" {
+  type = string
+}
+
+variable "chart_harbor_tag" {
+  type = string
+}
+
+variable "chart_harbor_release" {
+  type = string
+}
+# -- Harbor itself
+
+
+# -- Harbor PostgreSQL
+variable "chart_postgresql_repository" {
+  type = string
+}
+
+variable "chart_postgresql_name" {
+  type = string
+}
+
+variable "chart_postgresql_tag" {
+  type = string
+}
+
+variable "chart_postgresql_release" {
+  type = string
+}
+# -- Harbor PostgreSQL
+
+
+# -- Harbor Redis
+variable "chart_redis_repository" {
+  type = string
+}
+
+variable "chart_redis_name" {
+  type = string
+}
+
+variable "chart_redis_tag" {
+  type = string
+}
+
+variable "chart_redis_release" {
+  type = string
+}
+# -- Harbor Redis
+
+
 variable "harbor_postgres_user" {
   description = "PostgreSQL username for harbor"
   type        = string
@@ -23,42 +89,6 @@ variable "harbor_postgres_admin_password" {
 variable "harbor_admin_password" {
   type    = string
   default = ""
-}
-
-variable "harbor_helm_repo" {
-  type = string
-}
-
-variable "harbor_helm_chart" {
-  type = string
-}
-
-variable "harbor_helm_chart_version" {
-  type = string
-}
-
-variable "postgres_helm_repo" {
-  type = string
-}
-
-variable "postgres_helm_chart" {
-  type = string
-}
-
-variable "postgres_helm_chart_version" {
-  type = string
-}
-
-variable "redis_helm_repo" {
-  type = string
-}
-
-variable "redis_helm_chart" {
-  type = string
-}
-
-variable "redis_helm_chart_version" {
-  type = string
 }
 
 variable "cluster_domain" {
@@ -85,10 +115,10 @@ variable "pvc_jobservice" {
   type = string
 }
 
-# variable "pvc_chartmuseum" {
-#   type = string
-# }
+variable "postgresql_image_repository" {
+  type = string
+}
 
-# variable "pvc_trivy" {
-#   type = string
-# }
+variable "postgresql_image_tag" {
+  type = string
+}

@@ -12,16 +12,19 @@ locals {
     PERSISTENCE_PVC_PROMETHEUS  = var.pvc_prometheus
     PROMETHEUS_ADMIN_PASSWORD   = local.prometheus_admin_password
     REDIS_ADMIN_PASSWORD        = local.redis_admin_password
+    IMAGE_REGISTRY              = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET  = var.image_registry_auth_secret
   }
 }
 
 
 resource "helm_release" "prometheus_stack" {
-  name             = var.helm_release_name
-  repository       = var.helm_repo_url
-  chart            = var.helm_chart_name
-  version          = var.helm_chart_version
-  namespace        = var.namespace
+  namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
+
   create_namespace = false
 
   timeout      = 600

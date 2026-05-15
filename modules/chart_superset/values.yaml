@@ -304,19 +304,10 @@ flower:
   updateStrategy:
     type: RollingUpdate
 fullnameOverride: ""
-global:
-  compatibility:
-    openshift:
-      adaptSecurityContext: auto
-  imagePullSecrets: []
-  imageRegistry: ""
-  storageClass: "${PERSISTENCE_STORAGE_CLASS}"
-  security:
-    allowInsecureImages: true
 image:
   debug: true
   digest: ""
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   pullSecrets: []
   registry: ghcr.io
   repository: cosmo-tech/superset
@@ -412,7 +403,10 @@ nameOverride: ""
 namespaceOverride: ""
 postgresql:
   image:
-    repository: bitnamilegacy/postgresql
+    registry: ${IMAGE_REGISTRY}
+    repository: ${POSTGRESQL_IMAGE_REPOSITORY}
+    tag: ${POSTGRESQL_IMAGE_TAG}
+    pullPolicy: IfNotPresent
   architecture: standalone
   auth:
     database: bitnami_superset
@@ -438,7 +432,9 @@ postgresql:
       existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
 redis:
   image:
-    repository: bitnamilegacy/redis
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/redis
+    pullPolicy: IfNotPresent
   architecture: standalone
   auth:
     enabled: true
@@ -764,3 +760,13 @@ worker:
   topologySpreadConstraints: []
   updateStrategy:
     type: RollingUpdate
+global:
+  compatibility:
+    openshift:
+      adaptSecurityContext: auto
+  imagePullSecrets: []
+  storageClass: "${PERSISTENCE_STORAGE_CLASS}"
+  # imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+  org: cosmotech

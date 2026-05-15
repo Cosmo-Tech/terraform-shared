@@ -5,17 +5,17 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: ${certificate_email}
+    email: ${CERTIFICATE_EMAIL}
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
     - dns01:
         azureDNS:
-          hostedZoneName: ${domain_zone}                  # your DNS zone
-          resourceGroupName: ${resource_group_name}       # Azure RG containing the zone
-          subscriptionID: ${subscription_id}
-          tenantID: ${tenant_id}
-          clientID: ${client_id}
+          hostedZoneName: ${DOMAIN_ZONE}                  # your DNS zone
+          resourceGroupName: ${DOMAIN_ZONE_RESOURCE_GROUP}            # Azure Resource Group containing the zone
+          subscriptionID: ${SUBSCRIPTION_ID}
+          tenantID: ${TENANT_ID}
+          clientID: ${CLIENT_ID}
           clientSecretSecretRef:
             name: dns-challenge                           # this secret is being created from terraform-onprem
             key: client-secret
@@ -31,3 +31,5 @@ spec:
                 effect: "NoSchedule"
               nodeSelector:
                 "cosmotech.com/tier": "services"
+              imagePullSecrets:
+                - name: ${IMAGE_REGISTRY_AUTH_SECRET}
