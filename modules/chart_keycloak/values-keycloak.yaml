@@ -1,13 +1,13 @@
 production: true
-proxy: "edge"
-httpRelativePath: "/keycloak/"
-auth: 
+proxy: edge
+httpRelativePath: /keycloak/
+auth:
   existingSecret: ${KEYCLOAK_SECRET}
   adminUser: ${KEYCLOAK_ADMIN_USER}
   passwordSecretKey: ${KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY}
 ingress:
   enabled: true
-  servicePort: "http"
+  servicePort: http
   hostname: ${INGRESS_HOSTNAME}
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -16,26 +16,27 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
     nginx.ingress.kubernetes.io/proxy-buffer-size: 2m
-    nginx.org/client-max-body-size: "0"
+    nginx.org/client-max-body-size: 0
 postgresql:
   enabled: false
 externalDatabase:
-  database: "keycloak_db"
-  host: "keycloak-postgresql.${NAMESPACE}.svc.cluster.local"
+  database: keycloak_db
+  host: keycloak-postgresql.${NAMESPACE}.svc.cluster.local
   user: ${POSTGRES_USER}
   existingSecret: ${KEYCLOAK_SECRET}
   existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
 nodeSelector:
-  "cosmotech.com/tier": "services"
+  cosmotech.com/tier: services
 tolerations:
-- key: "vendor"
-  operator: "Equal"
-  value: "cosmotech"
-  effect: "NoSchedule"
+- key: vendor
+  operator: Equal
+  value: cosmotech
+  effect: NoSchedule
 commonLabels:
-  "networking/traffic-allowed": "yes"
-global:
-  security:
-    allowInsecureImages: true
+  networking/traffic-allowed: "yes"
 image:
-  repository: "bitnamilegacy/keycloak"  
+  repository: cosmotech/keycloak
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

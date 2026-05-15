@@ -1,9 +1,3 @@
-# values.yaml for Bitnami Redis (single instance for Harbor)
-global:
-  security:
-    allowInsecureImages: true
-  redis:
-    password: ""
 architecture: "standalone" 
 auth:
   enabled: false
@@ -33,20 +27,22 @@ replica:
 metrics:
   enabled: true
   image:
-    repository: bitnamilegacy/redis-exporter
-    tag: 1.45.0-debian-11-r11
+    repository: cosmotech/redis-exporter-iamguarded
   service:
     type: ClusterIP
   resourcesPreset: "nano"
 volumePermissions:
   enabled: true
   image:
-    registry: docker.io
-    repository: bitnamilegacy/os-shell
+    repository: cosmotech/os-shell-iamguarded
     tag: latest
     pullPolicy: IfNotPresent
-    pullSecrets: []
-  resourcesPreset: "nano"
 image:
-  repository: "bitnamilegacy/redis"
+  repository: cosmotech/redis-server-iamguarded
   pullPolicy: IfNotPresent
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+  redis:
+    password: ""

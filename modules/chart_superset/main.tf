@@ -27,6 +27,8 @@ locals {
     PERSISTENCE_STORAGE_CLASS       = var.pvc_storage_class
     PERSISTENCE_REDIS_PVC           = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC      = var.pvc_postgresql
+    IMAGE_REGISTRY                  = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET      = var.image_registry_auth_secret
   }
 }
 
@@ -163,11 +165,11 @@ resource "kubernetes_config_map" "superset_config_map" {
 
 ## Superset Helm Chart
 resource "helm_release" "superset" {
-  name       = "superset"
-  repository = var.helm_repo
-  chart      = var.helm_chart
-  version    = var.helm_chart_version
   namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
 
   values = [
     templatefile("${path.module}/values.yaml", local.chart_values)

@@ -1,6 +1,3 @@
-global:
-  security:
-    allowInsecureImages: true
 externalURL: http://${CLUSTER_DOMAIN}
 exposureType: ingress
 service:
@@ -33,28 +30,22 @@ persistence:
     jobservice:
       existingClaim: "${PERSISTENCE_JOBSERVICE_PVC}"
       subPath: jobservice
-    # chartmuseum:
-    #   existingClaim: "PERSISTENCE_CHARTMUSEUM_PVC}"
-    #   subPath: chartmuseum
-    # trivy:
-    #   existingClaim: "PERSISTENCE_TRIVY_PVC}"
-    #   subPath: trivy
 registry:
   storage:
     filesystem:
       rootdirectory: /harbor-data
   image:
-    repository: bitnamilegacy/harbor-registry
-    tag: 2.13.2-debian-12-r2
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/harbor-registry-iamguarded
   server:
     image:
-      repository: bitnamilegacy/harbor-registry
-      tag: 2.13.2-debian-12-r2
+      registry: ${IMAGE_REGISTRY}
+      repository: cosmotech/harbor-registry-iamguarded
     resourcesPreset: "nano"
   controller:
     image:
-      repository: bitnamilegacy/harbor-registryctl
-      tag: 2.13.2-debian-12-r2
+      registry: ${IMAGE_REGISTRY}
+      repository: cosmotech/harbor-registryctl-iamguarded
     resourcesPreset: "nano"
   nodeSelector:
     "cosmotech.com/tier": "db"
@@ -63,37 +54,6 @@ registry:
       operator: Equal
       value: cosmotech
       effect: NoSchedule
-
-trivy:
-  enabled: false
-  # image:
-  #   repository: bitnamilegacy/trivy
-  #   tag: 2.13.2-debian-12-r2
-  # securityContext:
-  #   runAsUser: 10000
-  #   fsGroup: 10000
-  # initContainers:
-  #   - name: init-cache
-  #     image: busybox:1.35
-  #     securityContext:
-  #       runAsUser: 0
-  #     command: ['sh', '-c']
-  #     args:
-  #       - |
-  #         mkdir -p /home/scanner/.cache/trivy
-  #         chown -R 10000:10000 /home/scanner/.cache/trivy
-  #         chmod -R 755 /home/scanner/.cache/trivy
-  #     volumeMounts:
-  #       - name: trivy
-  #         mountPath: /home/scanner/.cache/trivy
-  # nodeSelector:
-  #   "cosmotech.com/tier": "db"
-  # tolerations:
-  #   - key: vendor
-  #     operator: Equal
-  #     value: cosmotech
-  #     effect: NoSchedule
-  # resourcesPreset: "nano"
 
 externalDatabase:
   host: harbor-postgresql.${NAMESPACE}.svc.cluster.local
@@ -115,8 +75,8 @@ redis:
 portal:
   replicas: 1
   image:
-    repository: bitnamilegacy/harbor-portal
-    tag: 2.13.2-debian-12-r2
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/harbor-portal-iamguarded
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -129,8 +89,8 @@ portal:
 core:
   replicas: 1
   image:
-    repository: bitnamilegacy/harbor-core
-    tag: 2.13.2-debian-12-r2
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/harbor-core-iamguarded
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -143,8 +103,8 @@ core:
 jobservice:
   replicas: 1
   image:
-    repository: bitnamilegacy/harbor-jobservice
-    tag: 2.13.2-debian-12-r2
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/harbor-jobservice-iamguarded
   nodeSelector:
     "cosmotech.com/tier": "db"
   tolerations:
@@ -154,30 +114,14 @@ jobservice:
       effect: NoSchedule
   resourcesPreset: "nano"
 
-chartmuseum:
-  enabled: false
-  # image:
-  #   repository: bitnamilegacy/harbor-chartmuseum
-  #   tag: 0.15.0-debian-11-r84
-  # nodeSelector:
-  #   "cosmotech.com/tier": "db"
-  # tolerations:
-  #   - key: vendor
-  #     operator: Equal
-  #     value: cosmotech
-  #     effect: NoSchedule
-
-notary:
-  enabled: false
-
 exporter:
   enabled: true
   core:
       host: harbor-core.${NAMESPACE}.svc.cluster.local
       port: 8080  
   image:
-    repository: bitnamilegacy/harbor-exporter
-    tag: 2.13.2-debian-12-r2
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/harbor-exporter-iamguarded
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -187,11 +131,20 @@ exporter:
       effect: NoSchedule
   resourcesPreset: "nano"
 
+chartmuseum:
+  enabled: false
+
+notary:
+  enabled: false
+
+trivy:
+  enabled: false
+
 nginx:
   enabled: true
   image:
-    repository: bitnamilegacy/nginx
-    tag: 1.29.0-debian-12-r0
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/nginx-iamguarded
   resourcesPreset: "nano"
 
 existingSecret: "${SECRET}"
@@ -201,3 +154,8 @@ metrics:
   enabled: true
 internalTLS:
   enabled: false
+
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

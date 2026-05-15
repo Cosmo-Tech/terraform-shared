@@ -17,6 +17,8 @@ locals {
     POSTGRES_USER                      = local.keycloak_postgres_user
     POSTGRES_PASSWORD_SECRET_KEY       = local.keycloak_postgres_user_password_secret
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
+    IMAGE_REGISTRY                     = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
   }
 }
 
@@ -59,11 +61,11 @@ resource "kubernetes_secret" "keycloak_config" {
 
 
 resource "helm_release" "postgresql" {
-  name       = "keycloak-postgresql"
-  repository = var.postgres_helm_repo
-  chart      = var.postgres_helm_chart
-  version    = var.postgres_helm_chart_version
   namespace  = var.namespace
+  name       = var.chart_postgresql_release
+  repository = var.chart_postgresql_repository
+  chart      = var.chart_postgresql_name
+  version    = var.chart_postgresql_tag
 
   values = [
     templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
@@ -72,11 +74,11 @@ resource "helm_release" "postgresql" {
 
 
 resource "helm_release" "keycloak" {
-  name       = "keycloak"
-  repository = var.keycloak_helm_repo
-  chart      = var.keycloak_helm_chart
-  version    = var.keycloak_helm_chart_version
   namespace  = var.namespace
+  name       = var.chart_keycloak_release
+  repository = var.chart_keycloak_repository
+  chart      = var.chart_keycloak_name
+  version    = var.chart_keycloak_tag
 
   values = [
     templatefile("${path.module}/values-keycloak.yaml", local.chart_values)

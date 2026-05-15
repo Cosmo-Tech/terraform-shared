@@ -21,7 +21,7 @@ resources:
 serviceAccount:
   create: false
   annotations: |
-    ${service_annotations}
+    ${SERVICE_ANNOTATIONS}
 
 cainjector:
   podLabels:
@@ -44,6 +44,32 @@ cainjector:
     limits:
       cpu: 500m
       memory: 512Mi
+  image:
+    repository: cosmotech/cert-manager-cainjector-iamguarded
+
+controller:
+  podLabels:
+    networking/traffic-allowed: "yes"
+  nodeSelector:
+    cosmotech.com/tier: services
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    - key: "cosmotech.com/tier"
+      operator: "Equal"
+      value: "services"
+      effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  image:
+    repository: cosmotech/cert-manager-controller-iamguarded
 
 webhook:
   podLabels:
@@ -66,6 +92,8 @@ webhook:
     limits:
       cpu: 500m
       memory: 512Mi
+  image:
+    repository: cosmotech/cert-manager-webhook-iamguarded
 
 startupapicheck:
   nodeSelector:
@@ -86,3 +114,8 @@ startupapicheck:
     limits:
       cpu: 500m
       memory: 512Mi
+
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

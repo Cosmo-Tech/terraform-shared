@@ -304,15 +304,6 @@ flower:
   updateStrategy:
     type: RollingUpdate
 fullnameOverride: ""
-global:
-  compatibility:
-    openshift:
-      adaptSecurityContext: auto
-  imagePullSecrets: []
-  imageRegistry: ""
-  storageClass: "${PERSISTENCE_STORAGE_CLASS}"
-  security:
-    allowInsecureImages: true
 image:
   debug: true
   digest: ""
@@ -412,7 +403,8 @@ nameOverride: ""
 namespaceOverride: ""
 postgresql:
   image:
-    repository: bitnamilegacy/postgresql
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/postgresql
   architecture: standalone
   auth:
     database: bitnami_superset
@@ -438,7 +430,8 @@ postgresql:
       existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
 redis:
   image:
-    repository: bitnamilegacy/redis
+    registry: ${IMAGE_REGISTRY}
+    repository: cosmotech/redis
   architecture: standalone
   auth:
     enabled: true
@@ -764,3 +757,12 @@ worker:
   topologySpreadConstraints: []
   updateStrategy:
     type: RollingUpdate
+global:
+  compatibility:
+    openshift:
+      adaptSecurityContext: auto
+  imagePullSecrets: []
+  storageClass: "${PERSISTENCE_STORAGE_CLASS}"
+  # imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

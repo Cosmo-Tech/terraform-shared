@@ -20,17 +20,21 @@ resource "time_sleep" "wait_certmanager_crds" {
 # 1. CERT-MANAGER
 data "template_file" "cert_values" {
   template = file("${path.module}/values.yaml")
+
   vars = {
-    service_annotations = yamlencode(var.service_annotations)
+    SERVICE_ANNOTATIONS        = yamlencode(var.service_annotations)
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
   }
 }
 
 resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "1.11.0"
-  namespace        = "cert-manager"
+  namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
+
   create_namespace = true
 
   values = [
