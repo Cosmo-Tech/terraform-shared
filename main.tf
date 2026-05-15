@@ -85,7 +85,6 @@ module "kube_namespaces" {
     "ingress-nginx",
     "cert-manager",
     "monitoring",
-    "redis",
     "keycloak",
     "harbor",
     "superset"

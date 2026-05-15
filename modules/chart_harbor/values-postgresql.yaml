@@ -10,15 +10,16 @@ primary:
       value: "cosmotech"
       effect: "NoSchedule"
   resourcesPreset: "nano"
+image:
+  # registry: ${IMAGE_REGISTRY}
+  repository: cosmotech/postgres-iamguarded
+  tag: "16"
 volumePermissions:
   enabled: true
   image:
     repository: cosmotech/os-shell-iamguarded
     tag: latest
     pullPolicy: IfNotPresent
-image:
-  # registry: ${IMAGE_REGISTRY}
-  repository: cosmotech/postgresql-iamguarded
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:

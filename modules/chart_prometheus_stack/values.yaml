@@ -175,6 +175,9 @@ prometheusOperator:
           operator: "Equal"
           value: "cosmotech"
           effect: "NoSchedule"
+      image:
+        repository: cosmotech/kube-webhook-certgen
+        tag: "1"
 
 prometheus:
   enabled: true

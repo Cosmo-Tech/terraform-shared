@@ -67,7 +67,7 @@ postgresql:
   enabled: false
 
 externalRedis:
-  host: redis-master.${NAMESPACE}.svc.cluster.local
+  host: harbor-redis-master.${NAMESPACE}.svc.cluster.local
   port: 6379
 redis:
   enabled: false

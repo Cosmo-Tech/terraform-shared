@@ -11,7 +11,9 @@ primary:
       effect: NoSchedule
   resourcesPreset: nano
 image:
-  repository: cosmotech/postgresql
+  # registry: ${IMAGE_REGISTRY}
+  repository: cosmotech/postgres-iamguarded
+  tag: "16"
 volumePermissions:
   enabled: true
   image:

@@ -11,6 +11,7 @@ resource "kubernetes_namespace" "this" {
   }
 }
 
+
 # Copy the registry auth secret
 data "kubernetes_secret" "registry_auth" {
   metadata {
@@ -33,4 +34,10 @@ resource "kubernetes_secret" "registry_auth" {
   }
 
   type = "kubernetes.io/dockerconfigjson"
+
+
+  depends_on = [
+    kubernetes_namespace.this,
+    data.kubernetes_secret.registry_auth
+  ]
 }

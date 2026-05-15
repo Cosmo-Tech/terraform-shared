@@ -27,7 +27,7 @@ replica:
 metrics:
   enabled: true
   image:
-    repository: cosmotech/redis-exporter-iamguarded
+    repository: cosmotech/prometheus-redis-exporter-iamguarded
   service:
     type: ClusterIP
   resourcesPreset: "nano"
