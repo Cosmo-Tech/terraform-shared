@@ -8,11 +8,6 @@ locals {
       name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
     }
-    # lokistack-loki = {
-    #   size      = 50
-    #   name      = "${var.cluster_name}-lokistack-loki"
-    #   namespace = "monitoring"
-    # }
     prometheusstack-prometheus = {
       size      = 100
       name      = "${var.cluster_name}-prometheusstack-prometheus"
@@ -43,16 +38,6 @@ locals {
       name      = "${var.cluster_name}-harbor-jobservice"
       namespace = "harbor"
     }
-    # harbor-chartmuseum = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-harbor-chartmuseum"
-    #   namespace = "harbor"
-    # }
-    # harbor-trivy = {
-    #   size      = 10
-    #   name      = "${var.cluster_name}-harbor-trivy"
-    #   namespace = "harbor"
-    # }
     superset-postgresql = {
       size      = 10
       name      = "${var.cluster_name}-superset-postgresql"
@@ -245,30 +230,6 @@ module "chart_keycloak" {
     module.chart_ingress_nginx,
   ]
 }
-
-
-# module "chart_loki_stack" {
-#   source = "./modules/chart_loki_stack"
-
-#   namespace = "monitoring"
-
-#   helm_repo_url      = "https://grafana.github.io/helm-charts"
-#   helm_chart_name    = "loki-stack"
-#   helm_chart_version = "2.10.2"
-#   helm_release_name  = "loki"
-
-#   # pvc_storage_class = local.storage_class_name
-#   # pvc_loki          = "pvc-${local.persistences.lokistack-loki["name"]}"
-#   # size_loki         = local.persistences.lokistack-loki["size"]
-#   # pvc_grafana       = "pvc-${local.persistences.lokistack-grafana["name"]}"
-#   # size_grafana      = local.persistences.lokistack-grafana["size"]
-
-#   depends_on = [
-#     module.kube_namespaces,
-#     module.storageclass,
-#     module.chart_ingress_nginx,
-#   ]
-# }
 
 
 module "chart_prometheus_stack" {
