@@ -11,13 +11,13 @@ spec:
     solvers:
     - dns01:
         azureDNS:
-          hostedZoneName: ${DOMAIN_ZONE}                  # your DNS zone
-          resourceGroupName: ${DOMAIN_ZONE_RESOURCE_GROUP}            # Azure Resource Group containing the zone
+          hostedZoneName: ${DOMAIN_ZONE}                      # your DNS zone
+          resourceGroupName: ${DOMAIN_ZONE_RESOURCE_GROUP}    # Azure Resource Group containing the zone
           subscriptionID: ${SUBSCRIPTION_ID}
           tenantID: ${TENANT_ID}
           clientID: ${CLIENT_ID}
           clientSecretSecretRef:
-            name: dns-challenge                           # this secret is being created from terraform-onprem
+            name: dns-challenge                               # this secret is being created from terraform-onprem
             key: client-secret
           podTemplate:
             metadata:

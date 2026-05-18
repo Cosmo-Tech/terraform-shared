@@ -31,7 +31,7 @@ controller:
       cpu: 1000m
       memory: 1Gi
   extraArgs:
-    default-ssl-certificate: "monitoring/letsencrypt-prod"
+    default-ssl-certificate: "'cert-manager/letsencrypt-prod'"
     healthz-port: 10254
   admissionWebhooks:
     labels:

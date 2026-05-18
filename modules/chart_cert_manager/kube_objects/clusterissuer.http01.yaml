@@ -26,3 +26,8 @@ spec:
                 "cosmotech.com/tier": "services"
               imagePullSecrets:
                 - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+          # ingressTemplate:
+          #   metadata:
+          #     annotations:
+          #       nginx.ingress.kubernetes.io/ssl-redirect: "false"
+          #       nginx.ingress.kubernetes.io/use-regex: "true"
