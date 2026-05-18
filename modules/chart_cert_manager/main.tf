@@ -122,7 +122,7 @@ resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
 data "template_file" "certificate" {
   template = file("${path.module}/kube_objects/certificate.yaml")
   vars = {
-    cluster_domain = var.cluster_domain
+    CLUSTER_DOMAIN = var.cluster_domain
   }
 }
 

@@ -1,9 +1,9 @@
 production: true
 proxy: edge
-httpRelativePath: /keycloak/
+httpRelativePath: "/keycloak/"
 ingress:
   enabled: true
-  servicePort: https
+  servicePort: http
   hostname: ${INGRESS_HOSTNAME}
   annotations:
     kubernetes.io/ingress.class: nginx
