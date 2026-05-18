@@ -40,6 +40,9 @@ grafana:
       - ReadWriteOnce
     size: "${PERSISTENCE_SIZE_GRAFANA}Gi"
   sidecar:
+    image:
+      repository: cosmotech/k8s-sidecar
+      pullPolicy: IfNotPresent
     dashboards:
       multicluster:
         enabled: true
@@ -51,20 +54,12 @@ grafana:
           enabled: false
         etcd:
           enabled: false
-      image:
-        registry: ${IMAGE_REGISTRY}
-        repository: cosmotech/k8s-sidecar
-        tag: latest
     datasources:
       alertmanager:
         enabled: true
         uid: alertmanager
         handleGrafanaManagedAlerts: false
         implementation: prometheus
-      image:
-        registry: ${IMAGE_REGISTRY}
-        repository: cosmotech/k8s-sidecar
-        tag: latest
   grafana.ini:
     server:
       domain: ${COSMOTECH_CLUSTER_DOMAIN}
@@ -149,12 +144,16 @@ grafana:
   downloadDashboardsImage:
     repository: cosmotech/os-shell-iamguarded
     tag: latest
+    pullPolicy: IfNotPresent
   initChownData:
     image:
       repository: cosmotech/os-shell-iamguarded
       tag: latest
-  image::
-    repository: grafana/grafana-iamguarded
+      pullPolicy: IfNotPresent
+  image:
+    repository: cosmotech/grafana
+    tag: "13"
+    pullPolicy: IfNotPresent
   imagePullSecrets:
     - name: ${IMAGE_REGISTRY_AUTH_SECRET}
   tolerations:
@@ -199,10 +198,10 @@ prometheusOperator:
           operator: "Equal"
           value: "cosmotech"
           effect: "NoSchedule"
-      image:
-        repository: cosmotech/kube-webhook-certgen
-        tag: latest
-        pullPolicy: IfNotPresent
+      # image:
+      #   repository: cosmotech/kube-webhook-certgen
+      #   tag: latest
+      #   pullPolicy: IfNotPresent
 
 prometheus:
   enabled: true

@@ -238,33 +238,33 @@ module "chart_keycloak" {
 }
 
 
-# module "chart_prometheus_stack" {
-#   source = "./modules/chart_prometheus_stack"
+module "chart_prometheus_stack" {
+  source = "./modules/chart_prometheus_stack"
 
-#   namespace = "monitoring"
+  namespace = "monitoring"
 
-#   image_registry             = var.image_registry
-#   image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
 
-#   chart_repository = var.prometheusstack_chart_repository
-#   chart_name       = var.prometheusstack_chart_name
-#   chart_tag        = var.prometheusstack_chart_tag
-#   chart_release    = "kube-prometheus-stack"
+  chart_repository = var.prometheusstack_chart_repository
+  chart_name       = var.prometheusstack_chart_name
+  chart_tag        = var.prometheusstack_chart_tag
+  chart_release    = "kube-prometheus-stack"
 
-#   pvc_storage_class = local.storage_class_name
-#   size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
-#   pvc_prometheus    = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
-#   size_grafana      = local.persistences.prometheusstack-grafana["size"]
-#   pvc_grafana       = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+  pvc_storage_class = local.storage_class_name
+  size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
+  pvc_prometheus    = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  size_grafana      = local.persistences.prometheusstack-grafana["size"]
+  pvc_grafana       = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
 
-#   cluster_domain = local.cluster_domain
+  cluster_domain = local.cluster_domain
 
-#   depends_on = [
-#     module.kube_namespaces,
-#     module.storageclass,
-#     module.chart_ingress_nginx,
-#   ]
-# }
+  depends_on = [
+    module.kube_namespaces,
+    module.storageclass,
+    module.chart_ingress_nginx,
+  ]
+}
 
 
 # module "chart_superset" {
