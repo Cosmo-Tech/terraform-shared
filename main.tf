@@ -267,36 +267,36 @@ module "chart_prometheus_stack" {
 }
 
 
-# module "chart_superset" {
-#   source = "./modules/chart_superset"
+module "chart_superset" {
+  source = "./modules/chart_superset"
 
-#   namespace = "superset"
+  namespace = "superset"
 
-#   image_registry             = var.image_registry
-#   image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
 
-#   chart_repository = var.superset_chart_repository
-#   chart_name       = var.superset_chart_name
-#   chart_tag        = var.superset_chart_tag
-#   chart_release    = "superset"
+  chart_repository = var.superset_chart_repository
+  chart_name       = var.superset_chart_name
+  chart_tag        = var.superset_chart_tag
+  chart_release    = "superset"
 
-#   postgresql_image_repository = var.postgresql_image_repository
-#   postgresql_image_tag        = var.superset_postgresql_image_tag
+  postgresql_image_repository = var.postgresql_image_repository
+  postgresql_image_tag        = var.superset_postgresql_image_tag
 
-#   pvc_storage_class = local.storage_class_name
-#   pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"
-#   pvc_postgresql    = "pvc-${local.persistences.superset-postgresql["name"]}"
+  pvc_storage_class = local.storage_class_name
+  pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"
+  pvc_postgresql    = "pvc-${local.persistences.superset-postgresql["name"]}"
 
-#   cluster_domain          = local.cluster_domain
-#   superset_cluster_domain = "superset-${local.cluster_domain}"
+  cluster_domain          = local.cluster_domain
+  superset_cluster_domain = "superset-${local.cluster_domain}"
 
-#   superset_connect_timeout = "30s"
-#   superset_query_timeout   = "60s"
-#   superset_buffer_size     = "16K"
-#   superset_max_file_size   = "5m"
+  superset_connect_timeout = "30s"
+  superset_query_timeout   = "60s"
+  superset_buffer_size     = "16K"
+  superset_max_file_size   = "5m"
 
-#   depends_on = [
-#     module.kube_namespaces,
-#     module.chart_ingress_nginx,
-#   ]
-# }
+  depends_on = [
+    module.kube_namespaces,
+    module.chart_ingress_nginx,
+  ]
+}

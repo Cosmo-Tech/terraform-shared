@@ -433,7 +433,8 @@ postgresql:
 redis:
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/redis
+    # repository: cosmotech/redis
+    repository: cosmotech/redis-server-iamguarded
     pullPolicy: IfNotPresent
   architecture: standalone
   auth:
