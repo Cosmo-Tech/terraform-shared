@@ -5,9 +5,12 @@
 *Install common resources on Kubernetes clusters required by tenants*
 
 ## Requirements
-- working Kubernetes cluster deployed from Cosmo Tech terraform-*provider* (like [terraform-azure](https://github.com/Cosmo-Tech/terraform-azure) for example)
-- [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+* working Kubernetes cluster deployed from Cosmo Tech terraform-*provider* (like [terraform-azure](https://github.com/Cosmo-Tech/terraform-azure) for example)
+* [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
     > If using Windows, Terraform must be accessible from PATH
+* [docker](https://docs.docker.com/engine/install)
+* Github account, [authenticated for ghcr.io usage](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+* A Cosmo Tech image registry username/password (provided by a Cosmo Tech administrator)
 
 ## How to
 * clone & open the repository

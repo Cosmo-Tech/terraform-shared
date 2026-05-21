@@ -10,28 +10,73 @@ locals {
 
 
   chart_values = {
-    NAMESPACE                       = var.namespace
-    CLUSTER_DOMAIN                  = var.cluster_domain
-    SUPERSET_CLUSTER_DOMAIN         = var.superset_cluster_domain
-    SUPERSET_SECRET_NAME            = local.superset_secret_name
-    SUPERSET_REDIS_SECRET_NAME      = local.superset_redis_secret_name
-    SUPERSET_POSTGRESQL_SECRET_NAME = local.superset_postgresql_secret_name
-    CONFIGMAP_NAME                  = local.superset_configmap_name
-    OAUTH_PROVIDERS_CONFIGMAP_NAME  = local.superset_oauth_providers_configmap_name
-    SUPERSET_GUEST_TOKEN            = local.superset_guest_token
-    SUPERSET_SECRET_KEY_NAME        = local.superset_secret_key_name
-    SUPERSET_CONNECT_TIMEOUT        = var.superset_connect_timeout
-    SUPERSET_QUERY_TIMEOUT          = var.superset_query_timeout
-    SUPERSET_BUFFER_SIZE            = var.superset_buffer_size
-    SUPERSET_MAX_FILE_SIZE          = var.superset_max_file_size
-    PERSISTENCE_STORAGE_CLASS       = var.pvc_storage_class
-    PERSISTENCE_REDIS_PVC           = var.pvc_redis
-    PERSISTENCE_POSTGRESQL_PVC      = var.pvc_postgresql
-    IMAGE_REGISTRY                  = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET      = var.image_registry_auth_secret
-    POSTGRESQL_IMAGE_REPOSITORY     = var.postgresql_image_repository
-    POSTGRESQL_IMAGE_TAG            = var.postgresql_image_tag
+    NAMESPACE                                        = var.namespace
+    CLUSTER_DOMAIN                                   = var.cluster_domain
+    SUPERSET_CLUSTER_DOMAIN                          = var.superset_cluster_domain
+    SUPERSET_SECRET_NAME                             = local.superset_secret_name
+    SUPERSET_REDIS_SECRET_NAME                       = local.superset_redis_secret_name
+    SUPERSET_POSTGRESQL_SECRET_NAME                  = local.superset_postgresql_secret_name
+    CONFIGMAP_NAME                                   = local.superset_configmap_name
+    OAUTH_PROVIDERS_CONFIGMAP_NAME                   = local.superset_oauth_providers_configmap_name
+    SUPERSET_GUEST_TOKEN                             = local.superset_guest_token
+    SUPERSET_SECRET_KEY_NAME                         = local.superset_secret_key_name
+    SUPERSET_CONNECT_TIMEOUT                         = var.superset_connect_timeout
+    SUPERSET_QUERY_TIMEOUT                           = var.superset_query_timeout
+    SUPERSET_BUFFER_SIZE                             = var.superset_buffer_size
+    SUPERSET_MAX_FILE_SIZE                           = var.superset_max_file_size
+    PERSISTENCE_STORAGE_CLASS                        = var.pvc_storage_class
+    PERSISTENCE_REDIS_PVC                            = var.pvc_redis
+    PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
+    IMAGE_REGISTRY                                   = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
+    POSTGRESQL_IMAGE_REPOSITORY                      = var.postgresql_image_repository
+    POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
+    PYTHON_REQUIREMENTS_INIT_CONTAINER               = indent(4, local.py_init_container)
+    PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES       = indent(4, local.py_volumes)
+    PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS = indent(4, local.py_volumes_mounts)
+    PYTHON_REQUIREMENTS_EXTRA_ENV_VARS               = indent(6, local.py_env_vars)
   }
+
+  py_main_name = "python-requirements"
+  # py_venv_name = "superset-venv"
+  # py_venv_path = "/usr/share/superset/venv"
+
+  py_init_container = yamlencode([
+    {
+      name            = local.py_main_name
+      image           = "python:3.11-slim"
+      imagePullPolicy = "IfNotPresent"
+      command         = ["sh", "-c", "pip install --target=/custom-pip --no-deps flask-cors Flask-OAuthlib authlib joserfc"]
+
+      volumeMounts = [
+        {
+          name      = local.py_main_name
+          mountPath = "/custom-pip"
+        }
+      ]
+    }
+  ])
+
+  py_volumes = yamlencode([
+    {
+      name     = local.py_main_name
+      emptyDir = {}
+    }
+  ])
+
+  py_volumes_mounts = yamlencode([
+    {
+      name      = local.py_main_name
+      mountPath = "/opt/custom-python-packages"
+    }
+  ])
+
+  py_env_vars = yamlencode(
+    {
+      name  = "PYTHONPATH"
+      value = "/opt/custom-python-packages"
+    }
+  )
 }
 
 
