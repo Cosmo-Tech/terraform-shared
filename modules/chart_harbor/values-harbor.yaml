@@ -5,12 +5,10 @@ service:
 ingress:
   core:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: traefik
     hostname: ${CLUSTER_DOMAIN}
     path: /harbor
     pathType: Prefix
-    annotations:
-      kubernetes.io/ingress.class: nginx
     tls: false
     selfSigned: false
 tolerations:
