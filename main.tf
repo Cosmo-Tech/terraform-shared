@@ -120,14 +120,25 @@ module "storageclass" {
   ]
 }
 
+
 module "chart_traefik" {
   source = "./modules/chart_traefik"
 
-  helm_chart         = "traefik"
-  helm_chart_version = "40.2.0"
-  helm_repo          = "https://traefik.github.io/charts"
-  lb_annotations     = local.lb_annotations
   namespace          = "traefik"
+
+  # image_registry             = var.image_registry
+  # image_registry_auth_secret = var.image_registry_auth_secret
+
+  chart_repository = var.traefik_chart_repository
+  chart_name       = var.traefik_chart_name
+  chart_tag        = var.traefik_chart_tag
+  chart_release    = "traefik"
+
+  # helm_chart         = "traefik"
+  # helm_chart_version = "40.2.0"
+  # helm_repo          = "https://traefik.github.io/charts"
+
+  lb_annotations     = local.lb_annotations
   platform_lb_ip     = local.lb_ip
 
   depends_on = [
@@ -135,6 +146,7 @@ module "chart_traefik" {
     time_sleep.timer,
   ]
 }
+
 
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"

@@ -29,13 +29,13 @@ variable "harbor_redis_chart_tag" { default = "25.3.8" }
 # variable "harbor_redis_chart_tag" { default = "17.3.14" }
 
 
-# ingress-nginx
-variable "ingressnginx_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
-variable "ingressnginx_chart_name" { default = "nginx-ingress-controller" }
-variable "ingressnginx_chart_tag" { default = "12.0.9" }
-# variable "ingressnginx_chart_repository" { default = "https://kubernetes.github.io/ingress-nginx" }
-# variable "ingressnginx_chart_name" { default = "ingress-nginx" }
-# variable "ingressnginx_chart_tag" { default = "4.12.3" }
+# # ingress-nginx
+# variable "ingressnginx_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
+# variable "ingressnginx_chart_name" { default = "nginx-ingress-controller" }
+# variable "ingressnginx_chart_tag" { default = "12.0.9" }
+# # variable "ingressnginx_chart_repository" { default = "https://kubernetes.github.io/ingress-nginx" }
+# # variable "ingressnginx_chart_name" { default = "ingress-nginx" }
+# # variable "ingressnginx_chart_tag" { default = "4.12.3" }
 
 
 # Keycloak
@@ -64,6 +64,15 @@ variable "superset_chart_repository" { default = "oci://cgr.dev/cosmotech/iamgua
 variable "superset_chart_name" { default = "superset" }
 variable "superset_chart_tag" { default = "5.0.0" }
 variable "superset_postgresql_image_tag" { default = "17" }
+
+
+# Traefik
+# variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
+# variable "traefik_chart_name" { default = "traefik" }
+# variable "traefik_chart_tag" { default = "xxxxxxxxxx" }
+variable "traefik_chart_repository" { default = "https://traefik.github.io/charts" }
+variable "traefik_chart_name" { default = "traefik" }
+variable "traefik_chart_tag" { default = "40.2.0" }
 
 
 # Global

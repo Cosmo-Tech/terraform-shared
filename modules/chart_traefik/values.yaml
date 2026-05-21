@@ -1,20 +1,16 @@
 deployment:
   replicas: 1
-
   nodeSelector:
     cosmotech.com/tier: services
-
   tolerations:
     - key: vendor
       operator: Equal
       value: cosmotech
       effect: NoSchedule
-
     - key: cosmotech.com/tier
       operator: Equal
       value: services
       effect: NoSchedule
-
   podLabels:
     networking/traffic-allowed: "yes"
 
@@ -31,9 +27,7 @@ service:
   type: LoadBalancer
   spec:
     loadBalancerIP: ${platform_lb_ip}
-
   annotations: {}
-
   labels:
     networking/traffic-allowed: "yes"
 
@@ -43,7 +37,6 @@ ports:
     exposedPort: 80
     expose:
       default: true
-
   websecure:
     port: 8443
     exposedPort: 443

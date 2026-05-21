@@ -25,15 +25,15 @@ ingress:
   pathType: Prefix
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  extraHosts: []
-  extraPaths: []
-  extraRules: []
+  # extraHosts: []
+  # extraPaths: []
+  # extraRules: []
   extraTls:
     - hosts:
         - "${SUPERSET_CLUSTER_DOMAIN}"
       secretName: letsencrypt-prod
-  tls: []
-  secrets: []
+  # tls: []
+  # secrets: []
   selfSigned: false
 
 postgresql:
@@ -115,10 +115,10 @@ init:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
   extraVolumeMounts:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  podSecurityContext:
-    enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+  # podSecurityContext:
+  #   enabled: true
+  #   fsGroup: 1001
+  #   runAsUser: 1001
   resourcesPreset: medium
 
 web:
@@ -141,10 +141,10 @@ web:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
   extraVolumeMounts:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  podSecurityContext:
-    enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+  # podSecurityContext:
+  #   enabled: true
+  #   fsGroup: 1001
+  #   runAsUser: 1001
   nodeSelector:
     cosmotech.com/tier: services
   tolerations: 
