@@ -40,38 +40,6 @@ ingress:
   ingressClassName: nginx
   selfSigned: false
 
-
-# ingress:
-#   annotations:
-#     kubernetes.io/ingress.class: nginx
-#     cert-manager.io/cluster-issuer: letsencrypt-prod
-#     nginx.ingress.kubernetes.io/hsts: "false"
-#     ## Define timeout to allow long-running queries
-#     nginx.ingress.kubernetes.io/proxy-connect-timeout: "${SUPERSET_CONNECT_TIMEOUT}"
-#     nginx.ingress.kubernetes.io/proxy-read-timeout: "${SUPERSET_QUERY_TIMEOUT}"
-#     nginx.ingress.kubernetes.io/proxy-send-timeout: "${SUPERSET_QUERY_TIMEOUT}"
-#     ## Define body sizes for large data file exchanges.
-#     nginx.ingress.kubernetes.io/client_max_body_size: "${SUPERSET_MAX_FILE_SIZE}"
-#     nginx.ingress.kubernetes.io/proxy-body-size: "${SUPERSET_MAX_FILE_SIZE}"
-#     nginx.ingress.kubernetes.io/client-body-buffer-size: "${SUPERSET_BUFFER_SIZE}"
-#   apiVersion: ""
-#   enabled: true
-#   extraHosts: []
-#   extraPaths: []
-#   extraRules: []
-#   extraTls:
-#   - hosts:
-#       - "${SUPERSET_CLUSTER_DOMAIN}"
-#     secretName: letsencrypt-prod
-#   path: /
-#   pathType: Prefix
-#   hostname: "${SUPERSET_CLUSTER_DOMAIN}"
-#   ingressClassName: nginx
-#   secrets: []
-#   selfSigned: false
-#   tls: []
-
-
 postgresql:
   enabled: true
   architecture: standalone
@@ -151,10 +119,6 @@ init:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
   extraVolumeMounts:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  # extraVolumes:
-  #   - PYTHON_REQUIREMENTS_VOLUMES}
-  # extraVolumeMounts:
-  #   - PYTHON_REQUIREMENTS_VOLUMES_MOUNTS}
   podSecurityContext:
     enabled: true
     fsGroup: 1001
@@ -181,10 +145,6 @@ web:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
   extraVolumeMounts:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  # extraVolumes:
-  #   - PYTHON_REQUIREMENTS_VOLUMES}
-  # extraVolumeMounts:
-  #   - PYTHON_REQUIREMENTS_VOLUMES_MOUNTS}
   podSecurityContext:
     enabled: true
     fsGroup: 1001
@@ -204,8 +164,6 @@ worker:
   - worker
   - --concurrency=2
   - --loglevel=INFO
-  # containerSecurityContext:
-  #   runAsNonRoot: true
   extraEnvVars:
     - name: REDIS_PASSWORD
       valueFrom:
@@ -234,14 +192,10 @@ worker:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
   extraVolumeMounts:
     ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  # extraVolumes:
-  #   - PYTHON_REQUIREMENTS_VOLUMES}
-  # extraVolumeMounts:
-  #   - PYTHON_REQUIREMENTS_VOLUMES_MOUNTS}
-  podSecurityContext:
-    enabled: true
-    fsGroup: 1001
-    runAsUser: 1001
+  # podSecurityContext:
+  #   enabled: true
+  #   fsGroup: 1001
+  #   runAsUser: 1001
   livenessProbe:
     enabled: true
   readinessProbe:
@@ -267,7 +221,6 @@ image:
   # repository: cosmo-tech/superset
   # tag: latest
   repository: cosmotech/superset-iamguarded
-  # repository: cosmotech/superset-iamguarded-pip
   pullPolicy: IfNotPresent
   debug: true
 
