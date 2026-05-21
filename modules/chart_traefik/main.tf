@@ -14,7 +14,7 @@ locals {
   })
 }
 
-data "kubernetes_secret" "monitoring_cert" {
+data "kubernetes_secret" "certificate" {
   metadata {
     name      = "letsencrypt-prod"
     namespace = "cert-manager"
@@ -27,9 +27,9 @@ resource "kubernetes_secret" "traefik_cert" {
     namespace = var.namespace
   }
 
-  type = data.kubernetes_secret.monitoring_cert.type
+  type = data.kubernetes_secret.certificate.type
 
-  data = data.kubernetes_secret.monitoring_cert.data
+  data = data.kubernetes_secret.certificate.data
 }
 
 resource "helm_release" "traefik_ingress" {
