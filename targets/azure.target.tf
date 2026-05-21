@@ -45,7 +45,7 @@ locals {
 
   lb_annotations = {
     "service.beta.kubernetes.io/azure-load-balancer-resource-group"            = data.azurerm_kubernetes_cluster.cluster.node_resource_group
-    "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/healthz"
+    "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" = "/ping"
   }
 
   lb_ip = data.azurerm_public_ip.lb_ip.ip_address

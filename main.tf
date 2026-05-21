@@ -67,7 +67,7 @@ module "kube_namespaces" {
   source = "./modules/kube_namespaces"
 
   namespaces = [
-    "ingress-nginx",
+    "traefik",
     "cert-manager",
     "monitoring",
     "keycloak",
@@ -120,20 +120,21 @@ module "storageclass" {
   ]
 }
 
+module "chart_traefik" {
+  source = "./modules/chart_traefik"
 
-module "chart_ingress_nginx" {
-  source = "./modules/chart_ingress_nginx"
-
-  platform_lb_ip      = local.lb_ip
-  service_annotations = local.cloud_identity
-  lb_annotations      = local.lb_annotations
+  helm_chart         = "traefik"
+  helm_chart_version = "40.2.0"
+  helm_repo          = "https://traefik.github.io/charts"
+  lb_annotations     = local.lb_annotations
+  namespace          = "traefik"
+  platform_lb_ip     = local.lb_ip
 
   depends_on = [
     module.kube_namespaces,
     time_sleep.timer,
   ]
 }
-
 
 module "chart_cert_manager" {
   source = "./modules/chart_cert_manager"
@@ -159,7 +160,7 @@ module "chart_cert_manager" {
 
   depends_on = [
     module.kube_namespaces,
-    module.chart_ingress_nginx,
+    module.chart_traefik,
   ]
 }
 
@@ -200,7 +201,7 @@ module "chart_harbor" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
-    module.chart_ingress_nginx,
+    module.chart_traefik,
   ]
 }
 
@@ -233,7 +234,7 @@ module "chart_keycloak" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
-    module.chart_ingress_nginx,
+    module.chart_traefik,
   ]
 }
 
@@ -262,7 +263,7 @@ module "chart_prometheus_stack" {
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
-    module.chart_ingress_nginx,
+    module.chart_traefik,
   ]
 }
 
@@ -297,6 +298,6 @@ module "chart_superset" {
 
   depends_on = [
     module.kube_namespaces,
-    module.chart_ingress_nginx,
+    module.chart_traefik,
   ]
 }

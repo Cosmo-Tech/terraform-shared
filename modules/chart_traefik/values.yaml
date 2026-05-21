@@ -1,0 +1,78 @@
+deployment:
+  replicas: 1
+
+  nodeSelector:
+    cosmotech.com/tier: services
+
+  tolerations:
+    - key: vendor
+      operator: Equal
+      value: cosmotech
+      effect: NoSchedule
+
+    - key: cosmotech.com/tier
+      operator: Equal
+      value: services
+      effect: NoSchedule
+
+  podLabels:
+    networking/traffic-allowed: "yes"
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+service:
+  enabled: true
+  type: LoadBalancer
+  spec:
+    loadBalancerIP: ${platform_lb_ip}
+
+  annotations: {}
+
+  labels:
+    networking/traffic-allowed: "yes"
+
+ports:
+  web:
+    port: 8000
+    exposedPort: 80
+    expose:
+      default: true
+
+  websecure:
+    port: 8443
+    exposedPort: 443
+    expose:
+      default: true
+
+logs:
+  general:
+    level: INFO
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
+
+providers:
+  kubernetesIngress:
+    enabled: true
+
+additionalArguments:
+  - "--ping=true"
+  - "--api.dashboard=true"
+  - "--entrypoints.web.address=:8000"
+  - "--entrypoints.websecure.address=:8443"
+  - "--entryPoints.websecure.transport.respondingTimeouts.readTimeout=300s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=300s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.idleTimeout=300s"
+
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: letsencrypt-prod
