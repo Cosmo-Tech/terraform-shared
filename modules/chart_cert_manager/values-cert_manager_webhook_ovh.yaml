@@ -1,0 +1,32 @@
+# https://github.com/aureq/cert-manager-webhook-ovh/blob/main/charts/cert-manager-webhook-ovh/values.yaml
+groupName: ${group_name}
+certManager:
+  namespace: cert-manager
+  serviceAccountName: cert-manager
+issuers:
+  - name: letsencrypt-prod
+    create: false
+    kind: ClusterIssuer
+    acmeServerUrl: https://acme-v02.api.letsencrypt.org/directory
+    email: ${certificate_email}
+    ovhEndpointName: ovh-eu
+    ovhAuthenticationMethod: application
+    ovhAuthenticationRef:
+      applicationKeyRef:
+        name: dns-challenge
+        key: applicationKey
+      applicationSecretRef:
+        name: dns-challenge
+        key: applicationSecret
+
+# podLabels:
+#   networking/traffic-allowed: "yes"
+# nodeSelector:
+#   cosmotech.com/tier: services
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
