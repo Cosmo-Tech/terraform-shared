@@ -53,7 +53,7 @@ variable "keycloak_postgresql_image_tag" { default = "16" }
 # kube-prometheus-stack
 variable "prometheusstack_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
-variable "prometheusstack_chart_tag" { default = "85.1.0" }
+variable "prometheusstack_chart_tag" { default = "85.2.0" }
 # variable "prometheusstack_chart_repository" { default = "https://prometheus-community.github.io/helm-charts" }
 # variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
 # variable "prometheusstack_chart_tag" { default = "81.6.2" }
