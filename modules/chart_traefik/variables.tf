@@ -2,13 +2,13 @@ variable "namespace" {
   type = string
 }
 
-# variable "image_registry" {
-#   type = string
-# }
+variable "image_registry" {
+  type = string
+}
 
-# variable "image_registry_auth_secret" {
-#   type = string
-# }
+variable "image_registry_auth_secret" {
+  type = string
+}
 
 variable "chart_repository" {
   type = string
@@ -26,9 +26,13 @@ variable "chart_release" {
   type = string
 }
 
-# variable "helm_chart_version" { type = string }
-# variable "helm_chart" { type = string }
-# variable "helm_repo" { type = string }
+variable "traefik_image_repository" {
+  type = string
+}
+
+variable "traefik_image_tag" {
+  type = string
+}
 
 variable "platform_lb_ip" {
   type = string

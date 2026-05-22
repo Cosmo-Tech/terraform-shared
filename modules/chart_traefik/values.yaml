@@ -1,35 +1,20 @@
-deployment:
-  replicas: 1
-  nodeSelector:
-    cosmotech.com/tier: services
-  tolerations:
-    - key: vendor
-      operator: Equal
-      value: cosmotech
-      effect: NoSchedule
-    - key: cosmotech.com/tier
-      operator: Equal
-      value: services
-      effect: NoSchedule
-  podLabels:
-    networking/traffic-allowed: "yes"
-
-resources:
-  limits:
-    cpu: 1000m
-    memory: 1Gi
-  requests:
-    cpu: 200m
-    memory: 256Mi
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
 
 service:
   enabled: true
   type: LoadBalancer
   spec:
-    loadBalancerIP: ${platform_lb_ip}
+    loadBalancerIP: ${PLATFORM_LB_IP}
   annotations: {}
   labels:
     networking/traffic-allowed: "yes"
+
+providers:
+  kubernetesIngress:
+    enabled: true
 
 ports:
   web:
@@ -43,18 +28,10 @@ ports:
     expose:
       default: true
 
-logs:
-  general:
-    level: INFO
-
-ingressClass:
-  enabled: true
-  isDefaultClass: true
-  name: traefik
-
-providers:
-  kubernetesIngress:
-    enabled: true
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: letsencrypt-prod
 
 additionalArguments:
   - "--ping=true"
@@ -65,7 +42,56 @@ additionalArguments:
   - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=300s"
   - "--entryPoints.websecure.transport.respondingTimeouts.idleTimeout=300s"
 
-tlsStore:
-  default:
-    defaultCertificate:
-      secretName: letsencrypt-prod
+logs:
+  general:
+    level: INFO
+
+deployment:
+  enabled: true
+  replicas: 1
+  # nodeSelector:
+  #   cosmotech.com/tier: services
+  # tolerations:
+  #   - key: vendor
+  #     operator: Equal
+  #     value: cosmotech
+  #     effect: NoSchedule
+  #   - key: cosmotech.com/tier
+  #     operator: Equal
+  #     value: services
+  #     effect: NoSchedule
+  podLabels:
+    networking/traffic-allowed: "yes"
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+nodeSelector:
+  cosmotech.com/tier: services
+tolerations:
+  - key: vendor
+    operator: Equal
+    value: cosmotech
+    effect: NoSchedule
+  - key: cosmotech.com/tier
+    operator: Equal
+    value: services
+    effect: NoSchedule
+
+image:
+  registry: ${IMAGE_REGISTRY}
+  repository: ${TRAEFIK_IMAGE_REPOSITORY}
+  tag: "${TRAEFIK_IMAGE_TAG}"
+  pullPolicy: IfNotPresent
+
+global:
+  sendAnonymousUsage: false
+#   imageRegistry: ${IMAGE_REGISTRY}
+#   imagePullSecrets:
+#     - name: ${IMAGE_REGISTRY_AUTH_SECRET}

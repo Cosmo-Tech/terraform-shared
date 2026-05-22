@@ -10,7 +10,11 @@ locals {
 data "template_file" "traefik_values_static" {
   template = file("${path.module}/values.yaml")
   vars = {
-    platform_lb_ip = var.platform_lb_ip
+    PLATFORM_LB_IP             = var.platform_lb_ip
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    TRAEFIK_IMAGE_REPOSITORY   = var.traefik_image_repository
+    TRAEFIK_IMAGE_TAG          = var.traefik_image_tag
   }
 }
 

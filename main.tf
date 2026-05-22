@@ -124,22 +124,21 @@ module "storageclass" {
 module "chart_traefik" {
   source = "./modules/chart_traefik"
 
-  namespace          = "traefik"
+  namespace = "traefik"
 
-  # image_registry             = var.image_registry
-  # image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
 
   chart_repository = var.traefik_chart_repository
   chart_name       = var.traefik_chart_name
   chart_tag        = var.traefik_chart_tag
   chart_release    = "traefik"
 
-  # helm_chart         = "traefik"
-  # helm_chart_version = "40.2.0"
-  # helm_repo          = "https://traefik.github.io/charts"
+  traefik_image_repository = var.traefik_image_repository
+  traefik_image_tag        = var.traefik_image_tag
 
-  lb_annotations     = local.lb_annotations
-  platform_lb_ip     = local.lb_ip
+  lb_annotations = local.lb_annotations
+  platform_lb_ip = local.lb_ip
 
   depends_on = [
     module.kube_namespaces,

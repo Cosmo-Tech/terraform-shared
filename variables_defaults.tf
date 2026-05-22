@@ -53,7 +53,7 @@ variable "keycloak_postgresql_image_tag" { default = "16" }
 # kube-prometheus-stack
 variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
 variable "prometheusstack_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
-variable "prometheusstack_chart_tag" { default = "85.2.0" }
+variable "prometheusstack_chart_tag" { default = "85.1.0" }
 # variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
 # variable "prometheusstack_chart_repository" { default = "https://prometheus-community.github.io/helm-charts" }
 # variable "prometheusstack_chart_tag" { default = "81.6.2" }
@@ -68,8 +68,10 @@ variable "superset_postgresql_image_tag" { default = "17" }
 
 # Traefik
 variable "traefik_chart_name" { default = "traefik" }
-variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
-variable "traefik_chart_tag" { default = "xxxxxxxxxx" }
+variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
+variable "traefik_chart_tag" { default = "39.0.9" }
+variable "traefik_image_repository" { default = "cosmotech/traefik" }
+variable "traefik_image_tag" { default = "3.7.1" }
 # variable "traefik_chart_repository" { default = "https://traefik.github.io/charts" }
 # variable "traefik_chart_tag" { default = "40.2.0" }
 
