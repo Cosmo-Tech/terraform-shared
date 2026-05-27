@@ -7,6 +7,8 @@ locals {
   keycloak_postgres_user_password_secret  = "keycloak_postgres_password"
   keycloak_postgres_admin_password_secret = "keycloak_postgres_admin_password"
 
+  chart_values_file_keycloak   = templatefile("${path.module}/values-keycloak.yaml", local.chart_values)
+  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
@@ -71,7 +73,7 @@ resource "helm_release" "postgresql" {
   version    = var.chart_postgresql_tag
 
   values = [
-    templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+    local.chart_values_file_postgresql
   ]
 }
 
@@ -84,10 +86,26 @@ resource "helm_release" "keycloak" {
   version    = var.chart_keycloak_tag
 
   values = [
-    templatefile("${path.module}/values-keycloak.yaml", local.chart_values)
+    local.chart_values_file_keycloak
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
 
   depends_on = [
     helm_release.postgresql
   ]
+}
+
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version = var.chart_keycloak_tag,
+    values  = local.chart_values_file_keycloak
+  }
 }

@@ -1,4 +1,7 @@
 locals {
+  chart_values_file_harbor     = templatefile("${path.module}/values-harbor.yaml", local.chart_values)
+  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+  chart_values_file_redis      = templatefile("${path.module}/values-redis.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     CLUSTER_DOMAIN                     = var.cluster_domain
@@ -26,14 +29,21 @@ resource "helm_release" "harbor" {
   chart      = var.chart_harbor_name
   version    = var.chart_harbor_tag
 
-  create_namespace = true
-
   wait          = false
   wait_for_jobs = false
 
   values = [
-    templatefile("${path.module}/values-harbor.yaml", local.chart_values)
+    local.chart_values_file_harbor
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
 
   depends_on = [
     helm_release.postgresql,
@@ -42,6 +52,12 @@ resource "helm_release" "harbor" {
   ]
 }
 
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version = var.chart_harbor_tag
+    values  = local.chart_values_file_harbor
+  }
+}
 
 resource "helm_release" "postgresql" {
   namespace  = var.namespace
@@ -51,7 +67,7 @@ resource "helm_release" "postgresql" {
   version    = var.chart_postgresql_tag
 
   values = [
-    templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+    local.chart_values_file_postgresql
   ]
   depends_on = [
     kubernetes_secret.harbor_config
@@ -67,7 +83,7 @@ resource "helm_release" "redis" {
   version    = var.chart_redis_tag
 
   values = [
-    templatefile("${path.module}/values-redis.yaml", local.chart_values)
+    local.chart_values_file_redis
   ]
 }
 
@@ -90,9 +106,7 @@ resource "random_password" "harbor_admin_password" {
 }
 
 
-# -----------------------------
-# Kubernetes Secret for harbor Config
-# -----------------------------
+## Kubernetes Secret for harbor Config
 resource "kubernetes_secret" "harbor_config" {
   metadata {
     name      = "harbor-config"

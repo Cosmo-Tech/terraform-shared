@@ -47,7 +47,7 @@ postgresql:
   image:
     registry: ${IMAGE_REGISTRY}
     repository: ${POSTGRESQL_IMAGE_REPOSITORY}
-    tag: ${POSTGRESQL_IMAGE_TAG}
+    tag: "${POSTGRESQL_IMAGE_TAG}"
     pullPolicy: IfNotPresent
   primary:
     nodeSelector:

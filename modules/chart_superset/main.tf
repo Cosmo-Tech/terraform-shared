@@ -8,7 +8,7 @@ locals {
   superset_configmap_name                 = "superset-config"
   superset_oauth_providers_configmap_name = "superset-oauth-providers"
 
-
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                                        = var.namespace
     CLUSTER_DOMAIN                                   = var.cluster_domain
@@ -122,8 +122,8 @@ resource "kubernetes_secret" "superset_guest_token" {
 
 ## End of Guest token
 
-## Superset, Postgresql, Redis secrets
 
+## Superset, Postgresql, Redis secrets
 ## Superset
 resource "random_password" "superset_password" {
   length  = 40
@@ -149,6 +149,7 @@ resource "kubernetes_secret" "superset_secret" {
   type = "Opaque"
 }
 ## End of Superset
+
 
 ## Superset <-> Postgresql
 resource "random_password" "superset_postgresql_password" {
@@ -176,6 +177,7 @@ resource "kubernetes_secret" "superset_postgresql" {
 }
 ## End of Superset <-> Postgresql
 
+
 ## Superset <-> Redis
 resource "random_password" "superset_redis_password" {
   length  = 40
@@ -197,6 +199,7 @@ resource "kubernetes_secret" "superset_redis" {
 ## End of Superset <-> Redis
 ## End of Superset, Postgresql, Redis secrets
 
+
 ## ConfigMap with superset_config.py
 resource "kubernetes_config_map" "superset_config_map" {
   metadata {
@@ -210,6 +213,7 @@ resource "kubernetes_config_map" "superset_config_map" {
 }
 ## End of ConfigMap with superset_config.py
 
+
 ## Superset Helm Chart
 resource "helm_release" "superset" {
   namespace  = var.namespace
@@ -219,11 +223,27 @@ resource "helm_release" "superset" {
   version    = var.chart_tag
 
   values = [
-    templatefile("${path.module}/values.yaml", local.chart_values)
+    local.chart_values_file
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
 
   depends_on = [
     kubernetes_config_map.superset_config_map
   ]
+}
+
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version = var.chart_tag
+    values  = local.chart_values_file
+  }
 }
 ## End of Superset Helm Chart

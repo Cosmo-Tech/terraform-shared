@@ -2,6 +2,8 @@ locals {
   redis_admin_password      = var.redis_admin_password != "" ? var.redis_admin_password : (length(random_password.redis_admin_password) > 0 ? random_password.redis_admin_password[0].result : "")
   prometheus_admin_password = var.prometheus_admin_password != "" ? var.prometheus_admin_password : (length(random_password.prometheus_admin_password) > 0 ? random_password.prometheus_admin_password[0].result : "")
 
+
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
   chart_values = {
     COSMOTECH_CLUSTER_DOMAIN    = var.cluster_domain
     NAMESPACE                   = var.namespace
@@ -25,14 +27,28 @@ resource "helm_release" "prometheus_stack" {
   chart      = var.chart_name
   version    = var.chart_tag
 
-  create_namespace = false
-
-  timeout      = 600
-  reuse_values = true
+  timeout = 600
+  # reuse_values = true
 
   values = [
-    templatefile("${path.module}/values.yaml", local.chart_values)
+    local.chart_values_file
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
+}
+
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version = var.chart_tag
+    values  = local.chart_values_file
+  }
 }
 
 

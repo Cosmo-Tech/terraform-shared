@@ -7,6 +7,15 @@ terraform {
   }
 }
 
+locals {
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values = {
+    SERVICE_ANNOTATIONS        = var.service_annotations
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+  }
+}
+
 
 resource "time_sleep" "wait_certmanager_crds" {
   create_duration = "60s"
@@ -18,16 +27,6 @@ resource "time_sleep" "wait_certmanager_crds" {
 
 
 # 1. CERT-MANAGER
-data "template_file" "cert_values" {
-  template = file("${path.module}/values.yaml")
-
-  vars = {
-    SERVICE_ANNOTATIONS        = var.service_annotations
-    IMAGE_REGISTRY             = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
-  }
-}
-
 resource "helm_release" "cert_manager" {
   namespace  = var.namespace
   name       = var.chart_release
@@ -35,11 +34,25 @@ resource "helm_release" "cert_manager" {
   chart      = var.chart_name
   version    = var.chart_tag
 
-  create_namespace = true
-
   values = [
-    data.template_file.cert_values.rendered
+    local.chart_values_file
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
+}
+
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version = var.chart_tag
+    values  = local.chart_values_file
+  }
 }
 
 

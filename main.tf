@@ -213,6 +213,7 @@ module "chart_harbor" {
     module.kube_namespaces,
     module.storageclass,
     module.chart_traefik,
+    module.chart_cert_manager,
   ]
 }
 
@@ -246,6 +247,7 @@ module "chart_keycloak" {
     module.kube_namespaces,
     module.storageclass,
     module.chart_traefik,
+    module.chart_cert_manager,
   ]
 }
 
@@ -275,6 +277,7 @@ module "chart_prometheus_stack" {
     module.kube_namespaces,
     module.storageclass,
     module.chart_traefik,
+    module.chart_cert_manager,
   ]
 }
 
@@ -310,5 +313,6 @@ module "chart_superset" {
   depends_on = [
     module.kube_namespaces,
     module.chart_traefik,
+    module.chart_cert_manager,
   ]
 }
