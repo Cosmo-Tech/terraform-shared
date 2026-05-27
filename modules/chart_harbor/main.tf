@@ -54,8 +54,8 @@ resource "helm_release" "harbor" {
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version = var.chart_harbor_tag
-    values  = local.chart_values_file_harbor
+    version     = var.chart_harbor_tag
+    values_sha1 = sha1(local.chart_values_file_harbor)
   }
 }
 

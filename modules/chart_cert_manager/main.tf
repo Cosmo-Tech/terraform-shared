@@ -50,8 +50,8 @@ resource "helm_release" "cert_manager" {
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version = var.chart_tag
-    values  = local.chart_values_file
+    version     = var.chart_tag
+    values_sha1 = sha1(local.chart_values_file)
   }
 }
 
