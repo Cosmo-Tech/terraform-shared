@@ -212,17 +212,18 @@ TALISMAN_ENABLED = True
 TALISMAN_CONFIG = {
     "content_security_policy": {
         "frame-ancestors": [
-          "https://${SUPERSET_CLUSTER_DOMAIN}",
-          "https://${CLUSTER_DOMAIN}"]
+            "https://${SUPERSET_CLUSTER_DOMAIN}",
+            "https://${CLUSTER_DOMAIN}"
+            ],
+        "connect-src": [
+            "'self'",
+            "https://api.mapbox.com",
+            "https://events.mapbox.com",
+            "https://cdn.jsdelivr.net"
+        ]
     },
     "force_https": False,
     "force_https_permanent": False,
     "frame_options": "ALLOWFROM",
     "frame_options_allow_from": "*",
-    "connect-src": [
-      "'self'",
-      "https://api.mapbox.com",
-      "https://events.mapbox.com",
-      "https://cdn.jsdelivr.net"
-    ]
 }

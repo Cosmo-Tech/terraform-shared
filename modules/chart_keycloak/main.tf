@@ -107,6 +107,6 @@ resource "terraform_data" "helm_release_trigger" {
   input = {
     version     = var.chart_keycloak_tag,
     values      = local.chart_values_file_keycloak
-    # values_sha1 = sha1(local.chart_values_file_keycloak)
+    values_sha1 = sha1(local.chart_values_file_keycloak)
   }
 }
