@@ -242,9 +242,16 @@ resource "helm_release" "superset" {
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version     = var.chart_tag
-    values      = local.chart_values_file
-    values_sha1 = sha1(local.chart_values_file)
+    version      = var.chart_tag
+    values       = local.chart_values_file
+    values_sha1  = sha1(local.chart_values_file)
+    helm_release = data.kubernetes_resources.helm_release_secret
   }
+}
+
+data "kubernetes_resources" "helm_release_secret" {
+  api_version    = "v1"
+  kind           = "Secret"
+  label_selector = "owner=helm,name=${var.chart_release}"
 }
 ## End of Superset Helm Chart

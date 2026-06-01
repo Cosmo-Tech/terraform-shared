@@ -105,8 +105,15 @@ resource "helm_release" "keycloak" {
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version     = var.chart_keycloak_tag,
-    values      = local.chart_values_file_keycloak
-    values_sha1 = sha1(local.chart_values_file_keycloak)
+    version      = var.chart_keycloak_tag,
+    values       = local.chart_values_file_keycloak
+    values_sha1  = sha1(local.chart_values_file_keycloak)
+    helm_release = data.kubernetes_resources.helm_release_secret
   }
+}
+
+data "kubernetes_resources" "helm_release_secret" {
+  api_version    = "v1"
+  kind           = "Secret"
+  label_selector = "owner=helm,name=${var.chart_keycloak_release}"
 }
