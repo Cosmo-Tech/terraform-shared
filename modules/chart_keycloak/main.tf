@@ -1,6 +1,5 @@
 locals {
   keycloak_secret_name_config             = "keycloak-config"
-  keycloak_secret_name_crt                = "keycloak-crt"
   keycloak_admin_user                     = "admin"
   keycloak_admin_password_secret          = "keycloak_admin_password"
   keycloak_postgres_user                  = "keycloak"
