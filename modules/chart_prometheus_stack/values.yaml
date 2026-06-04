@@ -1,18 +1,8 @@
-namespace: ${NAMESPACE}
-name: cosmotech-api-latest
-labels:
-  networking/traffic-allowed: "yes"
-
-defaultRules:
-  create: true
-
-kubernetesServiceMonitors:
-  enabled: true
-
 alertmanager:
   enabled: true
   alertmanagerSpec:
     logLevel: info
+    replicas: 1
     tolerations:
       - key: "vendor"
         operator: "Equal"
@@ -20,13 +10,10 @@ alertmanager:
         effect: "NoSchedule"
     nodeSelector:
       "cosmotech.com/tier": "monitoring"
-    podMetadata:
-      labels:
-        networking/traffic-allowed: "yes"
     resources: {}
-
-windowsMonitoring:
-  enabled: false
+    image:
+      registry: ${IMAGE_REGISTRY}
+      repository: cosmotech/prometheus-alertmanager
 
 grafana:
   enabled: true
@@ -35,10 +22,11 @@ grafana:
   persistence:
     enabled: true
     type: pvc
+    existingClaim: ${PERSISTENCE_PVC_GRAFANA}
     storageClassName: ${PERSISTENCE_STORAGE_CLASS}
+    size: "${PERSISTENCE_SIZE_GRAFANA}Gi"
     accessModes:
       - ReadWriteOnce
-    size: "${PERSISTENCE_SIZE_GRAFANA}Gi"
   sidecar:
     image:
       repository: cosmotech/k8s-sidecar
@@ -163,20 +151,68 @@ grafana:
   nodeSelector:
     "cosmotech.com/tier": "monitoring"
 
-## Prometheus Components
-kubeApiServer: { enabled: true }
-kubelet: { enabled: true }
-kubeControllerManager: { enabled: true }
-coreDns: { enabled: true }
-kubeEtcd: { enabled: true }
-kubeScheduler: { enabled: true }
+prometheus:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: prometheus
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    logLevel: info
+    retention: "15d"
+    storage: {}
+    volumes:
+      - name: prometheus-volume
+        persistentVolumeClaim:
+          claimName: ${PERSISTENCE_PVC_PROMETHEUS}
+    resources: {}
+    replicas: 1
+    image:
+      registry: ${IMAGE_REGISTRY}
+      repository: cosmotech/prometheus
+      tag: "3"
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+    nodeSelector:
+      "cosmotech.com/tier": "monitoring"
+    initContainers:
+      - name: volume-permissions
+        image: ${IMAGE_REGISTRY}/cosmotech/os-shell-iamguarded
+        command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
+        volumeMounts:
+          - name: prometheus-volume
+            mountPath: /prometheus
+
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: true
+coreDns:
+  enabled: true
+kubeEtcd:
+  enabled: true
+kubeScheduler:
+  enabled: true
 kubeStateMetrics:
-  enabled: false
+  enabled: true
+
+kube-state-metrics:
+  image:
+    repository: cosmotech/kube-state-metrics
+    tag: latest
+    distroless: false
   tolerations:
     - key: "vendor"
       operator: "Equal"
       value: "cosmotech"
-      effect: "NoSchedule"  
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
 
 prometheusOperator:
   tolerations:
@@ -186,105 +222,48 @@ prometheusOperator:
       effect: "NoSchedule"
   nodeSelector:
     "cosmotech.com/tier": "monitoring"
+  prometheusConfigReloader:
+    image:
+      registry: ${IMAGE_REGISTRY}
+      repository: cosmotech/prometheus-config-reloader
   admissionWebhooks:
     patch:
-      labels:
-        networking/traffic-allowed: "yes"
-      nodeSelector:
-        "cosmotech.com/tier": "monitoring"
+      enabled: true
       tolerations:
         - key: "vendor"
           operator: "Equal"
           value: "cosmotech"
           effect: "NoSchedule"
-      # image:
-      #   repository: cosmotech/kube-webhook-certgen
-      #   tag: latest
-      #   pullPolicy: IfNotPresent
-
-prometheus:
-  enabled: true
-  crname: prometheus
-  networkPolicy:
-    enabled: false
-  serviceAccount:
-    create: true
-    name: prometheus-service-account
-  prometheusSpec:
-    serviceMonitorSelectorNilUsesHelmValues: false
-    logLevel: info
-    replicas: 1
-    tolerations:
-      - key: "vendor"
-        operator: "Equal"
-        value: "cosmotech"
-        effect: "NoSchedule"
-    nodeSelector:
-      "cosmotech.com/tier": "monitoring"
-    podMetadata:
-      annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
-      labels:
-        app: prometheus
-    resources: {}
-    retention: "15d"
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: ${PERSISTENCE_STORAGE_CLASS}
-          accessModes: [ReadWriteOnce]
-          resources:
-            requests:
-              storage: "${PERSISTENCE_SIZE_PROMETHEUS}Gi"
-    initContainers:
-      - name: volume-permissions
-        image: cosmotech/os-shell-iamguarded
-        command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
-        volumeMounts:
-          - name: prometheus-data   # match your volume name (usually the PVC mount)
-            mountPath: /prometheus
-  additionalServiceMonitors:
-    - name: cosmotech-v1
-      additionalLabels:
-        serviceMonitorSelector: prometheus
-      endpoints:
-        - interval: 30s
-          targetPort: 8081
-          path: /actuator/prometheus
-      namespaceSelector:
-        matchNames:
-          - phoenix
-      selector:
-        matchLabels:
-          app.kubernetes.io/instance: cosmotech-api-v1
+      nodeSelector:
+        "cosmotech.com/tier": "monitoring"
+      image:
+        registry: ${IMAGE_REGISTRY}
+        repository: cosmotech/kube-webhook-certgen
 
 nodeExporter:
   enabled: true
 
 prometheus-node-exporter:
-  podLabels:
-    jobLabel: node-exporter
-  releaseLabel: true
-  extraArgs:
-    - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
-    - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
-  service:
-    portName: http-metrics
-  prometheus:
-    monitor:
-      enabled: true
-      jobLabel: jobLabel
-      honorLabels: true
-      metricRelabelings: []
-      relabelings: []
-  rbac:
-    pspEnabled: false
   image:
-    repository: cosmotech/prometheus-node-exporter-iamguarded
+    repository: cosmotech/prometheus-node-exporter
     tag: latest
     distroless: false
-  nodeSelector:
-    "cosmotech.com/tier": "services"
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  # nodeSelector:
+  #   "cosmotech.com/tier": "monitoring"
+
+defaultRules:
+  create: true
+
+kubernetesServiceMonitors:
+  enabled: true
+
+windowsMonitoring:
+  enabled: false
 
 global:
   imageRegistry: ${IMAGE_REGISTRY}
