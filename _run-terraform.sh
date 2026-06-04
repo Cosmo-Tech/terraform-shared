@@ -124,7 +124,6 @@ else
 fi
 
 
-
 echo "$NO_FORMAT"
 echo "target is $FG_COLOR_INFO$cluster_name"
 

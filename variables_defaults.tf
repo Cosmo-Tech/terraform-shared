@@ -76,5 +76,12 @@ variable "traefik_image_tag" { default = "3.7.1" }
 # variable "traefik_chart_tag" { default = "40.2.0" }
 
 
+# Workload Scheduler (autostop/autostart)
+variable "workloadscheduler_enable_creation" { default = true } # Setting to false will prevent from Kubernetes objects creation 
+variable "workloadscheduler_timezone" { default = "Europe/Paris" }
+variable "workloadscheduler_cron_stop" { default = "0 21 * * 1-5" }  # Stop monday-friday at 21:00
+variable "workloadscheduler_cron_start" { default = "0 07 * * 1-5" } # Start monday-friday at 07:00
+
+
 # Global
 variable "postgresql_image_repository" { default = "cosmotech/postgres-iamguarded" }

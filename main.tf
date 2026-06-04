@@ -1,7 +1,6 @@
 locals {
-  cluster_domain            = "${var.cluster_name}.${var.domain_zone}"
-  storage_class_name        = "cosmotech-retain"
-  enable_workload_scheduler = true
+  cluster_domain     = "${var.cluster_name}.${var.domain_zone}"
+  storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
       size      = 10
@@ -99,7 +98,11 @@ resource "time_sleep" "timer" {
 module "workload_scheduler" {
   source = "./modules/workload_scheduler"
 
-  enable_workload_scheduler = local.enable_workload_scheduler
+  # Do not deploy for on-premise
+  create_workload_scheduler = var.cloud_provider == "kob" ? false : var.workloadscheduler_enable_creation
+  scaler_time_zone          = var.workloadscheduler_timezone
+  scale_down_cron_schedule  = var.workloadscheduler_cron_stop
+  scale_up_cron_schedule    = var.workloadscheduler_cron_start
 
   depends_on = [
     time_sleep.timer,
