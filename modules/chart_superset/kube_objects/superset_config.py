@@ -10,6 +10,41 @@ logger = logging.getLogger()
 log = getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+#### Superset plugins feature configuration
+
+# Blueprint: expose /dynamic-plugins/api/read as JSON API
+# Superset 6.x DynamicPluginsView is a FAB ModelView (HTML only).
+# The frontend expects GET /dynamic-plugins/api/read -> JSON.
+from flask import Blueprint, jsonify
+
+_dp_api = Blueprint("dynamic_plugins_api", __name__)
+
+
+@_dp_api.route("/dynamic-plugins/api/read")
+def _dp_api_read():
+    import time
+    from superset.extensions import db
+    from superset.models.dynamic_plugins import DynamicPlugin
+
+    plugins = db.session.query(DynamicPlugin).all()
+    ts = int(time.time())
+    return jsonify(
+        {
+            "result": [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "key": p.key,
+                    "bundle_url": p.bundle_url + f"?v={ts}",
+                }
+                for p in plugins
+            ]
+        }
+    )
+
+
+BLUEPRINTS = [_dp_api]
+
 ### This file is based on this one https://github.com/apache/superset/blob/master/superset/config.py
 
 # Start Utility functions
@@ -151,7 +186,8 @@ except ImportError:
 ### Enable embedded Superset functionality
 FEATURE_FLAGS = {'DASHBOARD_RBAC': True,
                  'ALERT_REPORTS': True,
-                 'EMBEDDED_SUPERSET': True}
+                 'EMBEDDED_SUPERSET': True,
+                 'DYNAMIC_PLUGINS': True}
 
 
 # After this : volatile config to try to get guest access tokens
@@ -176,11 +212,18 @@ TALISMAN_ENABLED = True
 TALISMAN_CONFIG = {
     "content_security_policy": {
         "frame-ancestors": [
-          "https://${SUPERSET_CLUSTER_DOMAIN}",
-          "https://${CLUSTER_DOMAIN}"]
+            "https://${SUPERSET_CLUSTER_DOMAIN}",
+            "https://${CLUSTER_DOMAIN}"
+            ],
+        "connect-src": [
+            "'self'",
+            "https://api.mapbox.com",
+            "https://events.mapbox.com",
+            "https://cdn.jsdelivr.net"
+        ]
     },
     "force_https": False,
     "force_https_permanent": False,
     "frame_options": "ALLOWFROM",
-    "frame_options_allow_from": "*"
+    "frame_options_allow_from": "*",
 }

@@ -26,22 +26,16 @@ variable "chart_release" {
   type = string
 }
 
-variable "certificate_email" {
+variable "traefik_image_repository" {
   type = string
 }
 
-variable "cluster_domain" {
+variable "traefik_image_tag" {
   type = string
 }
 
-variable "service_annotations" {
+variable "platform_lb_ip" {
   type = string
 }
 
-variable "cloud_provider" {
-  type = string
-}
-
-variable "dns_challenge_provider" {
-  type = string
-}
+variable "lb_annotations" {}

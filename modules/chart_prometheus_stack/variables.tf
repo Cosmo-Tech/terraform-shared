@@ -1,27 +1,30 @@
 variable "namespace" {
-  description = "Namespace for deploying the Helm release"
-  type        = string
-}
-variable "helm_repo_url" {
-  description = "Helm repository URL for Prometheus chart"
-  type        = string
+  type = string
 }
 
-variable "helm_chart_name" {
-  description = "Helm chart name"
-  type        = string
+variable "image_registry" {
+  type = string
 }
 
-variable "helm_chart_version" {
-  description = "Helm chart version"
-  type        = string
+variable "image_registry_auth_secret" {
+  type = string
 }
 
-variable "helm_release_name" {
-  description = "Helm release name for Prometheus"
-  type        = string
+variable "chart_repository" {
+  type = string
 }
 
+variable "chart_name" {
+  type = string
+}
+
+variable "chart_tag" {
+  type = string
+}
+
+variable "chart_release" {
+  type = string
+}
 
 variable "cluster_domain" {
   description = "API DNS name"

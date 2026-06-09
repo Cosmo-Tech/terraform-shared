@@ -7,6 +7,15 @@ terraform {
   }
 }
 
+locals {
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values = {
+    SERVICE_ANNOTATIONS        = var.service_annotations
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+  }
+}
+
 
 resource "time_sleep" "wait_certmanager_crds" {
   create_duration = "60s"
@@ -18,24 +27,40 @@ resource "time_sleep" "wait_certmanager_crds" {
 
 
 # 1. CERT-MANAGER
-data "template_file" "cert_values" {
-  template = file("${path.module}/values.yaml")
-  vars = {
-    service_annotations = yamlencode(var.service_annotations)
+resource "helm_release" "cert_manager" {
+  namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
+
+  values = [
+    local.chart_values_file
+  ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
   }
 }
 
-resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "1.11.0"
-  namespace        = "cert-manager"
-  create_namespace = true
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version      = var.chart_tag
+    values       = local.chart_values_file
+    values_sha1  = sha1(local.chart_values_file)
+    helm_release = data.kubernetes_resources.helm_release_secret
+  }
+}
 
-  values = [
-    data.template_file.cert_values.rendered
-  ]
+data "kubernetes_resources" "helm_release_secret" {
+  api_version    = "v1"
+  kind           = "Secret"
+  label_selector = "owner=helm,name=${var.chart_release}"
 }
 
 
@@ -46,7 +71,8 @@ data "template_file" "clusterissuer_prod_http01" {
 
   template = file("${path.module}/kube_objects/clusterissuer.http01.yaml")
   vars = {
-    certificate_email = var.certificate_email
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
   }
 }
 
@@ -92,12 +118,13 @@ data "template_file" "clusterissuer_prod_dns01_azuredns" {
 
   template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
   vars = {
-    certificate_email   = var.certificate_email
-    client_id           = kubernetes_secret.dns_challenge[0].data["client-id"]
-    subscription_id     = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-    tenant_id           = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-    domain_zone         = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-    resource_group_name = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
+    SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+    TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+    DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+    DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
   }
 }
 
@@ -116,7 +143,7 @@ resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
 data "template_file" "certificate" {
   template = file("${path.module}/kube_objects/certificate.yaml")
   vars = {
-    cluster_domain = var.cluster_domain
+    CLUSTER_DOMAIN = var.cluster_domain
   }
 }
 

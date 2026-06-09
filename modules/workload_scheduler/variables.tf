@@ -4,25 +4,25 @@ variable "namespace" {
   default     = "default"
 }
 
+variable "create_workload_scheduler" {
+  type        = bool
+  description = "Enable creation of workload scheduler resources"
+}
+
 variable "scaler_time_zone" {
   type        = string
   description = "Time zone used by the CronJobs for scheduling execution"
-  default     = "Europe/Paris"
-}
-
-variable "scale_up_cron_schedule" {
-  type        = string
-  description = "Cron expression for scaling workloads up"
-  default     = "0 05 * * 1-5"
+  # default     = "Europe/Paris"
 }
 
 variable "scale_down_cron_schedule" {
   type        = string
   description = "Cron expression for scaling workloads down"
-  default     = "0 19 * * 1-5"
+  # default     = "0 21 * * 1-5"
 }
 
-variable "enable_workload_scheduler" {
-  type        = bool
-  description = "Enable creation of workload scheduler resources"
+variable "scale_up_cron_schedule" {
+  type        = string
+  description = "Cron expression for scaling workloads up"
+  # default     = "0 07 * * 1-5"
 }

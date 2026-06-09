@@ -2,6 +2,8 @@ locals {
   redis_admin_password      = var.redis_admin_password != "" ? var.redis_admin_password : (length(random_password.redis_admin_password) > 0 ? random_password.redis_admin_password[0].result : "")
   prometheus_admin_password = var.prometheus_admin_password != "" ? var.prometheus_admin_password : (length(random_password.prometheus_admin_password) > 0 ? random_password.prometheus_admin_password[0].result : "")
 
+
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
   chart_values = {
     COSMOTECH_CLUSTER_DOMAIN    = var.cluster_domain
     NAMESPACE                   = var.namespace
@@ -12,24 +14,49 @@ locals {
     PERSISTENCE_PVC_PROMETHEUS  = var.pvc_prometheus
     PROMETHEUS_ADMIN_PASSWORD   = local.prometheus_admin_password
     REDIS_ADMIN_PASSWORD        = local.redis_admin_password
+    IMAGE_REGISTRY              = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET  = var.image_registry_auth_secret
   }
 }
 
 
 resource "helm_release" "prometheus_stack" {
-  name             = var.helm_release_name
-  repository       = var.helm_repo_url
-  chart            = var.helm_chart_name
-  version          = var.helm_chart_version
-  namespace        = var.namespace
-  create_namespace = false
+  namespace  = var.namespace
+  name       = var.chart_release
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
 
-  timeout      = 600
-  reuse_values = true
+  timeout = 600
+  # reuse_values = true
 
   values = [
-    templatefile("${path.module}/values.yaml", local.chart_values)
+    local.chart_values_file
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
+}
+
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version      = var.chart_tag
+    values       = local.chart_values_file
+    values_sha1  = sha1(local.chart_values_file)
+    helm_release = data.kubernetes_resources.helm_release_secret
+  }
+}
+
+data "kubernetes_resources" "helm_release_secret" {
+  api_version    = "v1"
+  kind           = "Secret"
+  label_selector = "owner=helm,name=${var.chart_release}"
 }
 
 

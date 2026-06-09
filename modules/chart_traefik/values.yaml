@@ -1,0 +1,97 @@
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: traefik
+
+service:
+  enabled: true
+  type: LoadBalancer
+  spec:
+    loadBalancerIP: ${PLATFORM_LB_IP}
+  annotations: {}
+  labels:
+    networking/traffic-allowed: "yes"
+
+providers:
+  kubernetesIngress:
+    enabled: true
+
+ports:
+  web:
+    port: 8000
+    exposedPort: 80
+    expose:
+      default: true
+  websecure:
+    port: 8443
+    exposedPort: 443
+    expose:
+      default: true
+
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: letsencrypt-prod
+
+additionalArguments:
+  - "--ping=true"
+  - "--api.dashboard=true"
+  - "--entrypoints.web.address=:8000"
+  - "--entrypoints.websecure.address=:8443"
+  - "--entryPoints.websecure.transport.respondingTimeouts.readTimeout=300s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.writeTimeout=300s"
+  - "--entryPoints.websecure.transport.respondingTimeouts.idleTimeout=300s"
+
+logs:
+  general:
+    level: INFO
+
+deployment:
+  enabled: true
+  replicas: 1
+  # nodeSelector:
+  #   cosmotech.com/tier: services
+  # tolerations:
+  #   - key: vendor
+  #     operator: Equal
+  #     value: cosmotech
+  #     effect: NoSchedule
+  #   - key: cosmotech.com/tier
+  #     operator: Equal
+  #     value: services
+  #     effect: NoSchedule
+  podLabels:
+    networking/traffic-allowed: "yes"
+  imagePullSecrets:
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+nodeSelector:
+  cosmotech.com/tier: services
+tolerations:
+  - key: vendor
+    operator: Equal
+    value: cosmotech
+    effect: NoSchedule
+  - key: cosmotech.com/tier
+    operator: Equal
+    value: services
+    effect: NoSchedule
+
+image:
+  registry: ${IMAGE_REGISTRY}
+  repository: ${TRAEFIK_IMAGE_REPOSITORY}
+  tag: "${TRAEFIK_IMAGE_TAG}"
+  pullPolicy: IfNotPresent
+
+global:
+  sendAnonymousUsage: false
+#   imageRegistry: ${IMAGE_REGISTRY}
+#   imagePullSecrets:
+#     - name: ${IMAGE_REGISTRY_AUTH_SECRET}

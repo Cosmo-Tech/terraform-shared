@@ -20,42 +20,42 @@ locals {
 
 
 resource "kubectl_manifest" "service_account" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/service-account.yaml", local.objects_values)
 }
 
 
 resource "kubectl_manifest" "cluster_role" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/cluster-role.yaml", local.objects_values)
 }
 
 
 resource "kubectl_manifest" "cluster_role_binding" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/cluster-role-binding.yaml", local.objects_values)
 }
 
 
 resource "kubectl_manifest" "cronjob_scale_down" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/cronjob-scale-down.yaml", local.objects_values)
 }
 
 
 resource "kubectl_manifest" "cronjob_scale_up" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/cronjob-scale-up.yaml", local.objects_values)
 }
 
 
 resource "kubectl_manifest" "pvc" {
-  count           = var.enable_workload_scheduler ? 1 : 0
+  count           = var.create_workload_scheduler ? 1 : 0
   validate_schema = false
   yaml_body       = templatefile("${path.module}/kube_objects/pvc.yaml", local.objects_values)
 }

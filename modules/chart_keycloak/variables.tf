@@ -1,8 +1,56 @@
-# -----------------------------
-# General
-# -----------------------------
 variable "namespace" {
-  description = "Namespace for Keycloak deployment"
+  type = string
+}
+
+variable "image_registry" {
+  type = string
+}
+
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+
+# -- Keycloak itself
+variable "chart_keycloak_repository" {
+  type = string
+}
+
+variable "chart_keycloak_name" {
+  type = string
+}
+
+variable "chart_keycloak_tag" {
+  type = string
+}
+
+variable "chart_keycloak_release" {
+  type = string
+}
+# -- Keycloak itself
+
+
+# -- Keycloak PostgreSQL
+variable "chart_postgresql_repository" {
+  type = string
+}
+
+variable "chart_postgresql_name" {
+  type = string
+}
+
+variable "chart_postgresql_tag" {
+  type = string
+}
+
+variable "chart_postgresql_release" {
+  type = string
+}
+# -- Keycloak PostgreSQL
+
+
+variable "keycloak_ingress_hostname" {
+  description = "Ingress hostname for Keycloak"
   type        = string
 }
 
@@ -12,14 +60,6 @@ variable "keycloak_admin_password" {
   default     = ""
 }
 
-variable "keycloak_ingress_hostname" {
-  description = "Ingress hostname for Keycloak"
-  type        = string
-}
-
-# -----------------------------
-# PostgreSQL Config
-# -----------------------------
 variable "keycloak_postgres_password" {
   description = "Optional PostgreSQL user password; generated if empty"
   type        = string
@@ -42,35 +82,10 @@ variable "pvc" {
   type        = string
 }
 
-# -----------------------------
-# Helm Charts
-# -----------------------------
-variable "postgres_helm_repo" {
-  description = "Helm repository URL for PostgreSQL"
-  type        = string
+variable "postgresql_image_repository" {
+  type = string
 }
 
-variable "postgres_helm_chart" {
-  description = "PostgreSQL Helm chart name"
-  type        = string
-}
-
-variable "postgres_helm_chart_version" {
-  description = "PostgreSQL Helm chart version"
-  type        = string
-}
-
-variable "keycloak_helm_repo" {
-  description = "Helm repository URL for Keycloak"
-  type        = string
-}
-
-variable "keycloak_helm_chart" {
-  description = "Keycloak Helm chart name"
-  type        = string
-}
-
-variable "keycloak_helm_chart_version" {
-  description = "Keycloak Helm chart version"
-  type        = string
+variable "postgresql_image_tag" {
+  type = string
 }

@@ -1,4 +1,7 @@
 locals {
+  chart_values_file_harbor     = templatefile("${path.module}/values-harbor.yaml", local.chart_values)
+  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+  chart_values_file_redis      = templatefile("${path.module}/values-redis.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     CLUSTER_DOMAIN                     = var.cluster_domain
@@ -11,24 +14,37 @@ locals {
     PERSISTENCE_POSTGRESQL_PVC         = var.pvc_postgresql
     PERSISTENCE_REGISTRY_PVC           = var.pvc_registry
     PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
-    # PERSISTENCE_CHARTMUSEUM_PVC        = var.pvc_chartmuseum
-    # PERSISTENCE_TRIVY_PVC              = var.pvc_trivy
+    IMAGE_REGISTRY                     = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
+    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
   }
 }
 
 
 resource "helm_release" "harbor" {
-  name             = "harbor"
-  repository       = var.harbor_helm_repo
-  chart            = var.harbor_helm_chart
-  version          = var.harbor_helm_chart_version
-  namespace        = "harbor"
-  create_namespace = true
-  wait             = false
-  wait_for_jobs    = false
+  namespace  = var.namespace
+  name       = var.chart_harbor_release
+  repository = var.chart_harbor_repository
+  chart      = var.chart_harbor_name
+  version    = var.chart_harbor_tag
+
+  wait          = false
+  wait_for_jobs = false
+
   values = [
-    templatefile("${path.module}/values-harbor.yaml", local.chart_values)
+    local.chart_values_file_harbor
   ]
+
+  force_update  = true
+  recreate_pods = true
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.helm_release_trigger,
+    ]
+  }
+
   depends_on = [
     helm_release.postgresql,
     helm_release.redis,
@@ -36,16 +52,30 @@ resource "helm_release" "harbor" {
   ]
 }
 
+resource "terraform_data" "helm_release_trigger" {
+  input = {
+    version      = var.chart_harbor_tag
+    values       = local.chart_values_file_harbor
+    values_sha1  = sha1(local.chart_values_file_harbor)
+    helm_release = data.kubernetes_resources.helm_release_secret
+  }
+}
+
+data "kubernetes_resources" "helm_release_secret" {
+  api_version    = "v1"
+  kind           = "Secret"
+  label_selector = "owner=helm,name=${var.chart_harbor_release}"
+}
 
 resource "helm_release" "postgresql" {
-  name       = "harbor-postgresql"
-  repository = var.postgres_helm_repo
-  chart      = var.postgres_helm_chart
-  version    = var.postgres_helm_chart_version
-  namespace  = "harbor"
+  namespace  = var.namespace
+  name       = var.chart_postgresql_release
+  repository = var.chart_postgresql_repository
+  chart      = var.chart_postgresql_name
+  version    = var.chart_postgresql_tag
 
   values = [
-    templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+    local.chart_values_file_postgresql
   ]
   depends_on = [
     kubernetes_secret.harbor_config
@@ -54,14 +84,14 @@ resource "helm_release" "postgresql" {
 
 
 resource "helm_release" "redis" {
-  name       = "redis"
-  repository = var.redis_helm_repo
-  chart      = var.redis_helm_chart
-  version    = var.redis_helm_chart_version
-  namespace  = "harbor"
+  namespace  = var.namespace
+  name       = var.chart_redis_release
+  repository = var.chart_redis_repository
+  chart      = var.chart_redis_name
+  version    = var.chart_redis_tag
 
   values = [
-    templatefile("${path.module}/values-redis.yaml", local.chart_values)
+    local.chart_values_file_redis
   ]
 }
 
@@ -84,9 +114,7 @@ resource "random_password" "harbor_admin_password" {
 }
 
 
-# -----------------------------
-# Kubernetes Secret for harbor Config
-# -----------------------------
+## Kubernetes Secret for harbor Config
 resource "kubernetes_secret" "harbor_config" {
   metadata {
     name      = "harbor-config"
