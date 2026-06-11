@@ -10,7 +10,13 @@ alertmanager:
         effect: "NoSchedule"
     nodeSelector:
       "cosmotech.com/tier": "monitoring"
-    resources: {}
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
     image:
       registry: ${IMAGE_REGISTRY}
       repository: cosmotech/prometheus-alertmanager
@@ -165,7 +171,13 @@ prometheus:
       - name: prometheus-volume
         persistentVolumeClaim:
           claimName: ${PERSISTENCE_PVC_PROMETHEUS}
-    resources: {}
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
     replicas: 1
     image:
       registry: ${IMAGE_REGISTRY}
