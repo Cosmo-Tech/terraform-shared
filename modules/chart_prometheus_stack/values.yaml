@@ -110,10 +110,6 @@ grafana:
         gnetId: 9614
         revision: 1
         datasource: Prometheus
-      minio:
-        gnetId: 15305
-        revision: 1
-        datasource: Prometheus
       postgresql:
         gnetId: 9628
         revision: 7
@@ -121,10 +117,6 @@ grafana:
       certmanager:
         gnetId: 11001
         revision: 1
-        datasource: Prometheus
-      rabbitmq:
-        gnetId: 10991
-        revision: 14
         datasource: Prometheus
       csm_licensing:
         url: "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/grafana/cosmotech_licensing/v8/cosmotech_licensing.json"
