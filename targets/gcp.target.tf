@@ -46,4 +46,5 @@ module "storage_gcp" {
   region             = var.cluster_region
   cluster_name       = var.cluster_name
   cloud_provider     = var.cloud_provider
+  pvc_annotations    = each.value.pvc_annotations
 }

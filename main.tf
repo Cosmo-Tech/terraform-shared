@@ -3,49 +3,58 @@ locals {
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-keycloak-postgresql"
-      namespace = "keycloak"
+      size            = 10
+      name            = "${var.cluster_name}-keycloak-postgresql"
+      namespace       = "keycloak"
+      pvc_annotations = {}
     }
     prometheusstack-prometheus = {
-      size      = 100
-      name      = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace = "monitoring"
+      size            = 100
+      name            = "${var.cluster_name}-prometheusstack-prometheus"
+      namespace       = "monitoring"
+      pvc_annotations = {}
     }
     prometheusstack-grafana = {
-      size      = 10
-      name      = "${var.cluster_name}-prometheusstack-grafana"
-      namespace = "monitoring"
+      size            = 10
+      name            = "${var.cluster_name}-prometheusstack-grafana"
+      namespace       = "monitoring"
+      pvc_annotations = {}
     }
     harbor-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-redis"
-      namespace = "harbor"
+      size            = 10
+      name            = "${var.cluster_name}-harbor-redis"
+      namespace       = "harbor"
+      pvc_annotations = {}
     }
     harbor-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-postgresql"
-      namespace = "harbor"
+      size            = 10
+      name            = "${var.cluster_name}-harbor-postgresql"
+      namespace       = "harbor"
+      pvc_annotations = {}
     }
     harbor-registry = {
-      size      = 30
-      name      = "${var.cluster_name}-harbor-registry"
-      namespace = "harbor"
+      size            = 30
+      name            = "${var.cluster_name}-harbor-registry"
+      namespace       = "harbor"
+      pvc_annotations = {}
     }
     harbor-jobservice = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-jobservice"
-      namespace = "harbor"
+      size            = 10
+      name            = "${var.cluster_name}-harbor-jobservice"
+      namespace       = "harbor"
+      pvc_annotations = {}
     }
     superset-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-postgresql"
-      namespace = "superset"
+      size            = 10
+      name            = "${var.cluster_name}-superset-postgresql"
+      namespace       = "superset"
+      pvc_annotations = {}
     }
     superset-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-redis"
-      namespace = "superset"
+      size            = 10
+      name            = "${var.cluster_name}-superset-redis"
+      namespace       = "superset"
+      pvc_annotations = {}
     }
   }
 }
