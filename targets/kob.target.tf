@@ -46,4 +46,5 @@ module "storage_kob" {
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
   cloud_provider     = var.cloud_provider
+  pvc_annotations    = each.value.pvc_annotations
 }
