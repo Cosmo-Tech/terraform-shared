@@ -47,3 +47,25 @@ variable "image_registry_auth_secret_source_namespace" {
   type    = string
   default = "default"
 }
+
+variable "cosmotech_modeling_api_image_registry_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "cosmotech_modeling_api_image_registry_auth_secret" {
+  type    = string
+  default = "registry-auth-cosmotech-modeling-api"
+}
+
+variable "cosmotech_modeling_api_image_registry_username" {
+  type      = string
+  sensitive = true
+  default   = null
+}
+
+variable "cosmotech_modeling_api_image_registry_password" {
+  type      = string
+  sensitive = true
+  default   = null
+}

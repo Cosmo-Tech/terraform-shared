@@ -54,11 +54,32 @@ locals {
 module "registry_authentication" {
   source = "./modules/registry_authentication"
 
-  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
-  image_registry                              = var.image_registry
-  image_registry_auth_secret                  = var.image_registry_auth_secret
-  image_registry_username                     = var.image_registry_username
-  image_registry_password                     = var.image_registry_password
+  for_each = {
+    for key, value in {
+      chainguard = {
+        enabled   = true
+        namespace = var.image_registry_auth_secret_source_namespace
+        secret    = var.image_registry_auth_secret
+        registry  = var.image_registry
+        username  = var.image_registry_username
+        password  = var.image_registry_password
+      }
+      cosmotech-modeling-api = {
+        enabled   = var.cosmotech_modeling_api_image_registry_enabled
+        namespace = "default"
+        secret    = var.cosmotech_modeling_api_image_registry_auth_secret
+        registry  = "ghcr.io"
+        username  = var.cosmotech_modeling_api_image_registry_username
+        password  = var.cosmotech_modeling_api_image_registry_password
+      }
+    } : key => value if value.enabled
+  }
+
+  namespace = each.value.namespace
+  secret    = each.value.secret
+  registry  = each.value.registry
+  username  = each.value.username
+  password  = each.value.password
 }
 
 
