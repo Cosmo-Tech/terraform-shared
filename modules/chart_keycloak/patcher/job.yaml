@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pvc-${namespace}-patcher
+  namespace: ${namespace}
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      serviceAccountName: pvc-patcher-sa
+      restartPolicy: OnFailure
+      containers:
+        - name: patcher
+          image: bitnami/kubectl:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for initdb job to finish..."
+              until kubectl get job -n ${namespace} | grep -E "${namespace}-postgresql-1-initdb.*1/1"; do
+                sleep 5
+              done
+              
+              echo "Initdb completed! Patching PVC annotations..."
+              kubectl annotate pvc ${namespace}-postgresql-1 \
+                cnpg.io/nodeSerial="1" \
+                cnpg.io/pvcStatus="ready" \
+                cnpg.io/pvcFor="${namespace}-postgresql-1" \
+                -n ${namespace} --overwrite
+              
+              echo "PVC patched successfully!"

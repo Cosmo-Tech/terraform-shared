@@ -57,11 +57,11 @@ registry:
       effect: NoSchedule
 
 externalDatabase:
-  host: harbor-postgresql.${NAMESPACE}.svc.cluster.local
+  host: harbor-postgresql-rw.${NAMESPACE}.svc.cluster.local
   port: 5432
-  user: postgres
+  user: harbor
   existingSecret: "${SECRET}"
-  existingSecretPasswordKey: "${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}"
+  existingSecretPasswordKey: password
   coreDatabase: harbor_db
   sslmode: disable
 postgresql:

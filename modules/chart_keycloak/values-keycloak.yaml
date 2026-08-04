@@ -18,7 +18,7 @@ postgresql:
   enabled: false
 externalDatabase:
   database: keycloak_db
-  host: keycloak-postgresql.${NAMESPACE}.svc.cluster.local
+  host: keycloak-postgresql-rw.${NAMESPACE}.svc.cluster.local
   user: ${POSTGRES_USER}
   existingSecret: ${KEYCLOAK_SECRET}
   existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}

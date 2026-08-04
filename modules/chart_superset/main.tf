@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1.3"
+    }
+  }
+}
 locals {
   superset_secret_name                    = "superset"
   superset_redis_secret_name              = "superset-redis"
@@ -35,6 +43,7 @@ locals {
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES       = indent(4, local.py_volumes)
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS = indent(4, local.py_volumes_mounts)
     PYTHON_REQUIREMENTS_EXTRA_ENV_VARS               = indent(6, local.py_env_vars)
+    PERSISTENCE_SIZE                                 = var.persistence_size
   }
 
   py_main_name = "python-requirements"
@@ -171,6 +180,8 @@ resource "kubernetes_secret" "superset_postgresql" {
   data = {
     password            = random_password.superset_postgresql_password.result
     postgresql-password = random_password.superset_user_postgresql_password.result
+    username            = "bn_superset"
+    password            = random_password.superset_user_postgresql_password.result
   }
 
   type = "Opaque"
@@ -253,5 +264,11 @@ data "kubernetes_resources" "helm_release_secret" {
   api_version    = "v1"
   kind           = "Secret"
   label_selector = "owner=helm,name=${var.chart_release}"
+}
+resource "kubernetes_manifest" "superset_postgresql" {
+  manifest = yamldecode(templatefile(
+    "${path.module}/values-postgresql.yaml",
+    local.chart_values
+  ))
 }
 ## End of Superset Helm Chart

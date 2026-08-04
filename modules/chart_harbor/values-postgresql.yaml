@@ -1,33 +1,30 @@
-primary:
-  persistence:
-    enabled: true
-    existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
-  nodeSelector:
-    "cosmotech.com/tier": "db"
-  tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-  resourcesPreset: "nano"
-image:
-  # registry: ${IMAGE_REGISTRY}
-  repository: ${POSTGRESQL_IMAGE_REPOSITORY}
-  tag: "${POSTGRESQL_IMAGE_TAG}"
-  pullPolicy: IfNotPresent
-volumePermissions:
-  enabled: true
-  image:
-    repository: cosmotech/os-shell-iamguarded
-    tag: latest
-    pullPolicy: IfNotPresent
-global:
-  imageRegistry: ${IMAGE_REGISTRY}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ${NAMESPACE}-postgresql
+  namespace: ${NAMESPACE}
+spec:
+  instances: 1
+  imageName: ${IMAGE_REGISTRY}/${POSTGRESQL_IMAGE_REPOSITORY}:${POSTGRESQL_IMAGE_TAG}
   imagePullSecrets:
     - name: ${IMAGE_REGISTRY_AUTH_SECRET}
-  postgresql:
-    auth:
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
       database: harbor_db
-      existingSecret: ${SECRET}
-      secretKeys:
-        adminPasswordKey: ${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}
+      owner: harbor
+      secret:
+        name: ${SECRET}
+  storage:
+    storageClass: ${PERSISTENCE_STORAGE_CLASS}
+    size: ${PERSISTENCE_SIZE}
+  affinity:
+    nodeSelector:
+      cosmotech.com/tier: db
+    tolerations:
+      - key: vendor
+        operator: Equal
+        value: cosmotech
+        effect: NoSchedule
+  monitoring:
+    enablePodMonitor: true

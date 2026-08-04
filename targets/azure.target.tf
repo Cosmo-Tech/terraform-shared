@@ -63,4 +63,8 @@ module "storage_azure" {
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
   cloud_provider     = var.cloud_provider
+  labels             = try(each.value.labels, {})
+  annotations        = try(each.value.annotations, {})
+  pv_name            = each.value.pv_name
+  pvc_name           = each.value.pvc_name
 }

@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1.3"
+    }
+  }
+}
 locals {
   keycloak_secret_name_config             = "keycloak-config"
   keycloak_admin_user                     = "admin"
@@ -23,6 +31,7 @@ locals {
     IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
+    PERSISTENCE_SIZE                   = var.persistence_size
   }
 }
 
@@ -58,22 +67,20 @@ resource "kubernetes_secret" "keycloak_config" {
     keycloak_postgres_user           = local.keycloak_postgres_user
     keycloak_postgres_password       = var.keycloak_postgres_password != "" ? var.keycloak_postgres_password : random_password.keycloak_postgres_password.result
     keycloak_postgres_admin_password = var.keycloak_postgres_admin_password != "" ? var.keycloak_postgres_admin_password : random_password.keycloak_postgres_admin_password.result
+    username                         = local.keycloak_postgres_user
+    password                         = var.keycloak_postgres_password != "" ? var.keycloak_postgres_password : random_password.keycloak_postgres_password.result
+
   }
 
   type = "Opaque"
 }
 
 
-resource "helm_release" "postgresql" {
-  namespace  = var.namespace
-  name       = var.chart_postgresql_release
-  repository = var.chart_postgresql_repository
-  chart      = var.chart_postgresql_name
-  version    = var.chart_postgresql_tag
-
-  values = [
-    local.chart_values_file_postgresql
-  ]
+resource "kubernetes_manifest" "postgresql" {
+  manifest = yamldecode(templatefile(
+    "${path.module}/values-postgresql.yaml",
+    local.chart_values
+  ))
 }
 
 
@@ -98,7 +105,7 @@ resource "helm_release" "keycloak" {
   }
 
   depends_on = [
-    helm_release.postgresql
+    kubernetes_manifest.postgresql
   ]
 }
 

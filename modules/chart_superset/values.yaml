@@ -8,7 +8,7 @@ beat:
 
 defaultInitContainers:
   waitForDB:
-    enabled: true
+    enabled: false
     resourcesPreset: nano
   waitForRedis:
     enabled: true
@@ -37,33 +37,15 @@ ingress:
   selfSigned: false
 
 postgresql:
-  enabled: true
-  architecture: standalone
-  auth:
-    database: bitnami_superset
-    enablePostgresUser: true
-    existingSecret: "${SUPERSET_POSTGRESQL_SECRET_NAME}"
-    username: bn_superset
-  image:
-    registry: ${IMAGE_REGISTRY}
-    repository: ${POSTGRESQL_IMAGE_REPOSITORY}
-    tag: "${POSTGRESQL_IMAGE_TAG}"
-    pullPolicy: IfNotPresent
-  primary:
-    nodeSelector:
-      "cosmotech.com/tier": "db"
-    tolerations:
-      - effect: NoSchedule
-        key: vendor
-        operator: Equal
-        value: cosmotech
-    resourcesPreset: nano
-    service:
-      ports:
-        postgresql: 5432
-    persistence:
-      enabled: true
-      existingClaim: "${PERSISTENCE_POSTGRESQL_PVC}"
+  enabled: false
+
+externalDatabase:
+  host: "superset-postgresql-rw.${NAMESPACE}.svc.cluster.local"
+  port: 5432
+  database: bitnami_superset
+  user: bn_superset
+  existingSecret: "${SUPERSET_POSTGRESQL_SECRET_NAME}"
+  existingSecretPasswordKey: "password"
 
 redis:
   enabled: true
@@ -109,16 +91,72 @@ init:
           key: secret-key
           name: ${SUPERSET_SECRET_KEY_NAME}
     - ${PYTHON_REQUIREMENTS_EXTRA_ENV_VARS}
+init:
+  enabled: true
+  extraEnvVars:
+    - name: SUPERSET_OAUTH_PROVIDERS
+      valueFrom:
+        configMapKeyRef:
+          key: oauth-providers
+          name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
+          optional: true
+    - name: SUPERSET_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          key: secret-key
+          name: ${SUPERSET_SECRET_KEY_NAME}
+    - name: PYTHONPATH
+      value: /opt/custom-python-packages
   initContainers:
-    ${PYTHON_REQUIREMENTS_INIT_CONTAINER}
+    - name: wait-for-db
+      image: postgres:17
+      imagePullPolicy: IfNotPresent
+      command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER"; do
+            echo "Waiting for database $PGHOST:$PGPORT..."
+            sleep 2
+          done
+          echo "Database is ready"
+      env:
+        - name: PGHOST
+          value: "superset-postgresql-rw.${NAMESPACE}.svc.cluster.local"
+        - name: PGPORT
+          value: "5432"
+        - name: PGUSER
+          value: bn_superset
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${SUPERSET_POSTGRESQL_SECRET_NAME}
+              key: password
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+    - name: python-requirements
+      image: python:3.11-slim
+      imagePullPolicy: IfNotPresent
+      command:
+        - sh
+        - -c
+        - pip install --target=/custom-pip --no-deps flask-cors Flask-OAuthlib authlib joserfc
+      volumeMounts:
+        - name: python-requirements
+          mountPath: /custom-pip
+
   extraVolumes:
-    ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES}
+    - name: python-requirements
+      emptyDir: {}
   extraVolumeMounts:
-    ${PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS}
-  # podSecurityContext:
-  #   enabled: true
-  #   fsGroup: 1001
-  #   runAsUser: 1001
+    - name: python-requirements
+      mountPath: /opt/custom-python-packages
   resourcesPreset: medium
 
 web:

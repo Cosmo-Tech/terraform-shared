@@ -89,3 +89,5 @@ variable "postgresql_image_repository" {
 variable "postgresql_image_tag" {
   type = string
 }
+
+variable "persistence_size" {}

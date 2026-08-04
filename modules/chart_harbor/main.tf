@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1.3"
+    }
+  }
+}
 locals {
   chart_values_file_harbor     = templatefile("${path.module}/values-harbor.yaml", local.chart_values)
   chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
@@ -7,6 +15,7 @@ locals {
     CLUSTER_DOMAIN                     = var.cluster_domain
     HARBOR_ADMIN_PASSWORD              = "harbor_admin_password"
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
+    POSTGRES_PASSWORD_KEY              = "passowrd"
     POSTGRES_PASSWORD_SECRET_KEY       = "harbor_postgres_password"
     SECRET                             = "harbor-config"
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
@@ -18,6 +27,7 @@ locals {
     IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
+    PERSISTENCE_SIZE                   = var.persistence_size
   }
 }
 
@@ -46,7 +56,7 @@ resource "helm_release" "harbor" {
   }
 
   depends_on = [
-    helm_release.postgresql,
+    kubernetes_manifest.postgresql,
     helm_release.redis,
     kubernetes_secret.harbor_config
   ]
@@ -67,16 +77,12 @@ data "kubernetes_resources" "helm_release_secret" {
   label_selector = "owner=helm,name=${var.chart_harbor_release}"
 }
 
-resource "helm_release" "postgresql" {
-  namespace  = var.namespace
-  name       = var.chart_postgresql_release
-  repository = var.chart_postgresql_repository
-  chart      = var.chart_postgresql_name
-  version    = var.chart_postgresql_tag
+resource "kubernetes_manifest" "postgresql" {
+  manifest = yamldecode(templatefile(
+    "${path.module}/values-postgresql.yaml",
+    local.chart_values
+  ))
 
-  values = [
-    local.chart_values_file_postgresql
-  ]
   depends_on = [
     kubernetes_secret.harbor_config
   ]
@@ -129,6 +135,8 @@ resource "kubernetes_secret" "harbor_config" {
     harbor_postgres_user           = var.harbor_postgres_user
     harbor_postgres_password       = var.harbor_postgres_password != "" ? var.harbor_postgres_password : random_password.harbor_postgres_password.result
     harbor_postgres_admin_password = var.harbor_postgres_admin_password != "" ? var.harbor_postgres_admin_password : random_password.harbor_postgres_admin_password.result
+    username                       = var.harbor_postgres_user != "" ? var.harbor_postgres_user : "harbor"
+    password                       = var.harbor_postgres_password != "" ? var.harbor_postgres_password : random_password.harbor_postgres_admin_password.result
   }
 
   type = "Opaque"

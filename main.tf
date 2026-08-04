@@ -6,46 +6,103 @@ locals {
       size      = 10
       name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
+      pvc_name  = "keycloak-postgresql-1"
+      pv_name   = "keycloak-postgresql-1"
+
+      labels = {
+        "app.kubernetes.io/managed-by" = "cloudnative-pg"
+        "cnpg.io/cluster"              = "keycloak-postgresql"
+        "cnpg.io/instanceName"         = "keycloak-postgresql-1"
+        "cnpg.io/pvcRole"              = "PG_DATA"
+      }
+
+      annotations = {}
     }
     prometheusstack-prometheus = {
-      size      = 100
-      name      = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace = "monitoring"
+      size        = 100
+      name        = "${var.cluster_name}-prometheusstack-prometheus"
+      namespace   = "monitoring"
+      pv_name     = "pv-${var.cluster_name}-monitoring-prometheusstack-prometheus"
+      pvc_name    = "pvc-${var.cluster_name}-monitoring-prometheusstack-prometheus"
+      labels      = {}
+      annotations = {}
     }
     prometheusstack-grafana = {
-      size      = 10
-      name      = "${var.cluster_name}-prometheusstack-grafana"
-      namespace = "monitoring"
+      size        = 10
+      name        = "${var.cluster_name}-prometheusstack-grafana"
+      namespace   = "monitoring"
+      pv_name     = "pv-${var.cluster_name}-monitoring-prometheusstack-grafana"
+      pvc_name    = "pvc-${var.cluster_name}-monitoring-prometheusstack-grafana"
+      labels      = {}
+      annotations = {}
     }
     harbor-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-redis"
-      namespace = "harbor"
+      size        = 10
+      name        = "${var.cluster_name}-harbor-redis"
+      namespace   = "harbor"
+      pv_name     = "pv-${var.cluster_name}-harbor-redis"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-redis"
+      labels      = {}
+      annotations = {}
     }
     harbor-postgresql = {
       size      = 10
       name      = "${var.cluster_name}-harbor-postgresql"
       namespace = "harbor"
+      pvc_name  = "harbor-postgresql-1"
+      pv_name   = "harbor-postgresql-1"
+
+      labels = {
+        "app.kubernetes.io/managed-by" = "cloudnative-pg"
+        "cnpg.io/cluster"              = "harbor-postgresql"
+        "cnpg.io/instanceName"         = "harbor-postgresql-1"
+        "cnpg.io/pvcRole"              = "PG_DATA"
+      }
+
+      annotations = {}
     }
     harbor-registry = {
-      size      = 30
-      name      = "${var.cluster_name}-harbor-registry"
-      namespace = "harbor"
+      size        = 30
+      name        = "${var.cluster_name}-harbor-registry"
+      namespace   = "harbor"
+      pv_name     = "pv-${var.cluster_name}-harbor-registry"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-registry"
+      labels      = {}
+      annotations = {}
     }
     harbor-jobservice = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-jobservice"
-      namespace = "harbor"
+      size        = 10
+      name        = "${var.cluster_name}-harbor-jobservice"
+      namespace   = "harbor"
+      pv_name     = "pv-${var.cluster_name}-harbor-jobservice"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-jobservice"
+      labels      = {}
+      annotations = {}
     }
     superset-postgresql = {
       size      = 10
       name      = "${var.cluster_name}-superset-postgresql"
       namespace = "superset"
+      pvc_name  = "superset-postgresql-1"
+      pv_name   = "superset-postgresql-1"
+
+      labels = {
+        "app.kubernetes.io/managed-by" = "cloudnative-pg"
+        "cnpg.io/cluster"              = "superset-postgresql"
+        "cnpg.io/instanceName"         = "superset-postgresql-1"
+        "cnpg.io/pvcRole"              = "PG_DATA"
+      }
+
+      annotations = {}
     }
     superset-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-redis"
-      namespace = "superset"
+      size        = 10
+      name        = "${var.cluster_name}-superset-redis"
+      namespace   = "superset"
+      pv_name     = "pv-${var.cluster_name}-superset-redis"
+      pvc_name    = "pvc-${var.cluster_name}-superset-redis"
+      labels      = {}
+      annotations = {}
     }
   }
 }
@@ -68,6 +125,7 @@ module "kube_namespaces" {
   namespaces = [
     "traefik",
     "cert-manager",
+    "cnpg-system",
     "monitoring",
     "keycloak",
     "harbor",
@@ -177,6 +235,23 @@ module "chart_cert_manager" {
     module.chart_traefik,
   ]
 }
+module "chart_cnpg" {
+  source = "./modules/chart_cnpg"
+
+  namespace             = "cnpg-system"
+  chart_cnpg_release    = var.cnpg_chart_name
+  chart_cnpg_repository = var.cnpg_chart_repository
+  chart_cnpg_name       = var.cnpg_chart_name
+  chart_cnpg_tag        = var.cnpg_chart_tag
+  image_registry        = var.image_registry
+  image_repository      = var.cnpg_image_repository
+  image_tag             = var.cnpg_image_tag
+  image_pull_secret     = var.image_registry_auth_secret
+
+  depends_on = [
+    module.kube_namespaces,
+  ]
+}
 
 
 module "chart_harbor" {
@@ -205,10 +280,11 @@ module "chart_harbor" {
   chart_redis_release    = "harbor-redis"
 
   pvc_storage_class = local.storage_class_name
-  pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
-  pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
-  pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
-  pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
+  pvc_redis         = local.persistences.harbor-redis["pvc_name"]
+  pvc_postgresql    = local.persistences.harbor-postgresql["pvc_name"]
+  pvc_registry      = local.persistences.harbor-registry["pvc_name"]
+  pvc_jobservice    = local.persistences.harbor-jobservice["pvc_name"]
+  persistence_size  = local.persistences.harbor-postgresql["size"]
 
   cluster_domain = local.cluster_domain
 
@@ -217,6 +293,7 @@ module "chart_harbor" {
     module.storageclass,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
   ]
 }
 
@@ -242,15 +319,17 @@ module "chart_keycloak" {
   postgresql_image_tag        = var.keycloak_postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
-  pvc               = "pvc-${local.persistences.keycloak-postgresql["name"]}"
+  pvc               = local.persistences.keycloak-postgresql["pvc_name"]
 
   keycloak_ingress_hostname = local.cluster_domain
+  persistence_size          = local.persistences.keycloak-postgresql["size"]
 
   depends_on = [
     module.kube_namespaces,
     module.storageclass,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
   ]
 }
 
@@ -270,9 +349,9 @@ module "chart_prometheus_stack" {
 
   pvc_storage_class = local.storage_class_name
   size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
-  pvc_prometheus    = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  pvc_prometheus    = local.persistences.prometheusstack-prometheus["pvc_name"]
   size_grafana      = local.persistences.prometheusstack-grafana["size"]
-  pvc_grafana       = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+  pvc_grafana       = local.persistences.prometheusstack-grafana["pvc_name"]
 
   cluster_domain = local.cluster_domain
 
@@ -302,11 +381,12 @@ module "chart_superset" {
   postgresql_image_tag        = var.superset_postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
-  pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"
-  pvc_postgresql    = "pvc-${local.persistences.superset-postgresql["name"]}"
+  pvc_redis         = local.persistences.superset-redis["pvc_name"]
+  pvc_postgresql    = local.persistences.superset-postgresql["pvc_name"]
 
   cluster_domain          = local.cluster_domain
   superset_cluster_domain = "superset-${local.cluster_domain}"
+  persistence_size        = local.persistences.superset-postgresql["size"]
 
   superset_connect_timeout = "30s"
   superset_query_timeout   = "60s"
@@ -317,5 +397,6 @@ module "chart_superset" {
     module.kube_namespaces,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
   ]
 }
