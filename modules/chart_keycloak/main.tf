@@ -15,7 +15,7 @@ locals {
   keycloak_postgres_admin_password_secret = "keycloak_postgres_admin_password"
 
   chart_values_file_keycloak   = templatefile("${path.module}/values-keycloak.yaml", local.chart_values)
-  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+  chart_values_file_postgresql = templatefile("${path.module}/cnpg-cluster.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
@@ -76,11 +76,11 @@ resource "kubernetes_secret" "keycloak_config" {
 }
 
 
-resource "kubernetes_manifest" "postgresql" {
-  manifest = yamldecode(templatefile(
-    "${path.module}/values-postgresql.yaml",
+resource "kubectl_manifest" "postgresql" {
+  yaml_body = templatefile(
+    "${path.module}/cnpg-cluster.yaml",
     local.chart_values
-  ))
+  )
 }
 
 
@@ -105,7 +105,7 @@ resource "helm_release" "keycloak" {
   }
 
   depends_on = [
-    kubernetes_manifest.postgresql
+    kubectl_manifest.postgresql,
   ]
 }
 

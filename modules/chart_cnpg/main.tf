@@ -1,17 +1,16 @@
 locals {
+  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
   chart_values = {
     IMAGE_REGISTRY    = var.image_registry
     IMAGE_REPOSITORY  = var.image_repository
     IMAGE_TAG         = var.image_tag
     IMAGE_PULL_SECRET = var.image_pull_secret
   }
-
-  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
 }
 
 resource "helm_release" "cnpg" {
-  name      = "cnpg"
-  namespace = var.namespace
+  name       = "cnpg"
+  namespace  = var.namespace
   repository = var.chart_cnpg_repository
   chart      = var.chart_cnpg_name
   version    = var.chart_cnpg_tag

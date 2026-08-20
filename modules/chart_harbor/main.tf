@@ -6,9 +6,10 @@ terraform {
     }
   }
 }
+
 locals {
   chart_values_file_harbor     = templatefile("${path.module}/values-harbor.yaml", local.chart_values)
-  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+  chart_values_file_postgresql = templatefile("${path.module}/cnpg-cluster.yaml", local.chart_values)
   chart_values_file_redis      = templatefile("${path.module}/values-redis.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
@@ -29,6 +30,27 @@ locals {
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     PERSISTENCE_SIZE                   = var.persistence_size
   }
+}
+
+
+resource "kubectl_manifest" "postgresql" {
+  yaml_body = templatefile(
+    "${path.module}/cnpg-cluster.yaml",
+    local.chart_values
+  )
+}
+
+
+resource "helm_release" "redis" {
+  namespace  = var.namespace
+  name       = var.chart_redis_release
+  repository = var.chart_redis_repository
+  chart      = var.chart_redis_name
+  version    = var.chart_redis_tag
+
+  values = [
+    local.chart_values_file_redis
+  ]
 }
 
 
@@ -56,7 +78,7 @@ resource "helm_release" "harbor" {
   }
 
   depends_on = [
-    kubernetes_manifest.postgresql,
+    kubectl_manifest.postgresql,
     helm_release.redis,
     kubernetes_secret.harbor_config
   ]
@@ -75,30 +97,6 @@ data "kubernetes_resources" "helm_release_secret" {
   api_version    = "v1"
   kind           = "Secret"
   label_selector = "owner=helm,name=${var.chart_harbor_release}"
-}
-
-resource "kubernetes_manifest" "postgresql" {
-  manifest = yamldecode(templatefile(
-    "${path.module}/values-postgresql.yaml",
-    local.chart_values
-  ))
-
-  depends_on = [
-    kubernetes_secret.harbor_config
-  ]
-}
-
-
-resource "helm_release" "redis" {
-  namespace  = var.namespace
-  name       = var.chart_redis_release
-  repository = var.chart_redis_repository
-  chart      = var.chart_redis_name
-  version    = var.chart_redis_tag
-
-  values = [
-    local.chart_values_file_redis
-  ]
 }
 
 

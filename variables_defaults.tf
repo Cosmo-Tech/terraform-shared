@@ -12,6 +12,24 @@ variable "certmanager_chart_repository" { default = "oci://cgr.dev/cosmotech/iam
 variable "certmanager_chart_tag" { default = "1.5.14" }
 
 
+# Traefik
+variable "traefik_chart_name" { default = "traefik" }
+variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
+variable "traefik_chart_tag" { default = "39.0.9" }
+variable "traefik_image_repository" { default = "cosmotech/traefik" }
+variable "traefik_image_tag" { default = "3.7.1" }
+# variable "traefik_chart_repository" { default = "https://traefik.github.io/charts" }
+# variable "traefik_chart_tag" { default = "40.2.0" }
+
+
+# CloudNative-PG
+variable "cnpg_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
+variable "cnpg_chart_name" { default = "cloudnative-pg" }
+variable "cnpg_chart_tag" { default = "0.29.0-fips" }
+variable "cnpg_image_repository" { default = "cosmotech/cloudnative-pg-fips" }
+variable "cnpg_image_tag" { default = "latest" }
+
+
 # Harbor
 variable "harbor_chart_name" { default = "harbor" }
 variable "harbor_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
@@ -65,22 +83,6 @@ variable "superset_chart_repository" { default = "oci://cgr.dev/cosmotech/iamgua
 variable "superset_chart_tag" { default = "5.0.0" }
 variable "superset_postgresql_image_tag" { default = "18" }
 
-
-# Traefik
-variable "traefik_chart_name" { default = "traefik" }
-variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
-variable "traefik_chart_tag" { default = "39.0.9" }
-variable "traefik_image_repository" { default = "cosmotech/traefik" }
-variable "traefik_image_tag" { default = "3.7.1" }
-# variable "traefik_chart_repository" { default = "https://traefik.github.io/charts" }
-# variable "traefik_chart_tag" { default = "40.2.0" }
-
-#Cnpg
-variable "cnpg_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
-variable "cnpg_chart_name" { default = "cloudnative-pg" }
-variable "cnpg_chart_tag" { default = "0.29.0-fips" }
-variable "cnpg_image_repository" { default = "cosmotech/cloudnative-pg-fips" }
-variable "cnpg_image_tag" { default = "latest" }
 
 # Workload Scheduler (autostop/autostart)
 variable "workloadscheduler_enable_creation" { default = true } # Setting to false will prevent from Kubernetes objects creation 

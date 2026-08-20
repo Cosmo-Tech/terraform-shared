@@ -3,105 +3,102 @@ locals {
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-keycloak-postgresql"
       namespace = "keycloak"
+      size      = 10
+      main_name = "${var.cluster_name}-keycloak-postgresql"
       pvc_name  = "keycloak-postgresql-1"
-      pv_name   = "keycloak-postgresql-1"
-
       labels = {
         "app.kubernetes.io/managed-by" = "cloudnative-pg"
         "cnpg.io/cluster"              = "keycloak-postgresql"
         "cnpg.io/instanceName"         = "keycloak-postgresql-1"
         "cnpg.io/pvcRole"              = "PG_DATA"
       }
-
-      annotations = {}
+      annotations = {
+        "cnpg.io/nodeSerial" = "1"
+        "cnpg.io/pvcStatus" = "ready"
+        "cnpg.io/pvcFor" = "keycloak-postgresql-1"
+      }
     }
     prometheusstack-prometheus = {
-      size        = 100
-      name        = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace   = "monitoring"
-      pv_name     = "pv-${var.cluster_name}-monitoring-prometheusstack-prometheus"
-      pvc_name    = "pvc-${var.cluster_name}-monitoring-prometheusstack-prometheus"
-      labels      = {}
+      namespace = "monitoring"
+      size      = 100
+      main_name = "${var.cluster_name}-prometheusstack-prometheus"
+      pvc_name  = "pvc-${var.cluster_name}-prometheusstack-prometheus"
+      labels = {}
       annotations = {}
     }
     prometheusstack-grafana = {
-      size        = 10
-      name        = "${var.cluster_name}-prometheusstack-grafana"
-      namespace   = "monitoring"
-      pv_name     = "pv-${var.cluster_name}-monitoring-prometheusstack-grafana"
-      pvc_name    = "pvc-${var.cluster_name}-monitoring-prometheusstack-grafana"
-      labels      = {}
+      namespace = "monitoring"
+      size      = 10
+      main_name = "${var.cluster_name}-prometheusstack-grafana"
+      pvc_name  = "pvc-${var.cluster_name}-prometheusstack-grafana"
+      labels = {}
       annotations = {}
     }
     harbor-redis = {
-      size        = 10
-      name        = "${var.cluster_name}-harbor-redis"
-      namespace   = "harbor"
-      pv_name     = "pv-${var.cluster_name}-harbor-redis"
-      pvc_name    = "pvc-${var.cluster_name}-harbor-redis"
-      labels      = {}
+      namespace = "harbor"
+      size      = 10
+      main_name = "${var.cluster_name}-harbor-redis"
+      pvc_name  = "pvc-${var.cluster_name}-harbor-redis"
+      labels = {}
       annotations = {}
     }
     harbor-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-postgresql"
       namespace = "harbor"
+      size      = 10
+      main_name = "${var.cluster_name}-harbor-postgresql"
       pvc_name  = "harbor-postgresql-1"
-      pv_name   = "harbor-postgresql-1"
-
       labels = {
         "app.kubernetes.io/managed-by" = "cloudnative-pg"
         "cnpg.io/cluster"              = "harbor-postgresql"
         "cnpg.io/instanceName"         = "harbor-postgresql-1"
         "cnpg.io/pvcRole"              = "PG_DATA"
       }
-
-      annotations = {}
+      annotations = {
+        "cnpg.io/nodeSerial" = "1"
+        "cnpg.io/pvcStatus" = "ready"
+        "cnpg.io/pvcFor" = "harbor-postgresql-1"
+      }
     }
     harbor-registry = {
-      size        = 30
-      name        = "${var.cluster_name}-harbor-registry"
-      namespace   = "harbor"
-      pv_name     = "pv-${var.cluster_name}-harbor-registry"
-      pvc_name    = "pvc-${var.cluster_name}-harbor-registry"
-      labels      = {}
+      namespace = "harbor"
+      size      = 30
+      main_name = "${var.cluster_name}-harbor-registry"
+      pvc_name  = "pvc-${var.cluster_name}-harbor-registry"
+      labels = {}
       annotations = {}
     }
     harbor-jobservice = {
-      size        = 10
-      name        = "${var.cluster_name}-harbor-jobservice"
-      namespace   = "harbor"
-      pv_name     = "pv-${var.cluster_name}-harbor-jobservice"
-      pvc_name    = "pvc-${var.cluster_name}-harbor-jobservice"
-      labels      = {}
+      namespace = "harbor"
+      size      = 10
+      main_name = "${var.cluster_name}-harbor-jobservice"
+      pvc_name  = "pvc-${var.cluster_name}-harbor-jobservice"
+      labels = {}
       annotations = {}
     }
     superset-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-postgresql"
       namespace = "superset"
+      size      = 10
+      main_name = "${var.cluster_name}-superset-postgresql"
       pvc_name  = "superset-postgresql-1"
-      pv_name   = "superset-postgresql-1"
-
       labels = {
         "app.kubernetes.io/managed-by" = "cloudnative-pg"
         "cnpg.io/cluster"              = "superset-postgresql"
         "cnpg.io/instanceName"         = "superset-postgresql-1"
         "cnpg.io/pvcRole"              = "PG_DATA"
       }
-
-      annotations = {}
+      annotations = {
+        "cnpg.io/nodeSerial" = "1"
+        "cnpg.io/pvcStatus" = "ready"
+        "cnpg.io/pvcFor" = "superset-postgresql-1"
+      }
     }
     superset-redis = {
-      size        = 10
-      name        = "${var.cluster_name}-superset-redis"
-      namespace   = "superset"
-      pv_name     = "pv-${var.cluster_name}-superset-redis"
-      pvc_name    = "pvc-${var.cluster_name}-superset-redis"
-      labels      = {}
+      namespace = "superset"
+      size      = 10
+      main_name = "${var.cluster_name}-superset-redis"
+      pvc_name  = "pvc-${var.cluster_name}-superset-redis"
+      labels = {}
       annotations = {}
     }
   }
@@ -235,6 +232,8 @@ module "chart_cert_manager" {
     module.chart_traefik,
   ]
 }
+
+
 module "chart_cnpg" {
   source = "./modules/chart_cnpg"
 

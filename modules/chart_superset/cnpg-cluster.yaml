@@ -17,7 +17,7 @@ spec:
         name: ${SUPERSET_POSTGRESQL_SECRET_NAME}
   storage:
     storageClass: ${PERSISTENCE_STORAGE_CLASS}
-    size: ${PERSISTENCE_SIZE}
+    size: "${PERSISTENCE_SIZE}Gi"
   affinity:
     nodeSelector:
       cosmotech.com/tier: db

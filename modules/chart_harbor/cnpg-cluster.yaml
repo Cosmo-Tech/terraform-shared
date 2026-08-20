@@ -11,13 +11,13 @@ spec:
   enableSuperuserAccess: true
   bootstrap:
     initdb:
-      database: keycloak_db
-      owner: ${POSTGRES_USER}
+      database: harbor_db
+      owner: harbor
       secret:
-        name: ${KEYCLOAK_SECRET}
+        name: ${SECRET}
   storage:
     storageClass: ${PERSISTENCE_STORAGE_CLASS}
-    size: ${PERSISTENCE_SIZE}
+    size: "${PERSISTENCE_SIZE}Gi"
   affinity:
     nodeSelector:
       cosmotech.com/tier: db

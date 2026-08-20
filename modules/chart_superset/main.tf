@@ -225,6 +225,14 @@ resource "kubernetes_config_map" "superset_config_map" {
 ## End of ConfigMap with superset_config.py
 
 
+resource "kubectl_manifest" "postgresql" {
+  yaml_body = templatefile(
+    "${path.module}/cnpg-cluster.yaml",
+    local.chart_values
+  )
+}
+
+
 ## Superset Helm Chart
 resource "helm_release" "superset" {
   namespace  = var.namespace
@@ -247,7 +255,8 @@ resource "helm_release" "superset" {
   }
 
   depends_on = [
-    kubernetes_config_map.superset_config_map
+    kubectl_manifest.postgresql,
+    kubernetes_config_map.superset_config_map,
   ]
 }
 
@@ -265,10 +274,13 @@ data "kubernetes_resources" "helm_release_secret" {
   kind           = "Secret"
   label_selector = "owner=helm,name=${var.chart_release}"
 }
-resource "kubernetes_manifest" "superset_postgresql" {
-  manifest = yamldecode(templatefile(
-    "${path.module}/values-postgresql.yaml",
-    local.chart_values
-  ))
-}
 ## End of Superset Helm Chart
+
+
+
+# resource "kubectl_manifest" "superset_postgresql" {
+#   manifest = yamldecode(templatefile(
+#     "${path.module}/cnpg-cluster.yaml",
+#     local.chart_values
+#   ))
+# }

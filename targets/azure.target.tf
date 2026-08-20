@@ -57,7 +57,8 @@ module "storage_azure" {
   for_each = var.cloud_provider == "azure" ? local.persistences : {}
 
   namespace          = each.value.namespace
-  resource           = each.value.name
+  main_name          = each.value.main_name
+  pvc_name           = each.value.pvc_name
   size               = each.value.size
   resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
   storage_class_name = local.storage_class_name
@@ -65,6 +66,8 @@ module "storage_azure" {
   cloud_provider     = var.cloud_provider
   labels             = try(each.value.labels, {})
   annotations        = try(each.value.annotations, {})
-  pv_name            = each.value.pv_name
-  pvc_name           = each.value.pvc_name
+
+  depends_on = [
+    module.kube_namespaces,
+  ]
 }
