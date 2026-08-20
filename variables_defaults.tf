@@ -25,7 +25,7 @@ variable "cnpg_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "cnpg_chart_name" { default = "cloudnative-pg" }
 variable "cnpg_chart_tag" { default = "0.29.0-fips" }
 variable "cnpg_image_repository" { default = "cosmotech/cloudnative-pg-fips" }
-variable "cnpg_image_tag" { default = "latest" }
+variable "cnpg_image_tag" { default = "1.30.0" }
 
 
 # Harbor

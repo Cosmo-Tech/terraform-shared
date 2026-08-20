@@ -55,8 +55,7 @@ module "storage_kob" {
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
   cloud_provider     = var.cloud_provider
-  labels             = try(each.value.labels, {})
-  annotations        = try(each.value.annotations, {})
+  create_pvc         = each.value.create_pvc
 
   depends_on = [
     module.kube_namespaces,
