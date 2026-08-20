@@ -18,8 +18,6 @@ variable "traefik_chart_repository" { default = "oci://cgr.dev/cosmotech/charts"
 variable "traefik_chart_tag" { default = "39.0.9" }
 variable "traefik_image_repository" { default = "cosmotech/traefik" }
 variable "traefik_image_tag" { default = "3.7.1" }
-# variable "traefik_chart_repository" { default = "https://traefik.github.io/charts" }
-# variable "traefik_chart_tag" { default = "40.2.0" }
 
 
 # CloudNative-PG
@@ -34,7 +32,6 @@ variable "cnpg_image_tag" { default = "latest" }
 variable "harbor_chart_name" { default = "harbor" }
 variable "harbor_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "harbor_chart_tag" { default = "27.0.3" }
-# variable "harbor_chart_tag" { default = "26.8.5" }
 
 variable "harbor_postgresql_chart_name" { default = "postgresql" }
 variable "harbor_postgresql_chart_repository" { default = "cosmotech/postgres-cloudnative-pg-fips" }
@@ -44,23 +41,12 @@ variable "harbor_postgresql_image_tag" { default = "18" }
 variable "harbor_redis_chart_name" { default = "redis" }
 variable "harbor_redis_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "harbor_redis_chart_tag" { default = "25.3.8" }
-# variable "harbor_redis_chart_tag" { default = "17.3.14" }
-
-
-# # ingress-nginx
-# variable "ingressnginx_chart_name" { default = "nginx-ingress-controller" }
-# variable "ingressnginx_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
-# variable "ingressnginx_chart_tag" { default = "12.0.9" }
-# # variable "ingressnginx_chart_name" { default = "ingress-nginx" }
-# # variable "ingressnginx_chart_repository" { default = "https://kubernetes.github.io/ingress-nginx" }
-# # variable "ingressnginx_chart_tag" { default = "4.12.3" }
 
 
 # Keycloak
 variable "keycloak_chart_name" { default = "keycloak" }
 variable "keycloak_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "keycloak_chart_tag" { default = "25.3.2" }
-# variable "keycloak_chart_tag" { default = "21.3.1" }
 
 variable "keycloak_postgresql_chart_name" { default = "postgresql" }
 variable "keycloak_postgresql_chart_repository" { default = "cosmotech/postgres-cloudnative-pg-fips" }
@@ -72,9 +58,6 @@ variable "keycloak_postgresql_image_tag" { default = "18" }
 variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
 variable "prometheusstack_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "prometheusstack_chart_tag" { default = "85.1.0" }
-# variable "prometheusstack_chart_name" { default = "kube-prometheus-stack" }
-# variable "prometheusstack_chart_repository" { default = "https://prometheus-community.github.io/helm-charts" }
-# variable "prometheusstack_chart_tag" { default = "81.6.2" }
 
 
 # Superset
