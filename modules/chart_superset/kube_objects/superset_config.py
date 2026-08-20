@@ -63,6 +63,28 @@ class KeycloakSecurity(SupersetSecurityManager):
     Create a new SecurityManager with own oauth_user_info to handle the information from Keycloak
     """
 
+    def __init__(self, appbuilder):
+        super().__init__(appbuilder)
+        ## GUEST_TOKEN_ROLE
+        # 
+        # Create or get the custom role
+        role_name = "GUEST_TOKEN_ROLE"
+        custom_role = self.add_role(role_name)
+
+        # Define permissions you want to grant
+        permissions = [
+            ("can_read", "Dashboard"),
+            ("can_read", "Chart"),
+        ]
+
+        # Add permissions to the role
+        for perm_name, view_menu in permissions:
+            self.add_permission_view_menu(perm_name, view_menu)
+            perm_view = self.find_permission_view_menu(perm_name, view_menu)
+            self.add_permission_role(custom_role, perm_view)
+
+        print(f"Role '{role_name}' created and permissions assigned.")
+
     def oauth_user_info(self, provider, resp=None):
         log.debug("Oauth2 provider: '{0}'.".format(provider))
         log.debug("Keycloak response received : {0}".format(resp))
@@ -187,11 +209,11 @@ except ImportError:
 FEATURE_FLAGS = {'DASHBOARD_RBAC': True,
                  'ALERT_REPORTS': True,
                  'EMBEDDED_SUPERSET': True,
-                 'DYNAMIC_PLUGINS': True}
-
+                 'DYNAMIC_PLUGINS': True,
+                 'FAB_ADD_SECURITY_API': True}
 
 # After this : volatile config to try to get guest access tokens
-GUEST_ROLE_NAME = "Gamma"
+GUEST_ROLE_NAME = "GUEST_TOKEN_ROLE"
 GUEST_TOKEN_JWT_AUDIENCE = "superset"
 GUEST_TOKEN_JWT_SECRET = "${SUPERSET_GUEST_TOKEN}"
 # Flask-WTF flag for CSRF
