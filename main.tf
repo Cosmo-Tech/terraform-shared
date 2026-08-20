@@ -15,32 +15,32 @@ locals {
       }
       annotations = {
         "cnpg.io/nodeSerial" = "1"
-        "cnpg.io/pvcStatus" = "ready"
-        "cnpg.io/pvcFor" = "keycloak-postgresql-1"
+        "cnpg.io/pvcStatus"  = "ready"
+        "cnpg.io/pvcFor"     = "keycloak-postgresql-1"
       }
     }
     prometheusstack-prometheus = {
-      namespace = "monitoring"
-      size      = 100
-      main_name = "${var.cluster_name}-prometheusstack-prometheus"
-      pvc_name  = "pvc-${var.cluster_name}-prometheusstack-prometheus"
-      labels = {}
+      namespace   = "monitoring"
+      size        = 100
+      main_name   = "${var.cluster_name}-prometheusstack-prometheus"
+      pvc_name    = "pvc-${var.cluster_name}-prometheusstack-prometheus"
+      labels      = {}
       annotations = {}
     }
     prometheusstack-grafana = {
-      namespace = "monitoring"
-      size      = 10
-      main_name = "${var.cluster_name}-prometheusstack-grafana"
-      pvc_name  = "pvc-${var.cluster_name}-prometheusstack-grafana"
-      labels = {}
+      namespace   = "monitoring"
+      size        = 10
+      main_name   = "${var.cluster_name}-prometheusstack-grafana"
+      pvc_name    = "pvc-${var.cluster_name}-prometheusstack-grafana"
+      labels      = {}
       annotations = {}
     }
     harbor-redis = {
-      namespace = "harbor"
-      size      = 10
-      main_name = "${var.cluster_name}-harbor-redis"
-      pvc_name  = "pvc-${var.cluster_name}-harbor-redis"
-      labels = {}
+      namespace   = "harbor"
+      size        = 10
+      main_name   = "${var.cluster_name}-harbor-redis"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-redis"
+      labels      = {}
       annotations = {}
     }
     harbor-postgresql = {
@@ -56,24 +56,24 @@ locals {
       }
       annotations = {
         "cnpg.io/nodeSerial" = "1"
-        "cnpg.io/pvcStatus" = "ready"
-        "cnpg.io/pvcFor" = "harbor-postgresql-1"
+        "cnpg.io/pvcStatus"  = "ready"
+        "cnpg.io/pvcFor"     = "harbor-postgresql-1"
       }
     }
     harbor-registry = {
-      namespace = "harbor"
-      size      = 30
-      main_name = "${var.cluster_name}-harbor-registry"
-      pvc_name  = "pvc-${var.cluster_name}-harbor-registry"
-      labels = {}
+      namespace   = "harbor"
+      size        = 30
+      main_name   = "${var.cluster_name}-harbor-registry"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-registry"
+      labels      = {}
       annotations = {}
     }
     harbor-jobservice = {
-      namespace = "harbor"
-      size      = 10
-      main_name = "${var.cluster_name}-harbor-jobservice"
-      pvc_name  = "pvc-${var.cluster_name}-harbor-jobservice"
-      labels = {}
+      namespace   = "harbor"
+      size        = 10
+      main_name   = "${var.cluster_name}-harbor-jobservice"
+      pvc_name    = "pvc-${var.cluster_name}-harbor-jobservice"
+      labels      = {}
       annotations = {}
     }
     superset-postgresql = {
@@ -89,16 +89,16 @@ locals {
       }
       annotations = {
         "cnpg.io/nodeSerial" = "1"
-        "cnpg.io/pvcStatus" = "ready"
-        "cnpg.io/pvcFor" = "superset-postgresql-1"
+        "cnpg.io/pvcStatus"  = "ready"
+        "cnpg.io/pvcFor"     = "superset-postgresql-1"
       }
     }
     superset-redis = {
-      namespace = "superset"
-      size      = 10
-      main_name = "${var.cluster_name}-superset-redis"
-      pvc_name  = "pvc-${var.cluster_name}-superset-redis"
-      labels = {}
+      namespace   = "superset"
+      size        = 10
+      main_name   = "${var.cluster_name}-superset-redis"
+      pvc_name    = "pvc-${var.cluster_name}-superset-redis"
+      labels      = {}
       annotations = {}
     }
   }
