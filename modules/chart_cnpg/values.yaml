@@ -19,4 +19,7 @@ webhook:
   mutating:
     create: true
   validating:
-    create: true    
+    create: true
+
+crds:
+  create: true
