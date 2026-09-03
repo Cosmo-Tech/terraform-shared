@@ -52,7 +52,7 @@ locals {
 }
 
 module "storage_azure" {
-  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-azure.git//terraform-cluster/modules/storage?ref=${local.module_storage_azure_tag}"
 
   for_each = var.cloud_provider == "azure" ? local.persistences : {}
 

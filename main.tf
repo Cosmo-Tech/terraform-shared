@@ -69,17 +69,6 @@ locals {
 }
 
 
-module "registry_authentication" {
-  source = "./modules/registry_authentication"
-
-  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
-  image_registry                              = var.image_registry
-  image_registry_auth_secret                  = var.image_registry_auth_secret
-  image_registry_username                     = var.image_registry_username
-  image_registry_password                     = var.image_registry_password
-}
-
-
 module "kube_namespaces" {
   source = "./modules/kube_namespaces"
 
@@ -92,13 +81,18 @@ module "kube_namespaces" {
     "harbor",
     "superset"
   ]
+}
 
-  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
-  image_registry                              = var.image_registry
-  image_registry_auth_secret                  = var.image_registry_auth_secret
+
+module "registry_authentication" {
+  source = "./modules/registry_authentication"
+
+  image_registries                            = var.image_registries
+  image_registry_auth_secret_source_namespace = "default"
+  namespaces                                  = values(module.kube_namespaces.namespaces)
 
   depends_on = [
-    module.registry_authentication,
+    module.kube_namespaces,
   ]
 }
 

@@ -35,7 +35,7 @@ locals {
 
 
 module "storage_kob" {
-  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage?ref=${local.module_storage_kob_tag}"
 
 
   for_each = var.cloud_provider == "kob" ? local.persistences : {}

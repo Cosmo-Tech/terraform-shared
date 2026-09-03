@@ -35,7 +35,7 @@ locals {
 }
 
 module "storage_gcp" {
-  source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-gcp.git//terraform-cluster/modules/storage?ref=${local.module_storage_gcp_tag}"
 
   for_each = var.cloud_provider == "gcp" ? local.persistences : {}
 

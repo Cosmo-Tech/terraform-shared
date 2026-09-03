@@ -20,7 +20,7 @@ variable "traefik_image_repository" { default = "cosmotech/traefik" }
 variable "traefik_image_tag" { default = "3.7.1" }
 
 
-# CloudNative-PG
+# CloudNative-PG ("cnpg", = PostgreSQL)
 variable "cnpg_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "cnpg_chart_name" { default = "cloudnative-pg" }
 variable "cnpg_chart_tag" { default = "0.29.0-fips" }
@@ -76,3 +76,9 @@ variable "workloadscheduler_cron_start" { default = "0 07 * * 1-5" } # Start mon
 
 # Global
 variable "postgresql_image_repository" { default = "cosmotech/postgres-cloudnative-pg-fips" }
+locals {
+  module_storage_onprem_tag = "main"
+  module_storage_azure_tag  = "main"
+  module_storage_aws_tag    = "main"
+  module_storage_gcp_tag    = "main"
+}
