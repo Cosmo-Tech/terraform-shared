@@ -43,4 +43,3 @@ certificate_email = "platform@cosmotech.com"
 #     "password": "example"
 #   }
 # }'
-

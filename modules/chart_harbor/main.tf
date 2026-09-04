@@ -8,9 +8,8 @@ terraform {
 }
 
 locals {
-  chart_values_file_harbor     = templatefile("${path.module}/values-harbor.yaml", local.chart_values)
-  chart_values_file_postgresql = templatefile("${path.module}/cnpg-cluster.yaml", local.chart_values)
-  chart_values_file_redis      = templatefile("${path.module}/values-redis.yaml", local.chart_values)
+  chart_values_file_harbor = templatefile("${path.module}/templates/values-harbor.yaml", local.chart_values)
+  chart_values_file_redis  = templatefile("${path.module}/templates/values-redis.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     CLUSTER_DOMAIN                     = var.cluster_domain
@@ -25,7 +24,7 @@ locals {
     PERSISTENCE_REGISTRY_PVC           = var.pvc_registry
     PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
     IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    IMAGE_REGISTRY_AUTH_SECRET_LIST    = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     PERSISTENCE_SIZE                   = var.persistence_size
@@ -35,7 +34,7 @@ locals {
 
 resource "kubectl_manifest" "postgresql" {
   yaml_body = templatefile(
-    "${path.module}/cnpg-cluster.yaml",
+    "${path.module}/templates/cnpg-cluster.yaml",
     local.chart_values
   )
 }

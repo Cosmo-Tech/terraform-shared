@@ -9,16 +9,9 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
-    - dns01:
-        azureDNS:
-          hostedZoneName: ${DOMAIN_ZONE}                      # your DNS zone
-          resourceGroupName: ${DOMAIN_ZONE_RESOURCE_GROUP}    # Azure Resource Group containing the zone
-          subscriptionID: ${SUBSCRIPTION_ID}
-          tenantID: ${TENANT_ID}
-          clientID: ${CLIENT_ID}
-          clientSecretSecretRef:
-            name: dns-challenge                               # this secret is being created from terraform-onprem
-            key: client-secret
+    - http01:
+        ingress:
+          class: traefik
           podTemplate:
             metadata:
               labels:
@@ -32,4 +25,4 @@ spec:
               nodeSelector:
                 "cosmotech.com/tier": "services"
               imagePullSecrets:
-                - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+                ${IMAGE_REGISTRY_AUTH_SECRET_LIST}

@@ -5,7 +5,7 @@
 
 locals {
   # Format target secret name for each registry in var.image_registries
-  # Example: "example.com" -> "registry-auth-example-com"
+  # "example.com" -> "registry-auth-example-com"
   target_registries = {
     for key, reg in var.image_registries :
     "registry-auth-${replace(replace(replace(reg.server, "https://", ""), "http://", ""), "/[.:/]/", "-")}" => reg
@@ -15,9 +15,9 @@ locals {
 # 1. Read existing secret from cluster if username or password is not provided in var.image_registries
 data "kubernetes_secret" "existing_registry_auth" {
   for_each = {
-    for secret_name, reg in local.target_registries :
-    secret_name => reg
-    if reg.username == null || reg.password == null
+    for secret, registry in local.target_registries :
+    secret => registry
+    if registry.username == null || registry.password == null
   }
 
   metadata {
@@ -30,16 +30,15 @@ data "kubernetes_secret" "existing_registry_auth" {
     postcondition {
       condition     = try(self.data[".dockerconfigjson"], "") != ""
       error_message = <<EOT
-MISSING REGISTRY CREDENTIALS for '${each.value.server}'.
-The secret '${each.key}' does not exist on the cluster yet.
+MISSING REGISTRY CREDENTIALS for '${each.value.server}'. The secret '${each.key}' does not exist on the cluster yet.
 
-On the first run, you must provide the registry username and password via the TF_VAR_image_registries environment variable:
+On the first run, you must provide the registry username and password:
 
 export TF_VAR_image_registries='{
   "${each.key}": {
     "server": "${each.value.server}",
-    "username": "YOUR_USERNAME",
-    "password": "YOUR_PASSWORD"
+    "username": "USERNAME",
+    "password": "PASSWORD"
   }
 }'
 EOT
@@ -47,20 +46,21 @@ EOT
   }
 }
 
+
 locals {
   # 2. Resolve final credentials (Variable priority -> Fallback to existing cluster secret)
   final_registries = {
-    for secret_name, reg in local.target_registries : secret_name => {
-      server = reg.server
+    for secret, registry in local.target_registries : secret => {
+      server = registry.server
 
       username = (
-        reg.username != null ? reg.username :
-        jsondecode(data.kubernetes_secret.existing_registry_auth[secret_name].data[".dockerconfigjson"]).auths[reg.server].username
+        registry.username != null ? registry.username :
+        jsondecode(data.kubernetes_secret.existing_registry_auth[secret].data[".dockerconfigjson"]).auths[registry.server].username
       )
 
       password = (
-        reg.password != null ? reg.password :
-        jsondecode(data.kubernetes_secret.existing_registry_auth[secret_name].data[".dockerconfigjson"]).auths[reg.server].password
+        registry.password != null ? registry.password :
+        jsondecode(data.kubernetes_secret.existing_registry_auth[secret].data[".dockerconfigjson"]).auths[registry.server].password
       )
     }
   }
@@ -68,13 +68,13 @@ locals {
   # 3. Build a static matrix for target namespaces duplication (Target Namespaces x Registries)
   secret_copies = flatten([
     for ns in var.namespaces : [
-      for secret_name, reg in local.final_registries : {
-        id          = "${ns}/${secret_name}"
-        namespace   = ns
-        secret_name = secret_name
-        server      = reg.server
-        username    = reg.username
-        password    = reg.password
+      for secret, registry in local.final_registries : {
+        id        = "${ns}/${secret}"
+        namespace = ns
+        secret    = secret
+        server    = registry.server
+        username  = registry.username
+        password  = registry.password
       }
     ]
   ])
@@ -105,6 +105,9 @@ resource "kubernetes_secret" "registry_auth" {
 
   lifecycle {
     prevent_destroy = true
+    ignore_changes = [
+      metadata,
+    ]
   }
 }
 
@@ -113,7 +116,7 @@ resource "kubernetes_secret" "registry_auth_copies" {
   for_each = { for item in local.secret_copies : item.id => item }
 
   metadata {
-    name      = each.value.secret_name
+    name      = each.value.secret
     namespace = each.value.namespace
   }
 

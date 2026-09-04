@@ -7,14 +7,14 @@ spec:
   instances: 1
   imageName: ${IMAGE_REGISTRY}/${POSTGRESQL_IMAGE_REPOSITORY}:${POSTGRESQL_IMAGE_TAG}
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
   enableSuperuserAccess: true
   bootstrap:
     initdb:
-      database: harbor_db
-      owner: harbor
+      database: keycloak_db
+      owner: ${POSTGRES_USER}
       secret:
-        name: ${SECRET}
+        name: ${KEYCLOAK_SECRET}
   storage:
     storageClass: ${PERSISTENCE_STORAGE_CLASS}
     size: "${PERSISTENCE_SIZE}Gi"

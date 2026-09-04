@@ -14,8 +14,7 @@ locals {
   keycloak_postgres_user_password_secret  = "keycloak_postgres_password"
   keycloak_postgres_admin_password_secret = "keycloak_postgres_admin_password"
 
-  chart_values_file_keycloak   = templatefile("${path.module}/values-keycloak.yaml", local.chart_values)
-  chart_values_file_postgresql = templatefile("${path.module}/cnpg-cluster.yaml", local.chart_values)
+  chart_values_file_keycloak = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
@@ -28,7 +27,7 @@ locals {
     POSTGRES_PASSWORD_SECRET_KEY       = local.keycloak_postgres_user_password_secret
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
     IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    IMAGE_REGISTRY_AUTH_SECRET_LIST    = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     PERSISTENCE_SIZE                   = var.persistence_size
@@ -78,7 +77,7 @@ resource "kubernetes_secret" "keycloak_config" {
 
 resource "kubectl_manifest" "postgresql" {
   yaml_body = templatefile(
-    "${path.module}/cnpg-cluster.yaml",
+    "${path.module}/templates/cnpg-cluster.yaml",
     local.chart_values
   )
 }

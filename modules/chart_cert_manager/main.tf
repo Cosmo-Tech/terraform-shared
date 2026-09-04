@@ -8,11 +8,11 @@ terraform {
 }
 
 locals {
-  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
-    SERVICE_ANNOTATIONS        = var.service_annotations
-    IMAGE_REGISTRY             = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    SERVICE_ANNOTATIONS             = var.service_annotations
+    IMAGE_REGISTRY                  = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
   }
 }
 
@@ -69,7 +69,7 @@ data "kubernetes_resources" "helm_release_secret" {
 data "template_file" "clusterissuer_prod_http01" {
   count = var.cloud_provider == "kob" ? 0 : 1
 
-  template = file("${path.module}/kube_objects/clusterissuer.http01.yaml")
+  template = file("${path.module}/templates/clusterissuer.http01.yaml")
   vars = {
     CERTIFICATE_EMAIL          = var.certificate_email
     IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
@@ -116,7 +116,7 @@ resource "kubernetes_secret" "dns_challenge" {
 data "template_file" "clusterissuer_prod_dns01_azuredns" {
   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
-  template = file("${path.module}/kube_objects/clusterissuer.dns01.azuredns.yaml")
+  template = file("${path.module}/templates/clusterissuer.dns01.azuredns.yaml")
   vars = {
     CERTIFICATE_EMAIL          = var.certificate_email
     IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
@@ -141,7 +141,7 @@ resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
 
 # 3. CERTIFICATE
 data "template_file" "certificate" {
-  template = file("${path.module}/kube_objects/certificate.yaml")
+  template = file("${path.module}/templates/certificate.yaml")
   vars = {
     CLUSTER_DOMAIN = var.cluster_domain
   }

@@ -142,8 +142,9 @@ module "chart_traefik" {
 
   namespace = "traefik"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry = var.image_registry
+  # image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_repository = var.traefik_chart_repository
   chart_name       = var.traefik_chart_name

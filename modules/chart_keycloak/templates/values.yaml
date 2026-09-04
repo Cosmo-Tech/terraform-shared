@@ -1,43 +1,36 @@
 production: true
+
 proxy: edge
+
 httpRelativePath: "/keycloak/"
+
 ingress:
   enabled: true
   ingressClassName: traefik
   hostname: ${INGRESS_HOSTNAME}
   path: /keycloak
   pathType: Prefix
+
 proxyHeaders: "xforwarded"
+
 tls:
   enabled: false
+
 auth:
   existingSecret: ${KEYCLOAK_SECRET}
   adminUser: ${KEYCLOAK_ADMIN_USER}
   passwordSecretKey: ${KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY}
+
 postgresql:
   enabled: false
+
 externalDatabase:
   database: keycloak_db
   host: keycloak-postgresql-rw.${NAMESPACE}.svc.cluster.local
   user: ${POSTGRES_USER}
   existingSecret: ${KEYCLOAK_SECRET}
   existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
-nodeSelector:
-  cosmotech.com/tier: services
-tolerations:
-- key: vendor
-  operator: Equal
-  value: cosmotech
-  effect: NoSchedule
-commonLabels:
-  networking/traffic-allowed: "yes"
-image:
-  repository: cosmotech/keycloak-iamguarded
-  pullPolicy: IfNotPresent
-global:
-  imageRegistry: ${IMAGE_REGISTRY}
-  imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+
 resources:
   requests:
     cpu: "2"
@@ -45,3 +38,23 @@ resources:
   limits:
     cpu: "2"
     memory: "2Gi"
+
+nodeSelector:
+  cosmotech.com/tier: services
+
+tolerations:
+- key: vendor
+  operator: Equal
+  value: cosmotech
+  effect: NoSchedule
+commonLabels:
+  networking/traffic-allowed: "yes"
+
+image:
+  repository: cosmotech/keycloak-iamguarded
+  pullPolicy: IfNotPresent
+
+global:
+  imageRegistry: ${IMAGE_REGISTRY}
+  imagePullSecrets:
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
