@@ -38,3 +38,10 @@ global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
     - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+resources:
+  requests:
+    cpu: "2"
+    memory: "2Gi"
+  limits:
+    cpu: "2"
+    memory: "2Gi"
