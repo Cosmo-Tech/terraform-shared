@@ -17,15 +17,6 @@ locals {
 }
 
 
-resource "time_sleep" "wait_certmanager_crds" {
-  create_duration = "60s"
-
-  depends_on = [
-    helm_release.cert_manager
-  ]
-}
-
-
 # 1. CERT-MANAGER
 resource "helm_release" "cert_manager" {
   namespace  = var.namespace
@@ -33,6 +24,11 @@ resource "helm_release" "cert_manager" {
   repository = var.chart_repository
   chart      = var.chart_name
   version    = var.chart_tag
+
+  # Ensure webhook are ready to avoid crash on clusterissuers installation
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 300 # 5 minutes max
 
   values = [
     local.chart_values_file
@@ -64,22 +60,8 @@ data "kubernetes_resources" "helm_release_secret" {
 }
 
 
-# 2. (MAIN) CLUSTER ISSUER HTTP-01
-# HTTP-01 challenges : https://cert-manager.io/docs/configuration/acme/http01/
-data "template_file" "clusterissuer_prod_http01" {
-  count = var.cloud_provider == "kob" ? 0 : 1
-
-  template = file("${path.module}/templates/clusterissuer.http01.yaml")
-  vars = {
-    CERTIFICATE_EMAIL          = var.certificate_email
-    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
-  }
-}
-
-resource "kubectl_manifest" "letsencrypt_prod_http01" {
-  count = var.cloud_provider == "kob" ? 0 : 1
-
-  yaml_body = data.template_file.clusterissuer_prod_http01[0].rendered
+resource "time_sleep" "wait_cert_manager_webhook" {
+  create_duration = "20s"
 
   depends_on = [
     helm_release.cert_manager
@@ -87,12 +69,49 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
 }
 
 
-# 2. (BIS) CLUSTER ISSUER DNS-01
-# DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01/2
-#
-# Trick here is to duplicate the dns-challenge secret from terraform-onprem from default namespace to cert-manager namespace
-# cert-manager requires to have this secret in its namespace.
-# This is to avoid creating namespace cert-manager in terraform-onprem
+## 2. (MAIN) CLUSTER ISSUER HTTP-01
+## HTTP-01 challenges : https://cert-manager.io/docs/configuration/acme/http01/
+resource "kubectl_manifest" "letsencrypt_prod_http01" {
+  count = var.cloud_provider == "kob" ? 0 : 1
+
+  yaml_body = templatefile("${path.module}/templates/clusterissuer.http01.yaml", {
+    CERTIFICATE_EMAIL               = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET_LIST = indent(16, replace(yamlencode(var.image_registry_auth_secret_list), "|", ""))
+  })
+
+  depends_on = [
+    helm_release.cert_manager,
+    time_sleep.wait_cert_manager_webhook
+  ]
+}
+
+# data "template_file" "clusterissuer_prod_http01" {
+#   count = var.cloud_provider == "kob" ? 0 : 1
+
+#   template = file("${path.module}/templates/clusterissuer.http01.yaml")
+#   vars = {
+#     CERTIFICATE_EMAIL          = var.certificate_email
+#     IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
+#   }
+# }
+
+# resource "kubectl_manifest" "letsencrypt_prod_http01" {
+#   count = var.cloud_provider == "kob" ? 0 : 1
+
+#   yaml_body = data.template_file.clusterissuer_prod_http01[0].rendered
+
+#   depends_on = [
+#     helm_release.cert_manager
+#   ]
+# }
+
+
+## 2. (BIS) CLUSTER ISSUER DNS-01
+## DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01/2
+##
+## Trick here is to duplicate the dns-challenge secret from terraform-onprem from default namespace to cert-manager namespace
+## cert-manager requires to have this secret in its namespace.
+## This is to avoid creating namespace cert-manager in terraform-onprem
 data "kubernetes_secret" "dns_challenge_terraform_onprem" {
   metadata {
     name      = "dns-challenge-terraform-onprem"
@@ -113,28 +132,48 @@ resource "kubernetes_secret" "dns_challenge" {
   type = "Opaque"
 }
 
-data "template_file" "clusterissuer_prod_dns01_azuredns" {
-  count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
+# data "template_file" "clusterissuer_prod_dns01_azuredns" {
+#   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
 
-  template = file("${path.module}/templates/clusterissuer.dns01.azuredns.yaml")
-  vars = {
-    CERTIFICATE_EMAIL          = var.certificate_email
-    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
-    CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
-    SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-    TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-    DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-    DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
-  }
-}
+#   template = file("${path.module}/templates/clusterissuer.dns01.azuredns.yaml")
+#   vars = {
+#     CERTIFICATE_EMAIL          = var.certificate_email
+#     IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
+#     CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
+#     SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+#     TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+#     DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+#     DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
+#   }
+# }
+
+# resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
+#   count = var.cloud_provider == "kob" ? 1 : 0
+
+#   yaml_body = data.template_file.clusterissuer_prod_dns01_azuredns[0].rendered
+
+#   depends_on = [
+#     helm_release.cert_manager
+#   ]
+# }
+
 
 resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
   count = var.cloud_provider == "kob" ? 1 : 0
 
-  yaml_body = data.template_file.clusterissuer_prod_dns01_azuredns[0].rendered
+  yaml_body = templatefile("${path.module}/templates/clusterissuer.dns01.azuredns.yaml", {
+    CERTIFICATE_EMAIL               = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET_LIST = indent(16, replace(yamlencode(var.image_registry_auth_secret_list), "|", ""))
+    CLIENT_ID                       = kubernetes_secret.dns_challenge[0].data["client-id"]
+    SUBSCRIPTION_ID                 = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+    TENANT_ID                       = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+    DOMAIN_ZONE                     = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+    DOMAIN_ZONE_RESOURCE_GROUP      = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
+  })
 
   depends_on = [
-    helm_release.cert_manager
+    helm_release.cert_manager,
+    time_sleep.wait_cert_manager_webhook
   ]
 }
 

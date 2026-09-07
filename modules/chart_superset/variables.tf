@@ -6,7 +6,7 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret" {
+variable "image_registry_auth_secret_list" {
   type = string
 }
 

@@ -6,6 +6,12 @@ variable "image_registry" { default = "cgr.dev" }
 variable "image_registry_auth_secret" { default = "registry-auth-cgrdev" }
 
 
+## Generic shell (used to run init containers, scripts etc...)
+variable "generic_shell_image_registry" { default = "cgr.dev" }
+variable "generic_shell_image_repository" { default = "cosmotech/os-shell-iamguarded" }
+variable "generic_shell_image_tag" { default = "latest" }
+
+
 # cert-manager
 variable "certmanager_chart_name" { default = "cert-manager" }
 variable "certmanager_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }

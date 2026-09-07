@@ -32,4 +32,4 @@ spec:
               nodeSelector:
                 "cosmotech.com/tier": "services"
               imagePullSecrets:
-                ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+                ${indent(4, IMAGE_REGISTRY_AUTH_SECRET_LIST)}

@@ -142,8 +142,7 @@ module "chart_traefik" {
 
   namespace = "traefik"
 
-  image_registry = var.image_registry
-  # image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
   image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_repository = var.traefik_chart_repository
@@ -169,8 +168,8 @@ module "chart_cert_manager" {
 
   namespace = "cert-manager"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_repository = var.certmanager_chart_repository
   chart_name       = var.certmanager_chart_name
@@ -196,15 +195,15 @@ module "chart_cert_manager" {
 module "chart_cnpg" {
   source = "./modules/chart_cnpg"
 
-  namespace             = "cnpg-system"
-  chart_cnpg_release    = var.cnpg_chart_name
-  chart_cnpg_repository = var.cnpg_chart_repository
-  chart_cnpg_name       = var.cnpg_chart_name
-  chart_cnpg_tag        = var.cnpg_chart_tag
-  image_registry        = var.image_registry
-  image_repository      = var.cnpg_image_repository
-  image_tag             = var.cnpg_image_tag
-  image_pull_secret     = var.image_registry_auth_secret
+  namespace                       = "cnpg-system"
+  chart_cnpg_release              = var.cnpg_chart_name
+  chart_cnpg_repository           = var.cnpg_chart_repository
+  chart_cnpg_name                 = var.cnpg_chart_name
+  chart_cnpg_tag                  = var.cnpg_chart_tag
+  image_registry                  = var.image_registry
+  image_repository                = var.cnpg_image_repository
+  image_tag                       = var.cnpg_image_tag
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   depends_on = [
     module.kube_namespaces,
@@ -217,8 +216,8 @@ module "chart_harbor" {
 
   namespace = "harbor"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_harbor_repository = var.harbor_chart_repository
   chart_harbor_name       = var.harbor_chart_name
@@ -236,6 +235,10 @@ module "chart_harbor" {
   chart_redis_name       = var.harbor_redis_chart_name
   chart_redis_tag        = var.harbor_redis_chart_tag
   chart_redis_release    = "harbor-redis"
+
+  generic_shell_image_registry   = var.generic_shell_image_registry
+  generic_shell_image_repository = var.generic_shell_image_repository
+  generic_shell_image_tag        = var.generic_shell_image_tag
 
   pvc_storage_class = local.storage_class_name
   pvc_redis         = local.persistences.harbor-redis["pvc_name"]
@@ -261,8 +264,8 @@ module "chart_keycloak" {
 
   namespace = "keycloak"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_keycloak_repository = var.keycloak_chart_repository
   chart_keycloak_name       = var.keycloak_chart_name
@@ -297,13 +300,17 @@ module "chart_prometheus_stack" {
 
   namespace = "monitoring"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_repository = var.prometheusstack_chart_repository
   chart_name       = var.prometheusstack_chart_name
   chart_tag        = var.prometheusstack_chart_tag
   chart_release    = "kube-prometheus-stack"
+
+  generic_shell_image_registry   = var.generic_shell_image_registry
+  generic_shell_image_repository = var.generic_shell_image_repository
+  generic_shell_image_tag        = var.generic_shell_image_tag
 
   pvc_storage_class = local.storage_class_name
   size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
@@ -327,8 +334,8 @@ module "chart_superset" {
 
   namespace = "superset"
 
-  image_registry             = var.image_registry
-  image_registry_auth_secret = var.image_registry_auth_secret
+  image_registry                  = var.image_registry
+  image_registry_auth_secret_list = module.registry_authentication.image_registry_auth_secret_list
 
   chart_repository = var.superset_chart_repository
   chart_name       = var.superset_chart_name

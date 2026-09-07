@@ -6,7 +6,7 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret" {
+variable "image_registry_auth_secret_list" {
   type = string
 }
 
@@ -122,4 +122,19 @@ variable "postgresql_image_repository" {
 variable "postgresql_image_tag" {
   type = string
 }
-variable "persistence_size" {}
+
+variable "persistence_size" {
+  type = string
+}
+
+variable "generic_shell_image_registry" {
+  type = string
+}
+
+variable "generic_shell_image_repository" {
+  type = string
+}
+
+variable "generic_shell_image_tag" {
+  type = string
+}
