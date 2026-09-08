@@ -236,9 +236,6 @@ worker:
     value: cosmotech
 
 image:
-  # registry: ghcr.io
-  # repository: cosmo-tech/superset
-  # tag: latest
   repository: cosmotech/superset-iamguarded
   pullPolicy: IfNotPresent
   debug: true
@@ -247,4 +244,4 @@ global:
   storageClass: "${PERSISTENCE_STORAGE_CLASS}"
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}

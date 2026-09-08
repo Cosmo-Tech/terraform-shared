@@ -6,7 +6,7 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret_list" {
+variable "image_registry_auth_secret" {
   type = string
 }
 
@@ -43,5 +43,13 @@ variable "cloud_provider" {
 }
 
 variable "dns_challenge_provider" {
+  type = string
+}
+
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "image_tag" {
   type = string
 }

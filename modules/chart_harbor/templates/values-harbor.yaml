@@ -34,18 +34,21 @@ registry:
       rootdirectory: /harbor-data
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/harbor-registry-iamguarded
+    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registry-iamguarded
+    tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   server:
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: cosmotech/harbor-registry-iamguarded
+      repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registry-iamguarded
+      tag: ${HARBOR_IMAGE_TAG}
       pullPolicy: IfNotPresent
     resourcesPreset: "nano"
   controller:
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: cosmotech/harbor-registryctl-iamguarded
+      repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registryctl-iamguarded
+      tag: ${HARBOR_IMAGE_TAG}
       pullPolicy: IfNotPresent
     resourcesPreset: "nano"
   nodeSelector:
@@ -77,7 +80,8 @@ portal:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/harbor-portal-iamguarded
+    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-portal-iamguarded
+    tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
@@ -92,7 +96,8 @@ core:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/harbor-core-iamguarded
+    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-core-iamguarded
+    tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
@@ -107,7 +112,8 @@ jobservice:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/harbor-jobservice-iamguarded
+    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-jobservice-iamguarded
+    tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "db"
@@ -125,7 +131,8 @@ exporter:
       port: 8080  
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/harbor-exporter-iamguarded
+    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-exporter-iamguarded
+    tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
     "cosmotech.com/tier": "services"
@@ -164,4 +171,4 @@ internalTLS:
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}

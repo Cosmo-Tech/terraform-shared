@@ -29,17 +29,3 @@
 certificate_email = "platform@cosmotech.com"
 
 
-
-
-# export TF_VAR_image_registries='{
-#   "example": {
-#     "server": "example.com",
-#     "username": "example",
-#     "password": "example"
-#   },
-#   "cosmotech": {
-#     "server": "registry.cosmotech.com",
-#     "username": "robot$example",
-#     "password": "example"
-#   }
-# }'

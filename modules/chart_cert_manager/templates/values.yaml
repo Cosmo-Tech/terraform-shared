@@ -45,7 +45,8 @@ cainjector:
       cpu: 500m
       memory: 512Mi
   image:
-    repository: cosmotech/cert-manager-cainjector-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}-cainjector-iamguarded
+    tag: ${IMAGE_TAG}
     pullPolicy: IfNotPresent
 
 controller:
@@ -70,11 +71,13 @@ controller:
       cpu: 500m
       memory: 512Mi
   image:
-    repository: cosmotech/cert-manager-controller-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}-controller-iamguarded
+    tag: ${IMAGE_TAG}
     pullPolicy: IfNotPresent
   acmesolver:
     image:
-      repository: cosmotech/cert-manager-acmesolver-iamguarded
+      repository: ${IMAGE_REPOSITORY_PREFIX}-acmesolver-iamguarded
+      tag: ${IMAGE_TAG}
       pullPolicy: IfNotPresent
 
 webhook:
@@ -99,7 +102,8 @@ webhook:
       cpu: 500m
       memory: 512Mi
   image:
-    repository: cosmotech/cert-manager-webhook-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}-webhook-iamguarded
+    tag: ${IMAGE_TAG}
     pullPolicy: IfNotPresent
 
 startupapicheck:
@@ -125,4 +129,4 @@ startupapicheck:
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+    - name: ${IMAGE_REGISTRY_AUTH_SECRET}

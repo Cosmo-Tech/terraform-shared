@@ -27,7 +27,7 @@ locals {
     POSTGRES_PASSWORD_SECRET_KEY       = local.keycloak_postgres_user_password_secret
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
     IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST    = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     PERSISTENCE_SIZE                   = var.persistence_size

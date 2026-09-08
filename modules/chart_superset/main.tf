@@ -36,7 +36,7 @@ locals {
     PERSISTENCE_REDIS_PVC                            = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
     IMAGE_REGISTRY                                   = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST                  = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
+    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
     POSTGRESQL_IMAGE_REPOSITORY                      = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
     PYTHON_REQUIREMENTS_INIT_CONTAINER               = indent(4, local.py_init_container)

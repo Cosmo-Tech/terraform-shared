@@ -25,4 +25,4 @@ spec:
               nodeSelector:
                 "cosmotech.com/tier": "services"
               imagePullSecrets:
-                ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+                - name: ${IMAGE_REGISTRY_AUTH_SECRET}

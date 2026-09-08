@@ -24,8 +24,11 @@ locals {
     PERSISTENCE_REGISTRY_PVC           = var.pvc_registry
     PERSISTENCE_JOBSERVICE_PVC         = var.pvc_jobservice
     IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST    = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
-    GENERIC_SHELL_IMAGE_REGISTRY       = var.generic_shell_image_registry
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    HARBOR_IMAGE_REPOSITORY_PREFIX     = var.harbor_image_repository_prefix
+    HARBOR_IMAGE_TAG                   = var.harbor_image_tag
+    REDIS_IMAGE_REPOSITORY             = var.redis_image_repository
+    REDIS_IMAGE_TAG                    = var.redis_image_tag
     GENERIC_SHELL_IMAGE_REPOSITORY     = var.generic_shell_image_repository
     GENERIC_SHELL_IMAGE_TAG            = var.generic_shell_image_tag
     POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository

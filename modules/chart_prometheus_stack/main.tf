@@ -5,20 +5,19 @@ locals {
 
   chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
-    COSMOTECH_CLUSTER_DOMAIN        = var.cluster_domain
-    NAMESPACE                       = var.namespace
-    PERSISTENCE_STORAGE_CLASS       = var.pvc_storage_class
-    PERSISTENCE_SIZE_GRAFANA        = var.size_grafana
-    PERSISTENCE_PVC_GRAFANA         = var.pvc_grafana
-    PERSISTENCE_SIZE_PROMETHEUS     = var.size_prometheus
-    PERSISTENCE_PVC_PROMETHEUS      = var.pvc_prometheus
-    PROMETHEUS_ADMIN_PASSWORD       = local.prometheus_admin_password
-    REDIS_ADMIN_PASSWORD            = local.redis_admin_password
-    IMAGE_REGISTRY                  = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
-    GENERIC_SHELL_IMAGE_REGISTRY    = var.generic_shell_image_registry
-    GENERIC_SHELL_IMAGE_REPOSITORY  = var.generic_shell_image_repository
-    GENERIC_SHELL_IMAGE_TAG         = var.generic_shell_image_tag
+    COSMOTECH_CLUSTER_DOMAIN       = var.cluster_domain
+    NAMESPACE                      = var.namespace
+    PERSISTENCE_STORAGE_CLASS      = var.pvc_storage_class
+    PERSISTENCE_SIZE_GRAFANA       = var.size_grafana
+    PERSISTENCE_PVC_GRAFANA        = var.pvc_grafana
+    PERSISTENCE_SIZE_PROMETHEUS    = var.size_prometheus
+    PERSISTENCE_PVC_PROMETHEUS     = var.pvc_prometheus
+    PROMETHEUS_ADMIN_PASSWORD      = local.prometheus_admin_password
+    REDIS_ADMIN_PASSWORD           = local.redis_admin_password
+    IMAGE_REGISTRY                 = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET     = var.image_registry_auth_secret
+    GENERIC_SHELL_IMAGE_REPOSITORY = var.generic_shell_image_repository
+    GENERIC_SHELL_IMAGE_TAG        = var.generic_shell_image_tag
   }
 }
 
