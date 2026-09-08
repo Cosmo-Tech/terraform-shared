@@ -30,6 +30,6 @@ variable "image_tag" {
   type = string
 }
 
-variable "image_pull_secret" {
+variable "image_registry_auth_secret_list" {
   type = string
 }

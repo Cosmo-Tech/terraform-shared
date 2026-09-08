@@ -6,6 +6,12 @@ variable "image_registry" { default = "cgr.dev" }
 variable "image_registry_auth_secret" { default = "registry-auth-cgrdev" }
 
 
+## Generic shell (used to run init containers, scripts etc...)
+variable "generic_shell_image_registry" { default = "cgr.dev" }
+variable "generic_shell_image_repository" { default = "cosmotech/os-shell-iamguarded" }
+variable "generic_shell_image_tag" { default = "latest" }
+
+
 # cert-manager
 variable "certmanager_chart_name" { default = "cert-manager" }
 variable "certmanager_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
@@ -20,7 +26,7 @@ variable "traefik_image_repository" { default = "cosmotech/traefik" }
 variable "traefik_image_tag" { default = "3.7.1" }
 
 
-# CloudNative-PG
+# CloudNative-PG ("cnpg", = PostgreSQL)
 variable "cnpg_chart_repository" { default = "oci://cgr.dev/cosmotech/charts" }
 variable "cnpg_chart_name" { default = "cloudnative-pg" }
 variable "cnpg_chart_tag" { default = "0.29.0-fips" }
@@ -76,3 +82,9 @@ variable "workloadscheduler_cron_start" { default = "0 07 * * 1-5" } # Start mon
 
 # Global
 variable "postgresql_image_repository" { default = "cosmotech/postgres-cloudnative-pg-fips" }
+locals {
+  module_storage_onprem_tag = "main"
+  module_storage_azure_tag  = "main"
+  module_storage_aws_tag    = "main"
+  module_storage_gcp_tag    = "main"
+}

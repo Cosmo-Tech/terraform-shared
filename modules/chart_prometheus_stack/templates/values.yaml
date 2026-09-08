@@ -127,20 +127,22 @@ grafana:
       csm_api:
         url: "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/grafana/cosmotech_api/v1/cosmotech_api.json"
   downloadDashboardsImage:
-    repository: cosmotech/os-shell-iamguarded
-    tag: latest
+    registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
+    repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+    tag: ${GENERIC_SHELL_IMAGE_TAG}
     pullPolicy: IfNotPresent
   initChownData:
     image:
-      repository: cosmotech/os-shell-iamguarded
-      tag: latest
+      registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
+      repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+      tag: ${GENERIC_SHELL_IMAGE_TAG}
       pullPolicy: IfNotPresent
   image:
     repository: cosmotech/grafana
     tag: "13"
     pullPolicy: IfNotPresent
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -184,7 +186,7 @@ prometheus:
       "cosmotech.com/tier": "monitoring"
     initContainers:
       - name: volume-permissions
-        image: ${IMAGE_REGISTRY}/cosmotech/os-shell-iamguarded
+        image: "${GENERIC_SHELL_IMAGE_REGISTRY}/${GENERIC_SHELL_IMAGE_REPOSITORY}:${GENERIC_SHELL_IMAGE_TAG}"
         command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
         volumeMounts:
           - name: prometheus-volume
@@ -272,4 +274,4 @@ windowsMonitoring:
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}

@@ -90,21 +90,6 @@ init:
         secretKeyRef:
           key: secret-key
           name: ${SUPERSET_SECRET_KEY_NAME}
-    - ${PYTHON_REQUIREMENTS_EXTRA_ENV_VARS}
-init:
-  enabled: true
-  extraEnvVars:
-    - name: SUPERSET_OAUTH_PROVIDERS
-      valueFrom:
-        configMapKeyRef:
-          key: oauth-providers
-          name: ${OAUTH_PROVIDERS_CONFIGMAP_NAME}
-          optional: true
-    - name: SUPERSET_SECRET_KEY
-      valueFrom:
-        secretKeyRef:
-          key: secret-key
-          name: ${SUPERSET_SECRET_KEY_NAME}
     - name: PYTHONPATH
       value: /opt/custom-python-packages
   initContainers:
@@ -262,4 +247,4 @@ global:
   storageClass: "${PERSISTENCE_STORAGE_CLASS}"
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}

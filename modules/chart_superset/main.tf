@@ -16,7 +16,7 @@ locals {
   superset_configmap_name                 = "superset-config"
   superset_oauth_providers_configmap_name = "superset-oauth-providers"
 
-  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                                        = var.namespace
     CLUSTER_DOMAIN                                   = var.cluster_domain
@@ -36,7 +36,7 @@ locals {
     PERSISTENCE_REDIS_PVC                            = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
     IMAGE_REGISTRY                                   = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
+    IMAGE_REGISTRY_AUTH_SECRET_LIST                  = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
     POSTGRESQL_IMAGE_REPOSITORY                      = var.postgresql_image_repository
     POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
     PYTHON_REQUIREMENTS_INIT_CONTAINER               = indent(4, local.py_init_container)
@@ -219,7 +219,7 @@ resource "kubernetes_config_map" "superset_config_map" {
   }
 
   data = {
-    "superset_config.py" = templatefile("${path.module}/kube_objects/superset_config.py", local.chart_values)
+    "superset_config.py" = templatefile("${path.module}/templates/superset_config.py", local.chart_values)
   }
 }
 ## End of ConfigMap with superset_config.py
@@ -227,7 +227,7 @@ resource "kubernetes_config_map" "superset_config_map" {
 
 resource "kubectl_manifest" "postgresql" {
   yaml_body = templatefile(
-    "${path.module}/cnpg-cluster.yaml",
+    "${path.module}/templates/cnpg-cluster.yaml",
     local.chart_values
   )
 }
@@ -277,11 +277,3 @@ data "kubernetes_resources" "helm_release_secret" {
 }
 ## End of Superset Helm Chart
 
-
-
-# resource "kubectl_manifest" "superset_postgresql" {
-#   manifest = yamldecode(templatefile(
-#     "${path.module}/cnpg-cluster.yaml",
-#     local.chart_values
-#   ))
-# }

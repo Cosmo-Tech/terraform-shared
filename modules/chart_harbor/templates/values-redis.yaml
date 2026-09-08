@@ -38,10 +38,11 @@ metrics:
 volumePermissions:
   enabled: true
   image:
-    repository: cosmotech/os-shell-iamguarded
-    tag: latest
+    registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
+    repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+    tag: ${GENERIC_SHELL_IMAGE_TAG}
     pullPolicy: IfNotPresent
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}

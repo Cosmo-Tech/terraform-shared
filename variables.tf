@@ -33,17 +33,13 @@ variable "dns_challenge_provider" {
   default = null
 }
 
-variable "image_registry_username" {
-  type    = string
-  default = null
-}
-
-variable "image_registry_password" {
-  type    = string
-  default = null
-}
-
-variable "image_registry_auth_secret_source_namespace" {
-  type    = string
-  default = "default"
+variable "image_registries" {
+  description = "All registries where to pull images to Kubernetes (usernames & passwords must be provided by your Administrator (= Cosmo Tech team if using Cosmo Tech registries))"
+  type = map(object({
+    server   = string
+    username = string
+    password = string
+  }))
+  default = {}
+  # sensitive = true
 }
