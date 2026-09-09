@@ -3,10 +3,15 @@ locals {
   prometheus_admin_password = var.prometheus_admin_password != "" ? var.prometheus_admin_password : (length(random_password.prometheus_admin_password) > 0 ? random_password.prometheus_admin_password[0].result : "")
 
 
-  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
-    COSMOTECH_CLUSTER_DOMAIN    = var.cluster_domain
     NAMESPACE                   = var.namespace
+    IMAGE_REGISTRY              = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET  = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX     = var.image_repository_prefix
+    GENERIC_SHELL_IMAGE_NAME    = var.generic_shell_image_name
+    GENERIC_SHELL_IMAGE_TAG     = var.generic_shell_image_tag
+    CLUSTER_DOMAIN              = var.cluster_domain
     PERSISTENCE_STORAGE_CLASS   = var.pvc_storage_class
     PERSISTENCE_SIZE_GRAFANA    = var.size_grafana
     PERSISTENCE_PVC_GRAFANA     = var.pvc_grafana
@@ -14,8 +19,6 @@ locals {
     PERSISTENCE_PVC_PROMETHEUS  = var.pvc_prometheus
     PROMETHEUS_ADMIN_PASSWORD   = local.prometheus_admin_password
     REDIS_ADMIN_PASSWORD        = local.redis_admin_password
-    IMAGE_REGISTRY              = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET  = var.image_registry_auth_secret
   }
 }
 

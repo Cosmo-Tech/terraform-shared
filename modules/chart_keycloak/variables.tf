@@ -10,8 +10,22 @@ variable "image_registry_auth_secret" {
   type = string
 }
 
+variable "image_repository_prefix" {
+  type = string
+}
 
-# -- Keycloak itself
+variable "keycloak_image_tag" {
+  type = string
+}
+
+variable "postgresql_image_name" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}
+
 variable "chart_keycloak_repository" {
   type = string
 }
@@ -27,27 +41,6 @@ variable "chart_keycloak_tag" {
 variable "chart_keycloak_release" {
   type = string
 }
-# -- Keycloak itself
-
-
-# -- Keycloak PostgreSQL
-variable "chart_postgresql_repository" {
-  type = string
-}
-
-variable "chart_postgresql_name" {
-  type = string
-}
-
-variable "chart_postgresql_tag" {
-  type = string
-}
-
-variable "chart_postgresql_release" {
-  type = string
-}
-# -- Keycloak PostgreSQL
-
 
 variable "keycloak_ingress_hostname" {
   description = "Ingress hostname for Keycloak"
@@ -82,10 +75,6 @@ variable "pvc" {
   type        = string
 }
 
-variable "postgresql_image_repository" {
-  type = string
-}
-
-variable "postgresql_image_tag" {
+variable "persistence_size" {
   type = string
 }

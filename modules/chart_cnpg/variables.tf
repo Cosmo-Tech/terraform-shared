@@ -14,28 +14,22 @@ variable "image_repository_prefix" {
   type = string
 }
 
-variable "traefik_image_tag" {
+variable "cnpg_image_tag" {
   type = string
 }
 
-variable "chart_repository" {
+variable "chart_cnpg_release" {
   type = string
 }
 
-variable "chart_name" {
+variable "chart_cnpg_repository" {
   type = string
 }
 
-variable "chart_tag" {
+variable "chart_cnpg_name" {
   type = string
 }
 
-variable "chart_release" {
+variable "chart_cnpg_tag" {
   type = string
 }
-
-variable "platform_lb_ip" {
-  type = string
-}
-
-variable "lb_annotations" {}

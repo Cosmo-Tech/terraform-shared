@@ -23,15 +23,17 @@ data "kubernetes_secret" "registry_auth" {
   lifecycle {
     postcondition {
       condition     = try(self.data[".dockerconfigjson"], "") != ""
-      error_message = "EMPTY REGISTRY USERNAME OR PASSWORD.\nThe first time this module is running, you must provide a registry username/password (that will be stored in a secret and automatically reused the nexts times this module runs). Please ask the registry credentials to your administrator and fill the variables 'image_registry_username' and 'image_registry_password',\n\nCOPY/PASTE:\nexport TF_VAR_image_registry_username=USERNAME; export TF_VAR_image_registry_password=PASSWORD"
+      error_message = "EMPTY REGISTRY USERNAME OR PASSWORD.\nThe first time this module is running, you must provide a registry username/password (that will be stored in a secret and automatically reused the nexts times this module runs). Please ask the registry credentials to your administrator and fill the variables 'image_registry_username' and 'image_registry_password',\n\nCOPY/PASTE:\nexport TF_VAR_image_registry_username='USERNAME'; export TF_VAR_image_registry_password='PASSWORD'"
     }
   }
 }
 
+
 # Create the secret if it doesn't exist
 resource "kubernetes_secret" "registry_auth" {
   metadata {
-    name = var.image_registry_auth_secret
+    name      = var.image_registry_auth_secret
+    namespace = var.image_registry_auth_secret_source_namespace
   }
 
   data = {
@@ -47,8 +49,26 @@ resource "kubernetes_secret" "registry_auth" {
   }
 
   type = "kubernetes.io/dockerconfigjson"
+}
 
-  lifecycle {
-    prevent_destroy = true
+
+# Duplicate the registry auth secret in all namespaces
+resource "kubernetes_secret" "registry_auth_namespaces" {
+  for_each = toset(var.namespaces)
+
+  metadata {
+    name      = kubernetes_secret.registry_auth.metadata[0].name
+    namespace = each.key
   }
+
+  data = {
+    ".dockerconfigjson" = kubernetes_secret.registry_auth.data[".dockerconfigjson"]
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+
+  depends_on = [
+    kubernetes_secret.registry_auth
+  ]
 }

@@ -4,11 +4,6 @@ variable "namespace" {
   default     = "default"
 }
 
-variable "create_workload_scheduler" {
-  type        = bool
-  description = "Enable creation of workload scheduler resources"
-}
-
 variable "scaler_time_zone" {
   type        = string
   description = "Time zone used by the CronJobs for scheduling execution"

@@ -24,3 +24,8 @@ variable "image_registry_auth_secret_source_namespace" {
   description = "Namespace that contains the source Kubernetes secret to duplicate in others namespaces (each namespaces must have their own secret to be able pull images)"
   type        = string
 }
+
+variable "namespaces" {
+  description = "List of target namespaces where registry secrets must be duplicated"
+  type        = list(string)
+}
