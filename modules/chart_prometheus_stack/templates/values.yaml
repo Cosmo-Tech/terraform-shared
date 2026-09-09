@@ -221,6 +221,10 @@ kube-state-metrics:
     "cosmotech.com/tier": "monitoring"
 
 prometheusOperator:
+  image:
+    registry: ${IMAGE_REGISTRY}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-operator
+    pullPolicy: IfNotPresent
   tolerations:
     - key: "vendor"
       operator: "Equal"

@@ -45,7 +45,7 @@ volumePermissions:
     pullPolicy: IfNotPresent
 
 image:
-  repository: ${IMAGE_REPOSITORY_PREFIX}/redis
+  repository: ${IMAGE_REPOSITORY_PREFIX}/redis-server-iamguarded
   tag: ${REDIS_IMAGE_TAG}
   pullPolicy: IfNotPresent
 

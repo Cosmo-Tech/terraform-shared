@@ -383,7 +383,8 @@ module "chart_superset" {
 
 module "workload_scheduler" {
   # Do not deploy for on-premise, or if false
-  count = var.cloud_provider == "kob" ? false : var.workload_scheduler_deploy
+  count = var.cloud_provider == "kob" ? 0 : (var.workload_scheduler_deploy == true ? 1 : 0)
+  # count = var.cloud_provider == "kob" ? false : var.workload_scheduler_deploy
 
   source = "./modules/workload_scheduler"
 

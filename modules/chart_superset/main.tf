@@ -276,4 +276,3 @@ data "kubernetes_resources" "helm_release_secret" {
   label_selector = "owner=helm,name=${var.chart_release}"
 }
 ## End of Superset Helm Chart
-
