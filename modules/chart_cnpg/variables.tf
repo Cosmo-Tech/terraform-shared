@@ -2,6 +2,22 @@ variable "namespace" {
   type = string
 }
 
+variable "image_registry" {
+  type = string
+}
+
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "cnpg_image_tag" {
+  type = string
+}
+
 variable "chart_cnpg_release" {
   type = string
 }
@@ -15,21 +31,5 @@ variable "chart_cnpg_name" {
 }
 
 variable "chart_cnpg_tag" {
-  type = string
-}
-
-variable "image_registry" {
-  type = string
-}
-
-variable "image_repository" {
-  type = string
-}
-
-variable "image_tag" {
-  type = string
-}
-
-variable "image_registry_auth_secret" {
   type = string
 }

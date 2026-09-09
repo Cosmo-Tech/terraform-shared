@@ -6,7 +6,7 @@ auth:
 metrics:
   enabled: true
   image:
-    repository: cgr-proxy/cosmotech/prometheus-redis-exporter-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-redis-exporter-iamguarded
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -40,12 +40,12 @@ replica:
 volumePermissions:
   enabled: true
   image:
-    repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/${GENERIC_SHELL_IMAGE_NAME}
     tag: ${GENERIC_SHELL_IMAGE_TAG}
     pullPolicy: IfNotPresent
 
 image:
-  repository: ${REDIS_IMAGE_REPOSITORY}
+  repository: ${IMAGE_REPOSITORY_PREFIX}/redis
   tag: ${REDIS_IMAGE_TAG}
   pullPolicy: IfNotPresent
 

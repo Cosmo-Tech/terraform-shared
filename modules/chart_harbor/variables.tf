@@ -10,6 +10,34 @@ variable "image_registry_auth_secret" {
   type = string
 }
 
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "harbor_image_tag" {
+  type = string
+}
+
+variable "redis_image_tag" {
+  type = string
+}
+
+variable "postgresql_image_name" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}
+
+variable "generic_shell_image_name" {
+  type = string
+}
+
+variable "generic_shell_image_tag" {
+  type = string
+}
+
 variable "chart_harbor_repository" {
   type = string
 }
@@ -26,14 +54,6 @@ variable "chart_harbor_release" {
   type = string
 }
 
-variable "harbor_image_repository_prefix" {
-  type = string
-}
-
-variable "harbor_image_tag" {
-  type = string
-}
-
 variable "chart_redis_repository" {
   type = string
 }
@@ -47,14 +67,6 @@ variable "chart_redis_tag" {
 }
 
 variable "chart_redis_release" {
-  type = string
-}
-
-variable "redis_image_repository" {
-  type = string
-}
-
-variable "redis_image_tag" {
   type = string
 }
 
@@ -106,21 +118,5 @@ variable "pvc_jobservice" {
 }
 
 variable "persistence_size" {
-  type = string
-}
-
-variable "postgresql_image_repository" {
-  type = string
-}
-
-variable "postgresql_image_tag" {
-  type = string
-}
-
-variable "generic_shell_image_repository" {
-  type = string
-}
-
-variable "generic_shell_image_tag" {
   type = string
 }

@@ -1,6 +1,6 @@
 image:
-  repository: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY}
-  tag: ${IMAGE_TAG}
+  repository: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/cloudnative-pg-fips
+  tag: ${CNPG_IMAGE_TAG}
   pullPolicy: IfNotPresent
 
 imagePullSecrets:

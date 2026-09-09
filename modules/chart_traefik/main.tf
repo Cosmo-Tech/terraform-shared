@@ -1,11 +1,11 @@
 locals {
   chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
-    PLATFORM_LB_IP             = var.platform_lb_ip
     IMAGE_REGISTRY             = var.image_registry
     IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
-    TRAEFIK_IMAGE_REPOSITORY   = var.traefik_image_repository
+    IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
     TRAEFIK_IMAGE_TAG          = var.traefik_image_tag
+    PLATFORM_LB_IP             = var.platform_lb_ip
   }
 
   chart_values_dynamic = yamlencode({

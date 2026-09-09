@@ -17,20 +17,22 @@ locals {
   chart_values_file_keycloak = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
+    IMAGE_REGISTRY                     = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX            = var.image_repository_prefix
+    KEYCLOAK_IMAGE_TAG                 = var.keycloak_image_tag
+    POSTGRESQL_IMAGE_NAME              = var.postgresql_image_name
+    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_PVC                    = var.pvc
+    PERSISTENCE_SIZE                   = var.persistence_size
     KEYCLOAK_SECRET                    = local.keycloak_secret_name_config
     KEYCLOAK_ADMIN_USER                = local.keycloak_admin_user
     KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_admin_password_secret
     POSTGRES_USER                      = local.keycloak_postgres_user
     POSTGRES_PASSWORD_SECRET_KEY       = local.keycloak_postgres_user_password_secret
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
-    IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
-    POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
-    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
-    PERSISTENCE_SIZE                   = var.persistence_size
   }
 }
 

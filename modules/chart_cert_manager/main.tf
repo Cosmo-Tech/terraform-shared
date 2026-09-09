@@ -13,7 +13,7 @@ locals {
     IMAGE_REGISTRY             = var.image_registry
     IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
     IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
-    IMAGE_TAG                  = var.image_tag
+    CERT_MANAGER_IMAGE_TAG     = var.cert_manager_image_tag
   }
 }
 
@@ -86,26 +86,6 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
   ]
 }
 
-# data "template_file" "clusterissuer_prod_http01" {
-#   count = var.cloud_provider == "kob" ? 0 : 1
-
-#   template = file("${path.module}/templates/clusterissuer.http01.yaml")
-#   vars = {
-#     CERTIFICATE_EMAIL          = var.certificate_email
-#     IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
-#   }
-# }
-
-# resource "kubectl_manifest" "letsencrypt_prod_http01" {
-#   count = var.cloud_provider == "kob" ? 0 : 1
-
-#   yaml_body = data.template_file.clusterissuer_prod_http01[0].rendered
-
-#   depends_on = [
-#     helm_release.cert_manager
-#   ]
-# }
-
 
 ## 2. (BIS) CLUSTER ISSUER DNS-01
 ## DNS-01 challenges : https://cert-manager.io/docs/configuration/acme/dns01/2
@@ -133,30 +113,6 @@ resource "kubernetes_secret" "dns_challenge" {
   type = "Opaque"
 }
 
-# data "template_file" "clusterissuer_prod_dns01_azuredns" {
-#   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
-
-#   template = file("${path.module}/templates/clusterissuer.dns01.azuredns.yaml")
-#   vars = {
-#     CERTIFICATE_EMAIL          = var.certificate_email
-#     IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret), "|", "")
-#     CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
-#     SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-#     TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-#     DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-#     DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
-#   }
-# }
-
-# resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
-#   count = var.cloud_provider == "kob" ? 1 : 0
-
-#   yaml_body = data.template_file.clusterissuer_prod_dns01_azuredns[0].rendered
-
-#   depends_on = [
-#     helm_release.cert_manager
-#   ]
-# }
 
 
 resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {

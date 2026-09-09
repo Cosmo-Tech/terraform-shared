@@ -27,5 +27,3 @@
 ## COMMON VARIABLES EXAMPLE
 # This email can be any email, it will just be used as the contact email for Let's encrypt
 certificate_email = "platform@cosmotech.com"
-
-

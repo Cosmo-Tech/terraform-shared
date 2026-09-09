@@ -34,20 +34,20 @@ registry:
       rootdirectory: /harbor-data
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registry-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-registry-iamguarded
     tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   server:
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registry-iamguarded
+      repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-registry-iamguarded
       tag: ${HARBOR_IMAGE_TAG}
       pullPolicy: IfNotPresent
     resourcesPreset: "nano"
   controller:
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-registryctl-iamguarded
+      repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-registryctl-iamguarded
       tag: ${HARBOR_IMAGE_TAG}
       pullPolicy: IfNotPresent
     resourcesPreset: "nano"
@@ -80,7 +80,7 @@ portal:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-portal-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-portal-iamguarded
     tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
@@ -96,7 +96,7 @@ core:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-core-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-core-iamguarded
     tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
@@ -112,7 +112,7 @@ jobservice:
   replicas: 1
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-jobservice-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-jobservice-iamguarded
     tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
@@ -131,7 +131,7 @@ exporter:
       port: 8080  
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: ${HARBOR_IMAGE_REPOSITORY_PREFIX}-exporter-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/harbor-exporter-iamguarded
     tag: ${HARBOR_IMAGE_TAG}
     pullPolicy: IfNotPresent
   nodeSelector:
@@ -156,7 +156,7 @@ nginx:
   enabled: true
   image:
     registry: ${IMAGE_REGISTRY}
-    repository: cosmotech/nginx-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/nginx-iamguarded
     pullPolicy: IfNotPresent
   resourcesPreset: "nano"
 

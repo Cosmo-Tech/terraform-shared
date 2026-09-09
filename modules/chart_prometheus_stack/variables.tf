@@ -10,6 +10,18 @@ variable "image_registry_auth_secret" {
   type = string
 }
 
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "generic_shell_image_name" {
+  type = string
+}
+
+variable "generic_shell_image_tag" {
+  type = string
+}
+
 variable "chart_repository" {
   type = string
 }
@@ -61,13 +73,5 @@ variable "size_grafana" {
 }
 
 variable "pvc_grafana" {
-  type = string
-}
-
-variable "generic_shell_image_repository" {
-  type = string
-}
-
-variable "generic_shell_image_tag" {
   type = string
 }

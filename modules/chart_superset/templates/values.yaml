@@ -56,8 +56,8 @@ redis:
     username: default
   image:
     registry: ${IMAGE_REGISTRY}
-    # repository: cosmotech/redis
-    repository: cosmotech/redis-server-iamguarded
+    repository: ${IMAGE_REPOSITORY_PREFIX}/redis-server-iamguarded
+    tag: ${REDIS_IMAGE_TAG}
     pullPolicy: IfNotPresent
   master:
     nodeSelector:
@@ -94,7 +94,7 @@ init:
       value: /opt/custom-python-packages
   initContainers:
     - name: wait-for-db
-      image: postgres:17
+      image: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/${POSTGRESQL_IMAGE_NAME}:${POSTGRESQL_IMAGE_TAG}
       imagePullPolicy: IfNotPresent
       command:
         - sh
@@ -236,7 +236,8 @@ worker:
     value: cosmotech
 
 image:
-  repository: cosmotech/superset-iamguarded
+  repository: ${IMAGE_REPOSITORY_PREFIX}/superset-iamguarded
+  tag: ${SUPERSET_IMAGE_TAG}
   pullPolicy: IfNotPresent
   debug: true
 

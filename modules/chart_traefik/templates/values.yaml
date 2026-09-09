@@ -86,7 +86,7 @@ tolerations:
 
 image:
   registry: ${IMAGE_REGISTRY}
-  repository: ${TRAEFIK_IMAGE_REPOSITORY}
+  repository: ${IMAGE_REPOSITORY_PREFIX}/traefik
   tag: "${TRAEFIK_IMAGE_TAG}"
   pullPolicy: IfNotPresent
 
