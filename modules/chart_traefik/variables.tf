@@ -6,7 +6,15 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret_list" {
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "traefik_image_tag" {
   type = string
 }
 
@@ -23,14 +31,6 @@ variable "chart_tag" {
 }
 
 variable "chart_release" {
-  type = string
-}
-
-variable "traefik_image_repository" {
-  type = string
-}
-
-variable "traefik_image_tag" {
   type = string
 }
 

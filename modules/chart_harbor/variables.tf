@@ -6,12 +6,38 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret_list" {
+variable "image_registry_auth_secret" {
   type = string
 }
 
+variable "image_repository_prefix" {
+  type = string
+}
 
-# -- Harbor itself
+variable "harbor_image_tag" {
+  type = string
+}
+
+variable "redis_image_tag" {
+  type = string
+}
+
+variable "postgresql_image_name" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}
+
+variable "generic_shell_image_name" {
+  type = string
+}
+
+variable "generic_shell_image_tag" {
+  type = string
+}
+
 variable "chart_harbor_repository" {
   type = string
 }
@@ -27,29 +53,7 @@ variable "chart_harbor_tag" {
 variable "chart_harbor_release" {
   type = string
 }
-# -- Harbor itself
 
-
-# -- Harbor PostgreSQL
-variable "chart_postgresql_repository" {
-  type = string
-}
-
-variable "chart_postgresql_name" {
-  type = string
-}
-
-variable "chart_postgresql_tag" {
-  type = string
-}
-
-variable "chart_postgresql_release" {
-  type = string
-}
-# -- Harbor PostgreSQL
-
-
-# -- Harbor Redis
 variable "chart_redis_repository" {
   type = string
 }
@@ -65,8 +69,6 @@ variable "chart_redis_tag" {
 variable "chart_redis_release" {
   type = string
 }
-# -- Harbor Redis
-
 
 variable "harbor_postgres_user" {
   description = "PostgreSQL username for harbor"
@@ -115,26 +117,6 @@ variable "pvc_jobservice" {
   type = string
 }
 
-variable "postgresql_image_repository" {
-  type = string
-}
-
-variable "postgresql_image_tag" {
-  type = string
-}
-
 variable "persistence_size" {
-  type = string
-}
-
-variable "generic_shell_image_registry" {
-  type = string
-}
-
-variable "generic_shell_image_repository" {
-  type = string
-}
-
-variable "generic_shell_image_tag" {
   type = string
 }

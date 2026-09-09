@@ -27,19 +27,3 @@
 ## COMMON VARIABLES EXAMPLE
 # This email can be any email, it will just be used as the contact email for Let's encrypt
 certificate_email = "platform@cosmotech.com"
-
-
-
-
-# export TF_VAR_image_registries='{
-#   "example": {
-#     "server": "example.com",
-#     "username": "example",
-#     "password": "example"
-#   },
-#   "cosmotech": {
-#     "server": "registry.cosmotech.com",
-#     "username": "robot$example",
-#     "password": "example"
-#   }
-# }'

@@ -1,8 +1,7 @@
 terraform {
   required_providers {
     kubectl = {
-      source  = "alekc/kubectl"
-      version = "~> 2.1.3"
+      source = "alekc/kubectl"
     }
   }
 }
@@ -10,9 +9,11 @@ terraform {
 locals {
   chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
-    SERVICE_ANNOTATIONS             = var.service_annotations
-    IMAGE_REGISTRY                  = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
+    SERVICE_ANNOTATIONS        = var.service_annotations
+    IMAGE_REGISTRY             = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
+    CERT_MANAGER_IMAGE_TAG     = var.cert_manager_image_tag
   }
 }
 
@@ -28,7 +29,7 @@ resource "helm_release" "cert_manager" {
   # Ensure webhook are ready to avoid crash on clusterissuers installation
   wait          = true
   wait_for_jobs = true
-  timeout       = 300 # 5 minutes max
+  timeout       = 300
 
   values = [
     local.chart_values_file
@@ -61,7 +62,7 @@ data "kubernetes_resources" "helm_release_secret" {
 
 
 resource "time_sleep" "wait_cert_manager_webhook" {
-  create_duration = "20s"
+  create_duration = "30s"
 
   depends_on = [
     helm_release.cert_manager
@@ -75,8 +76,8 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
   count = var.cloud_provider == "kob" ? 0 : 1
 
   yaml_body = templatefile("${path.module}/templates/clusterissuer.http01.yaml", {
-    CERTIFICATE_EMAIL               = var.certificate_email
-    IMAGE_REGISTRY_AUTH_SECRET_LIST = indent(16, replace(yamlencode(var.image_registry_auth_secret_list), "|", ""))
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
   })
 
   depends_on = [
@@ -84,26 +85,6 @@ resource "kubectl_manifest" "letsencrypt_prod_http01" {
     time_sleep.wait_cert_manager_webhook
   ]
 }
-
-# data "template_file" "clusterissuer_prod_http01" {
-#   count = var.cloud_provider == "kob" ? 0 : 1
-
-#   template = file("${path.module}/templates/clusterissuer.http01.yaml")
-#   vars = {
-#     CERTIFICATE_EMAIL          = var.certificate_email
-#     IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
-#   }
-# }
-
-# resource "kubectl_manifest" "letsencrypt_prod_http01" {
-#   count = var.cloud_provider == "kob" ? 0 : 1
-
-#   yaml_body = data.template_file.clusterissuer_prod_http01[0].rendered
-
-#   depends_on = [
-#     helm_release.cert_manager
-#   ]
-# }
 
 
 ## 2. (BIS) CLUSTER ISSUER DNS-01
@@ -132,43 +113,19 @@ resource "kubernetes_secret" "dns_challenge" {
   type = "Opaque"
 }
 
-# data "template_file" "clusterissuer_prod_dns01_azuredns" {
-#   count = (var.cloud_provider == "kob" && var.dns_challenge_provider == "azure") ? 1 : 0
-
-#   template = file("${path.module}/templates/clusterissuer.dns01.azuredns.yaml")
-#   vars = {
-#     CERTIFICATE_EMAIL          = var.certificate_email
-#     IMAGE_REGISTRY_AUTH_SECRET_LIST = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
-#     CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
-#     SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-#     TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-#     DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-#     DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
-#   }
-# }
-
-# resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
-#   count = var.cloud_provider == "kob" ? 1 : 0
-
-#   yaml_body = data.template_file.clusterissuer_prod_dns01_azuredns[0].rendered
-
-#   depends_on = [
-#     helm_release.cert_manager
-#   ]
-# }
 
 
 resource "kubectl_manifest" "letsencrypt_prod_dns01_azuredns" {
   count = var.cloud_provider == "kob" ? 1 : 0
 
   yaml_body = templatefile("${path.module}/templates/clusterissuer.dns01.azuredns.yaml", {
-    CERTIFICATE_EMAIL               = var.certificate_email
-    IMAGE_REGISTRY_AUTH_SECRET_LIST = indent(16, replace(yamlencode(var.image_registry_auth_secret_list), "|", ""))
-    CLIENT_ID                       = kubernetes_secret.dns_challenge[0].data["client-id"]
-    SUBSCRIPTION_ID                 = kubernetes_secret.dns_challenge[0].data["subscription-id"]
-    TENANT_ID                       = kubernetes_secret.dns_challenge[0].data["tenant-id"]
-    DOMAIN_ZONE                     = kubernetes_secret.dns_challenge[0].data["domain-zone"]
-    DOMAIN_ZONE_RESOURCE_GROUP      = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
+    CERTIFICATE_EMAIL          = var.certificate_email
+    IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+    CLIENT_ID                  = kubernetes_secret.dns_challenge[0].data["client-id"]
+    SUBSCRIPTION_ID            = kubernetes_secret.dns_challenge[0].data["subscription-id"]
+    TENANT_ID                  = kubernetes_secret.dns_challenge[0].data["tenant-id"]
+    DOMAIN_ZONE                = kubernetes_secret.dns_challenge[0].data["domain-zone"]
+    DOMAIN_ZONE_RESOURCE_GROUP = kubernetes_secret.dns_challenge[0].data["domain-zone-rg"]
   })
 
   depends_on = [

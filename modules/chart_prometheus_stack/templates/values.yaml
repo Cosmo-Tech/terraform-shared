@@ -19,7 +19,7 @@ alertmanager:
         memory: 1Gi
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: cosmotech/prometheus-alertmanager
+      repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-alertmanager
 
 grafana:
   enabled: true
@@ -35,7 +35,7 @@ grafana:
       - ReadWriteOnce
   sidecar:
     image:
-      repository: cosmotech/k8s-sidecar
+      repository: ${IMAGE_REPOSITORY_PREFIX}/k8s-sidecar
       pullPolicy: IfNotPresent
     dashboards:
       multicluster:
@@ -56,7 +56,7 @@ grafana:
         implementation: prometheus
   grafana.ini:
     server:
-      domain: ${COSMOTECH_CLUSTER_DOMAIN}
+      domain: ${CLUSTER_DOMAIN}
       root_url: "%(protocol)s://%(domain)s/monitoring"
       serve_from_sub_path: true
   ingress:
@@ -64,11 +64,11 @@ grafana:
     ingressClassName: traefik
     path: "/monitoring"
     hosts:
-      - ${COSMOTECH_CLUSTER_DOMAIN}
+      - ${CLUSTER_DOMAIN}
     tls:
       - secretName: "letsencrypt-prod"
         hosts:
-          - ${COSMOTECH_CLUSTER_DOMAIN}
+          - ${CLUSTER_DOMAIN}
   plugins:
     - redis-datasource
   additionalDataSources:
@@ -127,22 +127,22 @@ grafana:
       csm_api:
         url: "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/grafana/cosmotech_api/v1/cosmotech_api.json"
   downloadDashboardsImage:
-    registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
-    repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+    registry: ${IMAGE_REGISTRY}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/${GENERIC_SHELL_IMAGE_NAME}
     tag: ${GENERIC_SHELL_IMAGE_TAG}
     pullPolicy: IfNotPresent
   initChownData:
     image:
-      registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
-      repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+      registry: ${IMAGE_REGISTRY}
+      repository: ${IMAGE_REPOSITORY_PREFIX}/${GENERIC_SHELL_IMAGE_NAME}
       tag: ${GENERIC_SHELL_IMAGE_TAG}
       pullPolicy: IfNotPresent
   image:
-    repository: cosmotech/grafana
+    repository: ${IMAGE_REPOSITORY_PREFIX}/grafana
     tag: "13"
     pullPolicy: IfNotPresent
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -175,7 +175,7 @@ prometheus:
     replicas: 1
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: cosmotech/prometheus
+      repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus
       tag: "3"
     tolerations:
       - key: "vendor"
@@ -186,7 +186,7 @@ prometheus:
       "cosmotech.com/tier": "monitoring"
     initContainers:
       - name: volume-permissions
-        image: "${GENERIC_SHELL_IMAGE_REGISTRY}/${GENERIC_SHELL_IMAGE_REPOSITORY}:${GENERIC_SHELL_IMAGE_TAG}"
+        image: "${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/${GENERIC_SHELL_IMAGE_NAME}:${GENERIC_SHELL_IMAGE_TAG}"
         command: ["sh", "-c", "chown -R 1000:1000 /prometheus || true"]
         volumeMounts:
           - name: prometheus-volume
@@ -209,7 +209,7 @@ kubeStateMetrics:
 
 kube-state-metrics:
   image:
-    repository: cosmotech/kube-state-metrics
+    repository: ${IMAGE_REPOSITORY_PREFIX}/kube-state-metrics
     tag: latest
     distroless: false
   tolerations:
@@ -221,6 +221,10 @@ kube-state-metrics:
     "cosmotech.com/tier": "monitoring"
 
 prometheusOperator:
+  image:
+    registry: ${IMAGE_REGISTRY}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-operator
+    pullPolicy: IfNotPresent
   tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -231,7 +235,7 @@ prometheusOperator:
   prometheusConfigReloader:
     image:
       registry: ${IMAGE_REGISTRY}
-      repository: cosmotech/prometheus-config-reloader
+      repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-config-reloader
   admissionWebhooks:
     patch:
       enabled: true
@@ -244,14 +248,14 @@ prometheusOperator:
         "cosmotech.com/tier": "monitoring"
       image:
         registry: ${IMAGE_REGISTRY}
-        repository: cosmotech/kube-webhook-certgen
+        repository: ${IMAGE_REPOSITORY_PREFIX}/kube-webhook-certgen
 
 nodeExporter:
   enabled: true
 
 prometheus-node-exporter:
   image:
-    repository: cosmotech/prometheus-node-exporter
+    repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-node-exporter
     tag: latest
     distroless: false
   tolerations:
@@ -274,4 +278,4 @@ windowsMonitoring:
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}

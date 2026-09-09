@@ -5,9 +5,9 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   instances: 1
-  imageName: ${IMAGE_REGISTRY}/${POSTGRESQL_IMAGE_REPOSITORY}:${POSTGRESQL_IMAGE_TAG}
+  imageName: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/${POSTGRESQL_IMAGE_NAME}:${POSTGRESQL_IMAGE_TAG}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
   enableSuperuserAccess: true
   bootstrap:
     initdb:

@@ -19,6 +19,17 @@ locals {
   chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                                        = var.namespace
+    IMAGE_REGISTRY                                   = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX                          = var.image_repository_prefix
+    SUPERSET_IMAGE_TAG                               = var.superset_image_tag
+    POSTGRESQL_IMAGE_NAME                            = var.postgresql_image_name
+    POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
+    REDIS_IMAGE_TAG                                  = var.redis_image_tag
+    PERSISTENCE_STORAGE_CLASS                        = var.pvc_storage_class
+    PERSISTENCE_REDIS_PVC                            = var.pvc_redis
+    PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
+    PERSISTENCE_SIZE                                 = var.persistence_size
     CLUSTER_DOMAIN                                   = var.cluster_domain
     SUPERSET_CLUSTER_DOMAIN                          = var.superset_cluster_domain
     SUPERSET_SECRET_NAME                             = local.superset_secret_name
@@ -32,24 +43,13 @@ locals {
     SUPERSET_QUERY_TIMEOUT                           = var.superset_query_timeout
     SUPERSET_BUFFER_SIZE                             = var.superset_buffer_size
     SUPERSET_MAX_FILE_SIZE                           = var.superset_max_file_size
-    PERSISTENCE_STORAGE_CLASS                        = var.pvc_storage_class
-    PERSISTENCE_REDIS_PVC                            = var.pvc_redis
-    PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
-    IMAGE_REGISTRY                                   = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET_LIST                  = replace(yamlencode(var.image_registry_auth_secret_list), "|", "")
-    POSTGRESQL_IMAGE_REPOSITORY                      = var.postgresql_image_repository
-    POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
     PYTHON_REQUIREMENTS_INIT_CONTAINER               = indent(4, local.py_init_container)
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES       = indent(4, local.py_volumes)
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS = indent(4, local.py_volumes_mounts)
     PYTHON_REQUIREMENTS_EXTRA_ENV_VARS               = indent(6, local.py_env_vars)
-    PERSISTENCE_SIZE                                 = var.persistence_size
   }
 
   py_main_name = "python-requirements"
-  # py_venv_name = "superset-venv"
-  # py_venv_path = "/usr/share/superset/venv"
-
   py_init_container = yamlencode([
     {
       name            = local.py_main_name
@@ -276,4 +276,3 @@ data "kubernetes_resources" "helm_release_secret" {
   label_selector = "owner=helm,name=${var.chart_release}"
 }
 ## End of Superset Helm Chart
-

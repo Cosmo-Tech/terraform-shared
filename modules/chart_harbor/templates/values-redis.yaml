@@ -1,6 +1,17 @@
 architecture: "standalone" 
+
 auth:
   enabled: false
+
+metrics:
+  enabled: true
+  image:
+    repository: ${IMAGE_REPOSITORY_PREFIX}/prometheus-redis-exporter-iamguarded
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+  resourcesPreset: "nano"
+
 master:
   persistence:
     enabled: true
@@ -19,30 +30,26 @@ master:
       value: "cosmotech"
       effect: "NoSchedule"
   resourcesPreset: "nano"
+
 replica:
   replicaCount: 0
   persistence:
     enabled: false
   resourcesPreset: "nano"
-image:
-  repository: cosmotech/redis-server-iamguarded
-  pullPolicy: IfNotPresent
-metrics:
-  enabled: true
-  image:
-    repository: cosmotech/prometheus-redis-exporter-iamguarded
-    pullPolicy: IfNotPresent
-  service:
-    type: ClusterIP
-  resourcesPreset: "nano"
+
 volumePermissions:
   enabled: true
   image:
-    registry: ${GENERIC_SHELL_IMAGE_REGISTRY}
-    repository: ${GENERIC_SHELL_IMAGE_REPOSITORY}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/${GENERIC_SHELL_IMAGE_NAME}
     tag: ${GENERIC_SHELL_IMAGE_TAG}
     pullPolicy: IfNotPresent
+
+image:
+  repository: ${IMAGE_REPOSITORY_PREFIX}/redis-server-iamguarded
+  tag: ${REDIS_IMAGE_TAG}
+  pullPolicy: IfNotPresent
+
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}

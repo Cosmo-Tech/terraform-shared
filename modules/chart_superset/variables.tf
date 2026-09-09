@@ -6,7 +6,27 @@ variable "image_registry" {
   type = string
 }
 
-variable "image_registry_auth_secret_list" {
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "superset_image_tag" {
+  type = string
+}
+
+variable "postgresql_image_name" {
+  type = string
+}
+
+variable "postgresql_image_tag" {
+  type = string
+}
+
+variable "redis_image_tag" {
   type = string
 }
 
@@ -27,6 +47,22 @@ variable "chart_release" {
 }
 
 variable "cluster_domain" {
+  type = string
+}
+
+variable "pvc_storage_class" {
+  type = string
+}
+
+variable "pvc_redis" {
+  type = string
+}
+
+variable "pvc_postgresql" {
+  type = string
+}
+
+variable "persistence_size" {
   type = string
 }
 
@@ -53,24 +89,3 @@ variable "superset_max_file_size" {
   type    = string
   default = "5m"
 }
-
-variable "pvc_storage_class" {
-  type = string
-}
-
-variable "pvc_redis" {
-  type = string
-}
-
-variable "pvc_postgresql" {
-  type = string
-}
-
-variable "postgresql_image_repository" {
-  type = string
-}
-
-variable "postgresql_image_tag" {
-  type = string
-}
-variable "persistence_size" {}

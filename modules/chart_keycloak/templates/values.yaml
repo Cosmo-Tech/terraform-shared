@@ -51,10 +51,11 @@ commonLabels:
   networking/traffic-allowed: "yes"
 
 image:
-  repository: cosmotech/keycloak-iamguarded
+  repository: ${IMAGE_REPOSITORY_PREFIX}/keycloak-iamguarded
+  tag: ${KEYCLOAK_IMAGE_TAG}
   pullPolicy: IfNotPresent
 
 global:
   imageRegistry: ${IMAGE_REGISTRY}
   imagePullSecrets:
-    ${IMAGE_REGISTRY_AUTH_SECRET_LIST}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
