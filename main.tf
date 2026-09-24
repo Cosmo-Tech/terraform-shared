@@ -3,62 +3,69 @@ locals {
   storage_class_name = "cosmotech-retain"
   persistences = {
     keycloak-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-keycloak-postgresql"
-      namespace = "keycloak"
+      namespace  = "keycloak"
+      size       = 10
+      main_name  = "${var.cluster_name}-keycloak-postgresql"
+      pvc_name   = "keycloak-postgresql-1"
+      create_pvc = false
     }
     prometheusstack-prometheus = {
-      size      = 100
-      name      = "${var.cluster_name}-prometheusstack-prometheus"
-      namespace = "monitoring"
+      namespace  = "monitoring"
+      size       = 100
+      main_name  = "${var.cluster_name}-prometheusstack-prometheus"
+      pvc_name   = "pvc-${var.cluster_name}-prometheusstack-prometheus"
+      create_pvc = true
     }
     prometheusstack-grafana = {
-      size      = 10
-      name      = "${var.cluster_name}-prometheusstack-grafana"
-      namespace = "monitoring"
+      namespace  = "monitoring"
+      size       = 10
+      main_name  = "${var.cluster_name}-prometheusstack-grafana"
+      pvc_name   = "pvc-${var.cluster_name}-prometheusstack-grafana"
+      create_pvc = true
     }
     harbor-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-redis"
-      namespace = "harbor"
+      namespace  = "harbor"
+      size       = 10
+      main_name  = "${var.cluster_name}-harbor-redis"
+      pvc_name   = "pvc-${var.cluster_name}-harbor-redis"
+      create_pvc = true
     }
     harbor-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-postgresql"
-      namespace = "harbor"
+      namespace  = "harbor"
+      size       = 10
+      main_name  = "${var.cluster_name}-harbor-postgresql"
+      pvc_name   = "harbor-postgresql-1"
+      create_pvc = false
     }
     harbor-registry = {
-      size      = 30
-      name      = "${var.cluster_name}-harbor-registry"
-      namespace = "harbor"
+      namespace  = "harbor"
+      size       = 30
+      main_name  = "${var.cluster_name}-harbor-registry"
+      pvc_name   = "pvc-${var.cluster_name}-harbor-registry"
+      create_pvc = true
     }
     harbor-jobservice = {
-      size      = 10
-      name      = "${var.cluster_name}-harbor-jobservice"
-      namespace = "harbor"
+      namespace  = "harbor"
+      size       = 10
+      main_name  = "${var.cluster_name}-harbor-jobservice"
+      pvc_name   = "pvc-${var.cluster_name}-harbor-jobservice"
+      create_pvc = true
     }
     superset-postgresql = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-postgresql"
-      namespace = "superset"
+      namespace  = "superset"
+      size       = 10
+      main_name  = "${var.cluster_name}-superset-postgresql"
+      pvc_name   = "superset-postgresql-1"
+      create_pvc = false
     }
     superset-redis = {
-      size      = 10
-      name      = "${var.cluster_name}-superset-redis"
-      namespace = "superset"
+      namespace  = "superset"
+      size       = 10
+      main_name  = "${var.cluster_name}-superset-redis"
+      pvc_name   = "pvc-${var.cluster_name}-superset-redis"
+      create_pvc = true
     }
   }
-}
-
-
-module "registry_authentication" {
-  source = "./modules/registry_authentication"
-
-  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
-  image_registry                              = var.image_registry
-  image_registry_auth_secret                  = var.image_registry_auth_secret
-  image_registry_username                     = var.image_registry_username
-  image_registry_password                     = var.image_registry_password
 }
 
 
@@ -68,18 +75,27 @@ module "kube_namespaces" {
   namespaces = [
     "traefik",
     "cert-manager",
+    "cnpg-system",
     "monitoring",
     "keycloak",
     "harbor",
     "superset"
   ]
+}
 
-  image_registry_auth_secret_source_namespace = var.image_registry_auth_secret_source_namespace
+
+module "registry_authentication" {
+  source = "./modules/registry_authentication"
+
   image_registry                              = var.image_registry
+  image_registry_auth_secret_source_namespace = "default"
   image_registry_auth_secret                  = var.image_registry_auth_secret
+  image_registry_username                     = var.image_registry_username
+  image_registry_password                     = var.image_registry_password
+  namespaces                                  = module.kube_namespaces.namespaces
 
   depends_on = [
-    module.registry_authentication,
+    module.kube_namespaces,
   ]
 }
 
@@ -91,21 +107,6 @@ resource "time_sleep" "timer" {
 
   depends_on = [
     module.registry_authentication,
-  ]
-}
-
-
-module "workload_scheduler" {
-  source = "./modules/workload_scheduler"
-
-  # Do not deploy for on-premise
-  create_workload_scheduler = var.cloud_provider == "kob" ? false : var.workloadscheduler_enable_creation
-  scaler_time_zone          = var.workloadscheduler_timezone
-  scale_down_cron_schedule  = var.workloadscheduler_cron_stop
-  scale_up_cron_schedule    = var.workloadscheduler_cron_start
-
-  depends_on = [
-    time_sleep.timer,
   ]
 }
 
@@ -125,43 +126,50 @@ module "storageclass" {
 
 
 module "chart_traefik" {
+  count = var.traefik_deploy == true ? 1 : 0
+
   source = "./modules/chart_traefik"
 
   namespace = "traefik"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
-  chart_repository = var.traefik_chart_repository
-  chart_name       = var.traefik_chart_name
-  chart_tag        = var.traefik_chart_tag
-  chart_release    = "traefik"
-
-  traefik_image_repository = var.traefik_image_repository
-  traefik_image_tag        = var.traefik_image_tag
+  chart_repository  = var.traefik_chart_repository
+  chart_name        = var.traefik_chart_name
+  chart_tag         = var.traefik_chart_tag
+  chart_release     = "traefik"
+  traefik_image_tag = var.traefik_image_tag
 
   lb_annotations = local.lb_annotations
   platform_lb_ip = local.lb_ip
 
   depends_on = [
     module.kube_namespaces,
+    module.registry_authentication,
     time_sleep.timer,
   ]
 }
 
 
 module "chart_cert_manager" {
+  count = var.cert_manager_deploy == true ? 1 : 0
+
   source = "./modules/chart_cert_manager"
 
   namespace = "cert-manager"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
-  chart_repository = var.certmanager_chart_repository
-  chart_name       = var.certmanager_chart_name
-  chart_tag        = var.certmanager_chart_tag
-  chart_release    = "cert-manager"
+
+  chart_repository       = var.cert_manager_chart_repository
+  chart_name             = var.cert_manager_chart_name
+  chart_tag              = var.cert_manager_chart_tag
+  chart_release          = "cert-manager"
+  cert_manager_image_tag = var.cert_manager_image_tag
 
   dns_challenge_provider = var.dns_challenge_provider
   # service_annotations    = local.cloud_identity
@@ -175,40 +183,70 @@ module "chart_cert_manager" {
   depends_on = [
     module.kube_namespaces,
     module.chart_traefik,
+    time_sleep.timer,
+  ]
+}
+
+
+module "chart_cnpg" {
+  count = var.cnpg_deploy == true ? 1 : 0
+
+  source = "./modules/chart_cnpg"
+
+  namespace = "cnpg-system"
+
+  image_registry             = var.image_registry
+  image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
+
+  chart_cnpg_release    = var.cnpg_chart_name
+  chart_cnpg_repository = var.cnpg_chart_repository
+  chart_cnpg_name       = var.cnpg_chart_name
+  chart_cnpg_tag        = var.cnpg_chart_tag
+  cnpg_image_tag        = var.cnpg_image_tag
+
+  depends_on = [
+    module.kube_namespaces,
+    time_sleep.timer,
   ]
 }
 
 
 module "chart_harbor" {
+  count = var.harbor_deploy == true ? 1 : 0
+
   source = "./modules/chart_harbor"
 
   namespace = "harbor"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
   chart_harbor_repository = var.harbor_chart_repository
   chart_harbor_name       = var.harbor_chart_name
   chart_harbor_tag        = var.harbor_chart_tag
   chart_harbor_release    = "harbor"
-
-  chart_postgresql_repository = var.harbor_postgresql_chart_repository
-  chart_postgresql_name       = var.harbor_postgresql_chart_name
-  chart_postgresql_tag        = var.harbor_postgresql_chart_tag
-  chart_postgresql_release    = "harbor-postgresql"
-  postgresql_image_repository = var.postgresql_image_repository
-  postgresql_image_tag        = var.harbor_postgresql_image_tag
+  harbor_image_tag        = var.harbor_image_tag
 
   chart_redis_repository = var.harbor_redis_chart_repository
   chart_redis_name       = var.harbor_redis_chart_name
   chart_redis_tag        = var.harbor_redis_chart_tag
   chart_redis_release    = "harbor-redis"
+  redis_image_tag        = var.harbor_redis_image_tag
+
+  postgresql_image_name = var.postgresql_image_name
+  postgresql_image_tag  = var.postgresql_image_tag
+
+  generic_shell_image_name = var.generic_shell_image_name
+  generic_shell_image_tag  = var.generic_shell_image_tag
 
   pvc_storage_class = local.storage_class_name
-  pvc_redis         = "pvc-${local.persistences.harbor-redis["name"]}"
-  pvc_postgresql    = "pvc-${local.persistences.harbor-postgresql["name"]}"
-  pvc_registry      = "pvc-${local.persistences.harbor-registry["name"]}"
-  pvc_jobservice    = "pvc-${local.persistences.harbor-jobservice["name"]}"
+  pvc_redis         = local.persistences.harbor-redis["pvc_name"]
+  pvc_postgresql    = local.persistences.harbor-postgresql["pvc_name"]
+  pvc_registry      = local.persistences.harbor-registry["pvc_name"]
+  pvc_jobservice    = local.persistences.harbor-jobservice["pvc_name"]
+  persistence_size  = local.persistences.harbor-postgresql["size"]
 
   cluster_domain = local.cluster_domain
 
@@ -217,32 +255,35 @@ module "chart_harbor" {
     module.storageclass,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
+    time_sleep.timer,
   ]
 }
 
 
 module "chart_keycloak" {
+  count = var.keycloak_deploy == true ? 1 : 0
+
   source = "./modules/chart_keycloak"
 
   namespace = "keycloak"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
   chart_keycloak_repository = var.keycloak_chart_repository
   chart_keycloak_name       = var.keycloak_chart_name
   chart_keycloak_tag        = var.keycloak_chart_tag
   chart_keycloak_release    = "keycloak"
+  keycloak_image_tag        = var.keycloak_image_tag
 
-  chart_postgresql_repository = var.keycloak_postgresql_chart_repository
-  chart_postgresql_name       = var.keycloak_postgresql_chart_name
-  chart_postgresql_tag        = var.keycloak_postgresql_chart_tag
-  chart_postgresql_release    = "keycloak-postgresql"
-  postgresql_image_repository = var.postgresql_image_repository
-  postgresql_image_tag        = var.keycloak_postgresql_image_tag
+  postgresql_image_name = var.postgresql_image_name
+  postgresql_image_tag  = var.postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
-  pvc               = "pvc-${local.persistences.keycloak-postgresql["name"]}"
+  pvc               = local.persistences.keycloak-postgresql["pvc_name"]
+  persistence_size  = local.persistences.keycloak-postgresql["size"]
 
   keycloak_ingress_hostname = local.cluster_domain
 
@@ -251,28 +292,36 @@ module "chart_keycloak" {
     module.storageclass,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
+    time_sleep.timer,
   ]
 }
 
 
 module "chart_prometheus_stack" {
+  count = var.prometheusstack_deploy == true ? 1 : 0
+
   source = "./modules/chart_prometheus_stack"
 
   namespace = "monitoring"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
   chart_repository = var.prometheusstack_chart_repository
   chart_name       = var.prometheusstack_chart_name
   chart_tag        = var.prometheusstack_chart_tag
   chart_release    = "kube-prometheus-stack"
 
+  generic_shell_image_name = var.generic_shell_image_name
+  generic_shell_image_tag  = var.generic_shell_image_tag
+
   pvc_storage_class = local.storage_class_name
   size_prometheus   = local.persistences.prometheusstack-prometheus["size"]
-  pvc_prometheus    = "pvc-${local.persistences.prometheusstack-prometheus["name"]}"
+  pvc_prometheus    = local.persistences.prometheusstack-prometheus["pvc_name"]
   size_grafana      = local.persistences.prometheusstack-grafana["size"]
-  pvc_grafana       = "pvc-${local.persistences.prometheusstack-grafana["name"]}"
+  pvc_grafana       = local.persistences.prometheusstack-grafana["pvc_name"]
 
   cluster_domain = local.cluster_domain
 
@@ -281,29 +330,38 @@ module "chart_prometheus_stack" {
     module.storageclass,
     module.chart_traefik,
     module.chart_cert_manager,
+    time_sleep.timer,
   ]
 }
 
 
 module "chart_superset" {
+  count = var.superset_deploy == true ? 1 : 0
+
   source = "./modules/chart_superset"
 
   namespace = "superset"
 
   image_registry             = var.image_registry
   image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
 
   chart_repository = var.superset_chart_repository
   chart_name       = var.superset_chart_name
   chart_tag        = var.superset_chart_tag
   chart_release    = "superset"
 
-  postgresql_image_repository = var.postgresql_image_repository
-  postgresql_image_tag        = var.superset_postgresql_image_tag
+  superset_image_tag = var.superset_image_tag
+
+  redis_image_tag = var.superset_redis_image_tag
+
+  postgresql_image_name = var.postgresql_image_name
+  postgresql_image_tag  = var.postgresql_image_tag
 
   pvc_storage_class = local.storage_class_name
-  pvc_redis         = "pvc-${local.persistences.superset-redis["name"]}"
-  pvc_postgresql    = "pvc-${local.persistences.superset-postgresql["name"]}"
+  pvc_redis         = local.persistences.superset-redis["pvc_name"]
+  pvc_postgresql    = local.persistences.superset-postgresql["pvc_name"]
+  persistence_size  = local.persistences.superset-postgresql["size"]
 
   cluster_domain          = local.cluster_domain
   superset_cluster_domain = "superset-${local.cluster_domain}"
@@ -317,5 +375,24 @@ module "chart_superset" {
     module.kube_namespaces,
     module.chart_traefik,
     module.chart_cert_manager,
+    module.chart_cnpg,
+    time_sleep.timer,
+  ]
+}
+
+
+module "workload_scheduler" {
+  # Do not deploy for on-premise, or if false
+  count = var.cloud_provider == "kob" ? 0 : (var.workload_scheduler_deploy == true ? 1 : 0)
+  # count = var.cloud_provider == "kob" ? false : var.workload_scheduler_deploy
+
+  source = "./modules/workload_scheduler"
+
+  scaler_time_zone         = var.workload_scheduler_timezone
+  scale_down_cron_schedule = var.workload_scheduler_cron_stop
+  scale_up_cron_schedule   = var.workload_scheduler_cron_start
+
+  depends_on = [
+    time_sleep.timer,
   ]
 }

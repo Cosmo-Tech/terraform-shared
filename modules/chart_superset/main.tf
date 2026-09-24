@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1.3"
+    }
+  }
+}
 locals {
   superset_secret_name                    = "superset"
   superset_redis_secret_name              = "superset-redis"
@@ -8,9 +16,20 @@ locals {
   superset_configmap_name                 = "superset-config"
   superset_oauth_providers_configmap_name = "superset-oauth-providers"
 
-  chart_values_file = templatefile("${path.module}/values.yaml", local.chart_values)
+  chart_values_file = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                                        = var.namespace
+    IMAGE_REGISTRY                                   = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX                          = var.image_repository_prefix
+    SUPERSET_IMAGE_TAG                               = var.superset_image_tag
+    POSTGRESQL_IMAGE_NAME                            = var.postgresql_image_name
+    POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
+    REDIS_IMAGE_TAG                                  = var.redis_image_tag
+    PERSISTENCE_STORAGE_CLASS                        = var.pvc_storage_class
+    PERSISTENCE_REDIS_PVC                            = var.pvc_redis
+    PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
+    PERSISTENCE_SIZE                                 = var.persistence_size
     CLUSTER_DOMAIN                                   = var.cluster_domain
     SUPERSET_CLUSTER_DOMAIN                          = var.superset_cluster_domain
     SUPERSET_SECRET_NAME                             = local.superset_secret_name
@@ -24,13 +43,6 @@ locals {
     SUPERSET_QUERY_TIMEOUT                           = var.superset_query_timeout
     SUPERSET_BUFFER_SIZE                             = var.superset_buffer_size
     SUPERSET_MAX_FILE_SIZE                           = var.superset_max_file_size
-    PERSISTENCE_STORAGE_CLASS                        = var.pvc_storage_class
-    PERSISTENCE_REDIS_PVC                            = var.pvc_redis
-    PERSISTENCE_POSTGRESQL_PVC                       = var.pvc_postgresql
-    IMAGE_REGISTRY                                   = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET                       = var.image_registry_auth_secret
-    POSTGRESQL_IMAGE_REPOSITORY                      = var.postgresql_image_repository
-    POSTGRESQL_IMAGE_TAG                             = var.postgresql_image_tag
     PYTHON_REQUIREMENTS_INIT_CONTAINER               = indent(4, local.py_init_container)
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUMES       = indent(4, local.py_volumes)
     PYTHON_REQUIREMENTS_INIT_CONTAINER_VOLUME_MOUNTS = indent(4, local.py_volumes_mounts)
@@ -38,9 +50,6 @@ locals {
   }
 
   py_main_name = "python-requirements"
-  # py_venv_name = "superset-venv"
-  # py_venv_path = "/usr/share/superset/venv"
-
   py_init_container = yamlencode([
     {
       name            = local.py_main_name
@@ -171,6 +180,8 @@ resource "kubernetes_secret" "superset_postgresql" {
   data = {
     password            = random_password.superset_postgresql_password.result
     postgresql-password = random_password.superset_user_postgresql_password.result
+    username            = "bn_superset"
+    password            = random_password.superset_user_postgresql_password.result
   }
 
   type = "Opaque"
@@ -208,10 +219,18 @@ resource "kubernetes_config_map" "superset_config_map" {
   }
 
   data = {
-    "superset_config.py" = templatefile("${path.module}/kube_objects/superset_config.py", local.chart_values)
+    "superset_config.py" = templatefile("${path.module}/templates/superset_config.py", local.chart_values)
   }
 }
 ## End of ConfigMap with superset_config.py
+
+
+resource "kubectl_manifest" "postgresql" {
+  yaml_body = templatefile(
+    "${path.module}/templates/cnpg-cluster.yaml",
+    local.chart_values
+  )
+}
 
 
 ## Superset Helm Chart
@@ -236,16 +255,18 @@ resource "helm_release" "superset" {
   }
 
   depends_on = [
-    kubernetes_config_map.superset_config_map
+    kubectl_manifest.postgresql,
+    kubernetes_config_map.superset_config_map,
   ]
 }
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version      = var.chart_tag
-    values       = local.chart_values_file
-    values_sha1  = sha1(local.chart_values_file)
-    helm_release = data.kubernetes_resources.helm_release_secret
+    version            = var.chart_tag
+    values             = local.chart_values_file
+    values_sha1        = sha1(local.chart_values_file)
+    helm_release       = data.kubernetes_resources.helm_release_secret
+    postgresql_version = var.postgresql_image_tag
   }
 }
 

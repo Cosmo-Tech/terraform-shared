@@ -1,0 +1,43 @@
+name: "Quality checks"
+run-name: "[linter] ${{ github.event.pull_request.title || github.event.head_commit.message }}"
+
+on:
+  push:
+    branches:
+      - 'ci/*'
+  pull_request:
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform-fmt:
+    name: "Terraform fmt"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+  tflint:
+    name: "TFLint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: latest
+
+      - name: TFLint run
+        run: tflint --recursive --config=${{ github.workspace }}/.github/tflint.hcl

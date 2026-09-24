@@ -29,7 +29,8 @@ locals {
 
 
 module "storage_aws" {
-  source = "git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-aws.git//terraform-cluster/modules/storage?ref=${local.module_storage_aws_tag}"
+
 
   for_each = var.cloud_provider == "aws" ? local.persistences : {}
 

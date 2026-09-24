@@ -63,7 +63,7 @@ deployment:
   podLabels:
     networking/traffic-allowed: "yes"
   imagePullSecrets:
-    - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
 
 resources:
   limits:
@@ -86,12 +86,9 @@ tolerations:
 
 image:
   registry: ${IMAGE_REGISTRY}
-  repository: ${TRAEFIK_IMAGE_REPOSITORY}
+  repository: ${IMAGE_REPOSITORY_PREFIX}/traefik
   tag: "${TRAEFIK_IMAGE_TAG}"
   pullPolicy: IfNotPresent
 
 global:
   sendAnonymousUsage: false
-#   imageRegistry: ${IMAGE_REGISTRY}
-#   imagePullSecrets:
-#     - name: ${IMAGE_REGISTRY_AUTH_SECRET}

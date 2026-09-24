@@ -1,0 +1,28 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ${NAMESPACE}-postgresql
+  namespace: ${NAMESPACE}
+spec:
+  instances: 1
+  imageName: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/${POSTGRESQL_IMAGE_NAME}:${POSTGRESQL_IMAGE_TAG}
+  imagePullSecrets:
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
+      database: harbor_db
+      owner: postgres
+      secret:
+        name: ${SECRET}
+  storage:
+    storageClass: ${PERSISTENCE_STORAGE_CLASS}
+    size: "${PERSISTENCE_SIZE}Gi"
+  affinity:
+    nodeSelector:
+      cosmotech.com/tier: db
+    tolerations:
+      - key: vendor
+        operator: Equal
+        value: cosmotech
+        effect: NoSchedule

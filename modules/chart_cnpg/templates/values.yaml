@@ -1,0 +1,30 @@
+image:
+  repository: ${IMAGE_REGISTRY}/${IMAGE_REPOSITORY_PREFIX}/cloudnative-pg-fips
+  tag: ${CNPG_IMAGE_TAG}
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+
+config:
+  clusterWide: true
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+webhook:
+  mutating:
+    create: true
+  validating:
+    create: true
+
+crds:
+  create: true
+
+postgresql:
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true

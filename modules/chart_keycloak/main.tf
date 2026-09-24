@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    kubectl = {
+      source  = "alekc/kubectl"
+      version = "~> 2.1.3"
+    }
+  }
+}
 locals {
   keycloak_secret_name_config             = "keycloak-config"
   keycloak_admin_user                     = "admin"
@@ -6,23 +14,25 @@ locals {
   keycloak_postgres_user_password_secret  = "keycloak_postgres_password"
   keycloak_postgres_admin_password_secret = "keycloak_postgres_admin_password"
 
-  chart_values_file_keycloak   = templatefile("${path.module}/values-keycloak.yaml", local.chart_values)
-  chart_values_file_postgresql = templatefile("${path.module}/values-postgresql.yaml", local.chart_values)
+  chart_values_file_keycloak = templatefile("${path.module}/templates/values.yaml", local.chart_values)
   chart_values = {
     NAMESPACE                          = var.namespace
+    IMAGE_REGISTRY                     = var.image_registry
+    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
+    IMAGE_REPOSITORY_PREFIX            = var.image_repository_prefix
+    KEYCLOAK_IMAGE_TAG                 = var.keycloak_image_tag
+    POSTGRESQL_IMAGE_NAME              = var.postgresql_image_name
+    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     INGRESS_HOSTNAME                   = var.keycloak_ingress_hostname
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_PVC                    = var.pvc
+    PERSISTENCE_SIZE                   = var.persistence_size
     KEYCLOAK_SECRET                    = local.keycloak_secret_name_config
     KEYCLOAK_ADMIN_USER                = local.keycloak_admin_user
     KEYCLOAK_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_admin_password_secret
     POSTGRES_USER                      = local.keycloak_postgres_user
     POSTGRES_PASSWORD_SECRET_KEY       = local.keycloak_postgres_user_password_secret
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = local.keycloak_postgres_admin_password_secret
-    IMAGE_REGISTRY                     = var.image_registry
-    IMAGE_REGISTRY_AUTH_SECRET         = var.image_registry_auth_secret
-    POSTGRESQL_IMAGE_REPOSITORY        = var.postgresql_image_repository
-    POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
   }
 }
 
@@ -58,22 +68,20 @@ resource "kubernetes_secret" "keycloak_config" {
     keycloak_postgres_user           = local.keycloak_postgres_user
     keycloak_postgres_password       = var.keycloak_postgres_password != "" ? var.keycloak_postgres_password : random_password.keycloak_postgres_password.result
     keycloak_postgres_admin_password = var.keycloak_postgres_admin_password != "" ? var.keycloak_postgres_admin_password : random_password.keycloak_postgres_admin_password.result
+    username                         = local.keycloak_postgres_user
+    password                         = var.keycloak_postgres_password != "" ? var.keycloak_postgres_password : random_password.keycloak_postgres_password.result
+
   }
 
   type = "Opaque"
 }
 
 
-resource "helm_release" "postgresql" {
-  namespace  = var.namespace
-  name       = var.chart_postgresql_release
-  repository = var.chart_postgresql_repository
-  chart      = var.chart_postgresql_name
-  version    = var.chart_postgresql_tag
-
-  values = [
-    local.chart_values_file_postgresql
-  ]
+resource "kubectl_manifest" "postgresql" {
+  yaml_body = templatefile(
+    "${path.module}/templates/cnpg-cluster.yaml",
+    local.chart_values
+  )
 }
 
 
@@ -98,16 +106,17 @@ resource "helm_release" "keycloak" {
   }
 
   depends_on = [
-    helm_release.postgresql
+    kubectl_manifest.postgresql,
   ]
 }
 
 resource "terraform_data" "helm_release_trigger" {
   input = {
-    version      = var.chart_keycloak_tag,
-    values       = local.chart_values_file_keycloak
-    values_sha1  = sha1(local.chart_values_file_keycloak)
-    helm_release = data.kubernetes_resources.helm_release_secret
+    version            = var.chart_keycloak_tag,
+    values             = local.chart_values_file_keycloak
+    values_sha1        = sha1(local.chart_values_file_keycloak)
+    helm_release       = data.kubernetes_resources.helm_release_secret
+    postgresql_version = var.postgresql_image_tag
   }
 }
 

@@ -35,15 +35,29 @@ locals {
 
 
 module "storage_kob" {
-  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage"
+  source = "git::https://github.com/cosmo-tech/terraform-onprem.git//terraform-cluster/modules/storage?ref=${local.module_storage_kob_tag}"
 
 
   for_each = var.cloud_provider == "kob" ? local.persistences : {}
 
+  # namespace          = each.value.namespace
+  # resource           = "${var.cluster_name}-${each.key}"
+  # size               = each.value.size
+  # storage_class_name = local.storage_class_name
+  # region             = var.cluster_region
+  # cloud_provider     = var.cloud_provider
+
   namespace          = each.value.namespace
-  resource           = "${var.cluster_name}-${each.key}"
+  main_name          = each.value.main_name
+  pvc_name           = each.value.pvc_name
   size               = each.value.size
+  resource_group     = data.azurerm_kubernetes_cluster.cluster.node_resource_group
   storage_class_name = local.storage_class_name
   region             = var.cluster_region
   cloud_provider     = var.cloud_provider
+  create_pvc         = each.value.create_pvc
+
+  depends_on = [
+    module.kube_namespaces,
+  ]
 }
