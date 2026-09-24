@@ -213,7 +213,7 @@ FEATURE_FLAGS = {'DASHBOARD_RBAC': True,
                  'FAB_ADD_SECURITY_API': True}
 
 # After this : volatile config to try to get guest access tokens
-GUEST_ROLE_NAME = "GUEST_TOKEN_ROLE"
+GUEST_ROLE_NAME = "Gamma"
 GUEST_TOKEN_JWT_AUDIENCE = "superset"
 GUEST_TOKEN_JWT_SECRET = "${SUPERSET_GUEST_TOKEN}"
 # Flask-WTF flag for CSRF

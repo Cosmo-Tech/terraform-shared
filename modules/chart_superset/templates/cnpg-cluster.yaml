@@ -27,5 +27,3 @@ spec:
         operator: Equal
         value: cosmotech
         effect: NoSchedule
-  monitoring:
-    enablePodMonitor: true

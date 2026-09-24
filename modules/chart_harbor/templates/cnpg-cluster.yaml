@@ -12,7 +12,7 @@ spec:
   bootstrap:
     initdb:
       database: harbor_db
-      owner: harbor
+      owner: postgres
       secret:
         name: ${SECRET}
   storage:
@@ -26,5 +26,3 @@ spec:
         operator: Equal
         value: cosmotech
         effect: NoSchedule
-  monitoring:
-    enablePodMonitor: true

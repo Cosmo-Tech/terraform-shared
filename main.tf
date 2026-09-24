@@ -5,7 +5,7 @@ locals {
     keycloak-postgresql = {
       namespace  = "keycloak"
       size       = 10
-      main_name  = "${var.cluster_name}-keycloak-postgresql"
+      main_name  = "${var.cluster_name}-keycloak-postgresql-cnpg"
       pvc_name   = "keycloak-postgresql-1"
       create_pvc = false
     }
@@ -33,7 +33,7 @@ locals {
     harbor-postgresql = {
       namespace  = "harbor"
       size       = 10
-      main_name  = "${var.cluster_name}-harbor-postgresql"
+      main_name  = "${var.cluster_name}-harbor-postgresql-cnpg"
       pvc_name   = "harbor-postgresql-1"
       create_pvc = false
     }
@@ -54,7 +54,7 @@ locals {
     superset-postgresql = {
       namespace  = "superset"
       size       = 10
-      main_name  = "${var.cluster_name}-superset-postgresql"
+      main_name  = "${var.cluster_name}-superset-postgresql-cnpg"
       pvc_name   = "superset-postgresql-1"
       create_pvc = false
     }
