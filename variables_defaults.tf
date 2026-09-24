@@ -80,7 +80,6 @@ variable "image_registry_auth_secret" { default = "registry-auth-cosmotech" }
 variable "image_repository_prefix" { default = "proxy-chainguard/cosmotech" }
 
 variable "postgresql_image_name" { default = "postgres-cloudnative-pg-fips" }
-# variable "postgresql_image_tag" { default = "17" }
 variable "postgresql_image_tag" { default = "18" }
 
 variable "generic_shell_image_name" { default = "os-shell-iamguarded" }
