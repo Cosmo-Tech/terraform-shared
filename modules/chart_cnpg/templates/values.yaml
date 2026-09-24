@@ -23,3 +23,8 @@ webhook:
 
 crds:
   create: true
+
+postgresql:
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true

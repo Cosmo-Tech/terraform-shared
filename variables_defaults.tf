@@ -35,7 +35,8 @@ variable "harbor_image_tag" { default = "2.15.2" }
 variable "harbor_redis_chart_name" { default = "redis" }
 variable "harbor_redis_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "harbor_redis_chart_tag" { default = "25.3.8" }
-variable "harbor_redis_image_tag" { default = "8.8.2" }
+variable "harbor_redis_image_tag" { default = "8.6.3" }
+# variable "harbor_redis_image_tag" { default = "8.8.2" }
 
 
 ## Keycloak
@@ -59,8 +60,11 @@ variable "superset_deploy" { default = true }
 variable "superset_chart_name" { default = "superset" }
 variable "superset_chart_repository" { default = "oci://cgr.dev/cosmotech/iamguarded-charts" }
 variable "superset_chart_tag" { default = "5.0.0" }
-variable "superset_image_tag" { default = "6.1.0" }
-variable "superset_redis_image_tag" { default = "8.8.2" }
+# variable "superset_chart_tag" { default = "5.0.1" }
+variable "superset_image_tag" { default = "6.0.0" }
+# variable "superset_image_tag" { default = "6.1.0" }
+variable "superset_redis_image_tag" { default = "8.6.3" }
+# variable "superset_redis_image_tag" { default = "8.8.2" }
 
 
 ## Workload Scheduler (autostop/autostart)
