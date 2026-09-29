@@ -117,6 +117,6 @@ variable "pvc_jobservice" {
   type = string
 }
 
-variable "persistence_size" {
+variable "persistence_size_postgresql" {
   type = string
 }

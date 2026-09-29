@@ -13,11 +13,11 @@ locals {
   chart_values = {
     NAMESPACE                          = var.namespace
     CLUSTER_DOMAIN                     = var.cluster_domain
+    HARBOR_SECRET_CONFIG               = local.harbor_secret_name_config
     HARBOR_ADMIN_PASSWORD              = "harbor_admin_password"
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
-    POSTGRES_PASSWORD_KEY              = "passowrd"
+    POSTGRES_USER                      = local.harbor_postgres_user
     POSTGRES_PASSWORD_SECRET_KEY       = "harbor_postgres_password"
-    SECRET                             = "harbor-config"
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_REDIS_PVC              = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC         = var.pvc_postgresql
@@ -32,8 +32,12 @@ locals {
     POSTGRESQL_IMAGE_TAG               = var.postgresql_image_tag
     GENERIC_SHELL_IMAGE_NAME           = var.generic_shell_image_name
     GENERIC_SHELL_IMAGE_TAG            = var.generic_shell_image_tag
-    PERSISTENCE_SIZE                   = var.persistence_size
+    PERSISTENCE_SIZE_POSTGRESQL        = var.persistence_size_postgresql
   }
+
+
+  harbor_secret_name_config = "harbor-config"
+  harbor_postgres_user      = "postgres"
 }
 
 
@@ -126,7 +130,7 @@ resource "random_password" "harbor_admin_password" {
 ## Kubernetes Secret for harbor Config
 resource "kubernetes_secret" "harbor_config" {
   metadata {
-    name      = "harbor-config"
+    name      = local.harbor_secret_name_config
     namespace = "harbor"
     labels = {
       "app" = "harbor"
@@ -135,10 +139,10 @@ resource "kubernetes_secret" "harbor_config" {
 
   data = {
     harbor_admin_password          = var.harbor_admin_password != "" ? var.harbor_admin_password : random_password.harbor_admin_password.result
-    harbor_postgres_user           = var.harbor_postgres_user
+    harbor_postgres_user           = local.harbor_postgres_user
     harbor_postgres_password       = var.harbor_postgres_password != "" ? var.harbor_postgres_password : random_password.harbor_postgres_password.result
     harbor_postgres_admin_password = var.harbor_postgres_admin_password != "" ? var.harbor_postgres_admin_password : random_password.harbor_postgres_admin_password.result
-    username                       = var.harbor_postgres_user != "" ? var.harbor_postgres_user : "harbor"
+    username                       = local.harbor_postgres_user
     password                       = var.harbor_postgres_password != "" ? var.harbor_postgres_password : random_password.harbor_postgres_admin_password.result
   }
 

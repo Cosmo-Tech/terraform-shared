@@ -241,12 +241,12 @@ module "chart_harbor" {
   generic_shell_image_name = var.generic_shell_image_name
   generic_shell_image_tag  = var.generic_shell_image_tag
 
-  pvc_storage_class = local.storage_class_name
-  pvc_redis         = local.persistences.harbor-redis["pvc_name"]
-  pvc_postgresql    = local.persistences.harbor-postgresql["pvc_name"]
-  pvc_registry      = local.persistences.harbor-registry["pvc_name"]
-  pvc_jobservice    = local.persistences.harbor-jobservice["pvc_name"]
-  persistence_size  = local.persistences.harbor-postgresql["size"]
+  pvc_storage_class           = local.storage_class_name
+  pvc_redis                   = local.persistences.harbor-redis["pvc_name"]
+  pvc_postgresql              = local.persistences.harbor-postgresql["pvc_name"]
+  pvc_registry                = local.persistences.harbor-registry["pvc_name"]
+  pvc_jobservice              = local.persistences.harbor-jobservice["pvc_name"]
+  persistence_size_postgresql = local.persistences.harbor-postgresql["size"]
 
   cluster_domain = local.cluster_domain
 
