@@ -17,7 +17,6 @@ locals {
     HARBOR_ADMIN_PASSWORD              = "harbor_admin_password"
     POSTGRES_ADMIN_PASSWORD_SECRET_KEY = "harbor_postgres_admin_password"
     POSTGRES_USER                      = local.harbor_postgres_user
-    POSTGRES_PASSWORD_SECRET_KEY       = "harbor_postgres_password"
     PERSISTENCE_STORAGE_CLASS          = var.pvc_storage_class
     PERSISTENCE_REDIS_PVC              = var.pvc_redis
     PERSISTENCE_POSTGRESQL_PVC         = var.pvc_postgresql
