@@ -14,10 +14,10 @@ spec:
       database: harbor_db
       owner: postgres
       secret:
-        name: ${SECRET}
+        name: ${HARBOR_SECRET_CONFIG}
   storage:
     storageClass: ${PERSISTENCE_STORAGE_CLASS}
-    size: "${PERSISTENCE_SIZE}Gi"
+    size: "${PERSISTENCE_SIZE_POSTGRESQL}Gi"
   affinity:
     nodeSelector:
       cosmotech.com/tier: db

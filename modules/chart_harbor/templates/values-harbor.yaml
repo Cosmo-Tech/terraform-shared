@@ -62,9 +62,9 @@ registry:
 externalDatabase:
   host: harbor-postgresql-rw.${NAMESPACE}.svc.cluster.local
   port: 5432
-  user: harbor
-  existingSecret: "${SECRET}"
-  existingSecretPasswordKey: password
+  user: ${POSTGRES_USER}
+  existingSecret: ${HARBOR_SECRET_CONFIG}
+  existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
   coreDatabase: harbor_db
   sslmode: disable
 postgresql:
@@ -160,7 +160,7 @@ nginx:
     pullPolicy: IfNotPresent
   resourcesPreset: "nano"
 
-existingSecret: "${SECRET}"
+existingSecret: "${HARBOR_SECRET_CONFIG}"
 existingSecretAdminPasswordKey: "${HARBOR_ADMIN_PASSWORD}"
 logLevel: info
 metrics:
