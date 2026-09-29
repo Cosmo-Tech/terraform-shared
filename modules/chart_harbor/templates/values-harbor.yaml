@@ -64,7 +64,7 @@ externalDatabase:
   port: 5432
   user: ${POSTGRES_USER}
   existingSecret: ${HARBOR_SECRET_CONFIG}
-  existingSecretPasswordKey: ${POSTGRES_PASSWORD_SECRET_KEY}
+  existingSecretPasswordKey: ${POSTGRES_ADMIN_PASSWORD_SECRET_KEY}
   coreDatabase: harbor_db
   sslmode: disable
 postgresql:
