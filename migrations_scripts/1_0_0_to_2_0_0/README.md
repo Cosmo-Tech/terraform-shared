@@ -8,3 +8,6 @@ After running terraform apply:
 * `restore_psql_keycloak.sh -s <az_account_name> -k <az_account_key>`
 * `restore_psql_harbor.sh -s <az_account_name> -k <az_account_key>`
 * `restore_psql_tenant.sh -s <az_account_name> -k <az_account_key> -n <namespace>`
+
+Ensure all PostgreSQL dump are healthy on Azure storage:
+* `./check_dump_on_azure.sh`

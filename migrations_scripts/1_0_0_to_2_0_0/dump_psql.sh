@@ -28,7 +28,8 @@ fi
 export AZURE_STORAGE_ACCOUNT="$AZURE_STORAGE_ACCOUNT"
 export AZURE_STORAGE_KEY="$AZURE_STORAGE_KEY"
 
-required_commands="kubectl base64 az"
+# Add gzip/gunzip to the list of required commands
+required_commands="kubectl base64 az gunzip"
 for command in $required_commands; do
     if ! command -v "$command" >/dev/null 2>&1; then
         echo "error: required command not found: $command"
@@ -98,9 +99,25 @@ dump_psql() {
     fi
 
     local local_tmp_dump="$DIR_DUMP/_tmp_dump.sql"
+    local local_tmp_dump_gz="${local_tmp_dump}.gz"
 
-    kubectl exec -n "$ns" "$pod" -c postgresql -- env PGPASSWORD="$password" pg_dump -U "$username" -d "$db" --no-owner --clean > "$local_tmp_dump"
+    echo " -> Streaming and compressing database '$db' over the network..."
+    # Stream the compressed file to the local machine
+    if ! kubectl exec -n "$ns" "$pod" -c postgresql -- sh -c "PGPASSWORD=\"$password\" pg_dump -U \"$username\" -d \"$db\" --no-owner --clean | gzip -c" > "$local_tmp_dump_gz"; then
+        echo " -> ERROR: Dump failed for $db"
+        # rm -f "$local_tmp_dump_gz"
+        return 1
+    fi
 
+    echo " -> Decompressing dump locally..."
+    # gunzip will replace _tmp_dump.sql.gz with _tmp_dump.sql
+    if ! gunzip -f "$local_tmp_dump_gz"; then
+        echo " -> ERROR: Decompression failed for $db"
+        rm -f "$local_tmp_dump_gz" "$local_tmp_dump"
+        return 1
+    fi
+
+    echo " -> Uploading uncompressed .sql dump to Azure Storage ($blob_name)..."
     az storage blob upload \
         --account-name "$AZURE_STORAGE_ACCOUNT" \
         --account-key "$AZURE_STORAGE_KEY" \
@@ -110,14 +127,15 @@ dump_psql() {
         --overwrite true \
         --output none
 
+    # Clean up the local file
     rm -f "$local_tmp_dump"
 }
 
 if [ "$TARGET_NAMESPACE" = "all" ]; then
-    echo "Retrieving all PostgreSQL on the cluster..."
+    echo "Retrieving all PostgreSQL instances on the cluster..."
     all_ns="$(kubectl get ns -o jsonpath='{.items[*].metadata.name}')"
 else
-    echo "Retrieving PostgreSQL in namespace: $TARGET_NAMESPACE..."
+    echo "Retrieving PostgreSQL instances in namespace: $TARGET_NAMESPACE..."
     all_ns="$TARGET_NAMESPACE"
 fi
 
@@ -157,8 +175,9 @@ for ns in $all_ns; do
             databases=$(get_databases "$ns" "$pod" "$psql_username" "$psql_password" "$psql_database")
 
             for db in $databases; do
+                # Keep the .sql extension for the remote file
                 blob_path="$ns/$db.sql"
-                echo "Dumping and uploading database '$db' from $ns/$pod to Azure Storage ($CONTAINER_NAME/$blob_path)..."
+                echo "Processing database '$db' from $ns/$pod to Azure Storage ($CONTAINER_NAME/$blob_path)..."
                 dump_psql "$ns" "$pod" "$psql_username" "$psql_password" "$db" "$blob_path"
             done
         fi
