@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# set -x
+
 AZURE_STORAGE_ACCOUNT=""
 AZURE_STORAGE_KEY=""
 NAMESPACE=""
@@ -42,7 +44,7 @@ mkdir -p "$DIR_DUMP"
 
 echo -e "\n=== Starting Tenant Restore Process for namespace: $NAMESPACE ==="
 
-# 1. Verify CNPG cluster
+# Verify CNPG cluster
 CLUSTER_NAME=$(kubectl get clusters.postgresql.cnpg.io -n "$NAMESPACE" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 [ -z "$CLUSTER_NAME" ] && { echo "ERROR: No CNPG cluster found in $NAMESPACE"; exit 1; }
 
@@ -51,7 +53,10 @@ PRIMARY_POD=$(kubectl get pod -n "$NAMESPACE" -l "cnpg.io/cluster=$CLUSTER_NAME,
 
 SUPER_USER=$(kubectl get secret -n "$NAMESPACE" "${CLUSTER_NAME}-superuser" -o jsonpath='{.data.username}' | base64 -d)
 
-# 2. Safety first: Generic scale down for all tenant apps
+
+
+
+# Scale down to avoid data corruption during psql restoration
 echo " -> Scaling down all applications in $NAMESPACE..."
 for dep in $(kubectl get deployments -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     if ! echo "$dep" | grep -Eq "postgres|cnpg"; then
@@ -67,11 +72,13 @@ done
 echo " -> Waiting for pods to terminate (15s)..."
 sleep 15
 
+
+
+
 # Fetch all SQL dumps for this tenant from Azure
 BLOBS=$(az storage blob list --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --container-name "$CONTAINER_NAME" --prefix "$NAMESPACE/" --query "[].name" -o tsv)
 [ -z "$BLOBS" ] && { echo "ERROR: No dump files found in Azure Storage for $NAMESPACE"; exit 1; }
 
-# 3. Main restore loop for each database
 for BLOB_PATH in $BLOBS; do
     DB_NAME=$(basename "$BLOB_PATH" .sql)
     LOCAL_DUMP="$DIR_DUMP/_tmp_${DB_NAME}_restore.sql"
@@ -84,7 +91,7 @@ for BLOB_PATH in $BLOBS; do
         seaweedfs) APP_USER="seaweedfs" ;;
     esac
 
-    echo -e "\n--- Processing Database: $DB_NAME (Owner: $APP_USER) ---"
+    echo "Processing database: $DB_NAME (Owner: $APP_USER)"
     
     echo " -> Downloading $BLOB_PATH..."
     az storage blob download --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --container-name "$CONTAINER_NAME" --name "$BLOB_PATH" --file "$LOCAL_DUMP" --output none
@@ -119,7 +126,120 @@ EOF
     rm -f "$LOCAL_DUMP"
 done
 
-# 4. Scale back up
+
+
+# Get decoded value of a given secret key
+# get_secret_value <namespace> <secret> <key>
+get_secret_value() {
+    local ns="$1"
+    local secret="$2"
+    local key="$3"
+
+    kubectl -n $ns get secret $secret -o yaml | yq -r '.data | map_values(. | @base64d)' | yq .$key
+}
+
+
+# Replace a given key value in a Kubernetes secret
+# Usage: replace_secret_key_value <secret> <key> <new_value>
+replace_secret_key_value() {
+    local secret=$1
+    local key=$2
+    local new_value=$3
+
+    echo "Replacing value of secret key: $secret/$key with '$new_value'..."
+    kubectl -n $NAMESPACE patch secret $secret -p '{"data": {"'$key'": "'$(echo -n "$new_value" | base64)'"}}'
+}
+
+
+# Get the list of all the PostgreSQL schemas used for the cosmotech tenant
+# Usage: list_psql_cosmotech_schemas
+list_psql_cosmotech_schemas() {
+    # artificially add the "inputs" schema
+    echo 'inputs'
+    
+    # All workspaces schemas
+    kubectl exec -i -n "$NAMESPACE" "$PRIMARY_POD" -c postgres -- psql -U "$SUPER_USER" -d cosmotech -c "SELECT schema_name FROM information_schema.schemata;" | grep 'w_' | tr -d ' '
+}
+
+
+# Replace the owner of a given PostgreSQL schema
+# Usage: replace_psql_schema_owner <schema> <new_owner>
+replace_psql_schema_owner() {
+    local schema=$1
+    local new_owner=$2
+
+    echo "Replacing schema '$schema' owner with '$new_owner'..."
+    kubectl exec -i -n "$NAMESPACE" "$PRIMARY_POD" -c postgres -- psql -U "$SUPER_USER" -d cosmotech -c "ALTER SCHEMA $schema OWNER TO $new_owner;"
+}
+
+
+# Replace the password of a given PostgreSQL user
+# Usage: replace_psql_user_password <username_target> <password_new>
+replace_psql_user_password() {
+    local username_target="$1"
+    local password_new="$2"
+
+    echo "Replacing password of user '$username_target'..."
+    kubectl exec -i -n "$NAMESPACE" "$PRIMARY_POD" -c postgres -- psql -U "$SUPER_USER" -c "ALTER USER $username_target WITH PASSWORD '$password_new';"
+}
+
+
+# Get the list of CoAL Kubernetes secrets
+# Usage: list_coal_secret_pqsl_password
+list_coal_secret_pqsl_password() {
+    kubectl -n $NAMESPACE get secret -o yaml | yq .items[].metadata.name | grep 'o-' | grep 'w-'
+}
+
+
+PSQL_SECRET='postgresql-cosmotechapi'
+psql_admin_username="$(get_secret_value $NAMESPACE $PSQL_SECRET "admin-username")"
+psql_admin_password="$(get_secret_value $NAMESPACE $PSQL_SECRET "admin-password")"
+
+psql_writer_username="$(get_secret_value $NAMESPACE $PSQL_SECRET "writer-username")"
+psql_writer_password="$(get_secret_value $NAMESPACE $PSQL_SECRET "writer-password")"
+
+psql_reader_username="$(get_secret_value $NAMESPACE $PSQL_SECRET "reader-username")"
+psql_reader_password="$(get_secret_value $NAMESPACE $PSQL_SECRET "reader-password")"
+
+echo ''
+echo "psql_admin_username $psql_admin_username"
+echo "psql_admin_password $psql_admin_password"
+echo ''
+echo "psql_writer_username $psql_writer_username"
+echo "psql_writer_password $psql_writer_password"
+echo ''
+echo "psql_reader_username $psql_reader_username"
+echo "psql_reader_password $psql_reader_password"
+echo ''
+
+
+# Ensure schema owner are ok in the restored database
+SCHEMA_LIST="$(list_psql_cosmotech_schemas)"
+for schema in $SCHEMA_LIST; do
+    replace_psql_schema_owner $schema $psql_writer_username
+done
+
+
+# Ensure passwords are ok in the restored database
+replace_psql_user_password $psql_admin_username "$psql_admin_password"
+replace_psql_user_password $psql_writer_username "$psql_writer_password"
+replace_psql_user_password $psql_reader_username "$psql_reader_password"
+## test the connexion : 
+## psql -U cosmotech_api_admin --password -d cosmotech -h 127.0.0.1
+## psql -U cosmotech_api_writer --password -d cosmotech -h 127.0.0.1
+## psql -U cosmotech_api_reader --password -d cosmotech -h 127.0.0.1
+
+
+# Ensure CoAL password are ok in all CoAL secrets (overwrite with cosmotech_api_writer)
+COAL_SECRET_LIST="$(list_coal_secret_pqsl_password)"
+for secret in $COAL_SECRET_LIST; do
+    replace_secret_key_value $secret 'POSTGRES_USER_PASSWORD' $psql_writer_password
+done
+
+
+
+
+# Scale back up
 echo -e "\n -> Scaling back up all applications in $NAMESPACE..."
 for dep in $(kubectl get deployments -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     if ! echo "$dep" | grep -Eq "postgres|cnpg"; then
@@ -132,5 +252,7 @@ for sts in $(kubectl get statefulsets -n "$NAMESPACE" -o jsonpath='{.items[*].me
     fi
 done
 
-echo -e "\n=== Tenant restore process completed successfully for $NAMESPACE! ==="
+
+echo "\n=== Tenant restore process completed successfully for $NAMESPACE! ==="
+
 exit 0
