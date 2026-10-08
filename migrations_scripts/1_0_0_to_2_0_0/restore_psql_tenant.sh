@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# set -x
+
 AZURE_STORAGE_ACCOUNT=""
 AZURE_STORAGE_KEY=""
 NAMESPACE=""
@@ -42,7 +44,7 @@ mkdir -p "$DIR_DUMP"
 
 echo -e "\n=== Starting Tenant Restore Process for namespace: $NAMESPACE ==="
 
-# 1. Verify CNPG cluster
+# Verify CNPG cluster
 CLUSTER_NAME=$(kubectl get clusters.postgresql.cnpg.io -n "$NAMESPACE" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 [ -z "$CLUSTER_NAME" ] && { echo "ERROR: No CNPG cluster found in $NAMESPACE"; exit 1; }
 
@@ -51,7 +53,10 @@ PRIMARY_POD=$(kubectl get pod -n "$NAMESPACE" -l "cnpg.io/cluster=$CLUSTER_NAME,
 
 SUPER_USER=$(kubectl get secret -n "$NAMESPACE" "${CLUSTER_NAME}-superuser" -o jsonpath='{.data.username}' | base64 -d)
 
-# 2. Safety first: Generic scale down for all tenant apps
+
+
+
+# Scale down to avoid data corruption during psql restoration
 echo " -> Scaling down all applications in $NAMESPACE..."
 for dep in $(kubectl get deployments -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     if ! echo "$dep" | grep -Eq "postgres|cnpg"; then
@@ -67,11 +72,13 @@ done
 echo " -> Waiting for pods to terminate (15s)..."
 sleep 15
 
+
+
+
 # Fetch all SQL dumps for this tenant from Azure
 BLOBS=$(az storage blob list --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --container-name "$CONTAINER_NAME" --prefix "$NAMESPACE/" --query "[].name" -o tsv)
 [ -z "$BLOBS" ] && { echo "ERROR: No dump files found in Azure Storage for $NAMESPACE"; exit 1; }
 
-# 3. Main restore loop for each database
 for BLOB_PATH in $BLOBS; do
     DB_NAME=$(basename "$BLOB_PATH" .sql)
     LOCAL_DUMP="$DIR_DUMP/_tmp_${DB_NAME}_restore.sql"
@@ -84,7 +91,7 @@ for BLOB_PATH in $BLOBS; do
         seaweedfs) APP_USER="seaweedfs" ;;
     esac
 
-    echo -e "\n--- Processing Database: $DB_NAME (Owner: $APP_USER) ---"
+    echo "Processing database: $DB_NAME (Owner: $APP_USER)"
     
     echo " -> Downloading $BLOB_PATH..."
     az storage blob download --account-name "$AZURE_STORAGE_ACCOUNT" --account-key "$AZURE_STORAGE_KEY" --container-name "$CONTAINER_NAME" --name "$BLOB_PATH" --file "$LOCAL_DUMP" --output none
@@ -119,7 +126,14 @@ EOF
     rm -f "$LOCAL_DUMP"
 done
 
-# 4. Scale back up
+
+
+# Fix users, their passwords & database schema owners
+./fix_psql_users.sh
+
+
+
+# Scale back up
 echo -e "\n -> Scaling back up all applications in $NAMESPACE..."
 for dep in $(kubectl get deployments -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     if ! echo "$dep" | grep -Eq "postgres|cnpg"; then
@@ -132,5 +146,7 @@ for sts in $(kubectl get statefulsets -n "$NAMESPACE" -o jsonpath='{.items[*].me
     fi
 done
 
-echo -e "\n=== Tenant restore process completed successfully for $NAMESPACE! ==="
+
+echo "\n=== Tenant restore process completed successfully for $NAMESPACE! ==="
+
 exit 0
