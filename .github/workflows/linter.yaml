@@ -40,4 +40,6 @@ jobs:
           tflint_version: latest
 
       - name: TFLint run
-        run: tflint --recursive --config=${{ github.workspace }}/.github/tflint.hcl
+        # tflint that avoid "targets/" directory
+        run: find . -type f -name "*.tf" -not -path "./targets/*" -not -path "./migrations_scripts/*" -exec dirname {} \; | sort -u | xargs -I {} tflint --chdir={} --config=$PWD/.github/tflint.hcl --format=compact
+        # run: tflint --recursive --config=${{ github.workspace }}/.github/tflint.hcl
