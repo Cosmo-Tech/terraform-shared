@@ -4,8 +4,8 @@
 
 
 locals {
-  image_registry_username = (var.image_registry_username == null ? jsondecode(data.kubernetes_secret.registry_auth[0].data[".dockerconfigjson"]).auths["${var.image_registry}"].username : var.image_registry_username)
-  image_registry_password = (var.image_registry_password == null ? jsondecode(data.kubernetes_secret.registry_auth[0].data[".dockerconfigjson"]).auths["${var.image_registry}"].password : var.image_registry_password)
+  image_registry_username = (var.image_registry_username == null ? jsondecode(data.kubernetes_secret.registry_auth[0].data[".dockerconfigjson"]).auths[var.image_registry].username : var.image_registry_username)
+  image_registry_password = (var.image_registry_password == null ? jsondecode(data.kubernetes_secret.registry_auth[0].data[".dockerconfigjson"]).auths[var.image_registry].password : var.image_registry_password)
 }
 
 
@@ -39,7 +39,7 @@ resource "kubernetes_secret" "registry_auth" {
   data = {
     ".dockerconfigjson" = jsonencode({
       auths = {
-        "${var.image_registry}" = {
+        var.image_registry = {
           "username" = local.image_registry_username
           "password" = local.image_registry_password
           "auth"     = base64encode("${local.image_registry_username}:${local.image_registry_password}")
