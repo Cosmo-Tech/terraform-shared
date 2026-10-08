@@ -178,7 +178,7 @@ resource "kubernetes_secret" "superset_postgresql" {
   }
 
   data = {
-    password            = random_password.superset_postgresql_password.result
+    # password            = random_password.superset_postgresql_password.result
     postgresql-password = random_password.superset_user_postgresql_password.result
     username            = "bn_superset"
     password            = random_password.superset_user_postgresql_password.result
