@@ -69,7 +69,6 @@ variable "superset_redis_image_tag" { default = "8.6.3" }
 
 ## Workload Scheduler (autostop/autostart)
 variable "kws_chart_name" { default = "cosmotech-kubernetes-workload-scaler" }
-variable "kws_chart_repository" { default = "https://cosmo-tech.github.io/helm-charts/" }
 variable "kws_chart_tag" { default = "0.0.0" }
 variable "kws_image_tag" { default = "0.0.7" }
 variable "kws_scale_down_schedule" { default = "0 21 * * 1-5" } # Stop monday-friday at 21:00

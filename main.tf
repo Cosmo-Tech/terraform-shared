@@ -387,7 +387,7 @@ module "workload_scheduler" {
   source = "./modules/workload_scheduler"
 
   namespace                  = "default"
-  chart_repository           = var.kws_chart_repository
+  chart_repository           = var.image_registry
   chart_name                 = var.kws_chart_name
   chart_tag                  = var.kws_chart_tag
   kws_scale_down_schedule    = var.kws_scale_down_schedule
