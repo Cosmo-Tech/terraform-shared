@@ -382,7 +382,7 @@ module "chart_superset" {
 
 
 module "workload_scheduler" {
-  count = var.workload_scheduler_deploy == true ? 1 : 0
+  count = var.cloud_provider == "kob" ? 0 : (var.workload_scheduler_deploy == true ? 1 : 0)
 
   source = "./modules/workload_scheduler"
 
