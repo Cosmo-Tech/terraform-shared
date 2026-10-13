@@ -382,17 +382,18 @@ module "chart_superset" {
 
 
 module "workload_scheduler" {
-  # Do not deploy for on-premise, or if false
   count = var.cloud_provider == "kob" ? 0 : (var.workload_scheduler_deploy == true ? 1 : 0)
-  # count = var.cloud_provider == "kob" ? false : var.workload_scheduler_deploy
 
   source = "./modules/workload_scheduler"
 
-  scaler_time_zone         = var.workload_scheduler_timezone
-  scale_down_cron_schedule = var.workload_scheduler_cron_stop
-  scale_up_cron_schedule   = var.workload_scheduler_cron_start
-
-  depends_on = [
-    time_sleep.timer,
-  ]
+  namespace                  = "default"
+  chart_repository           = var.image_registry
+  chart_name                 = var.kws_chart_name
+  chart_tag                  = var.kws_chart_tag
+  kws_scale_down_schedule    = var.kws_scale_down_schedule
+  kws_scale_up_schedule      = var.kws_scale_up_schedule
+  image_registry_auth_secret = var.image_registry_auth_secret
+  image_repository_prefix    = var.image_repository_prefix
+  kws_image_tag              = var.kws_image_tag
+  chart_prefix_product       = var.chart_prefix_product
 }

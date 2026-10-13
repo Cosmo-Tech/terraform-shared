@@ -1,23 +1,39 @@
+
+variable "kws_scale_down_schedule" {
+  type = string
+}
+
+variable "kws_scale_up_schedule" {
+  type = string
+}
+
+variable "image_registry_auth_secret" {
+  type = string
+}
+
+variable "image_repository_prefix" {
+  type = string
+}
+
+variable "kws_image_tag" {
+  type = string
+}
+
+variable "chart_repository" {
+  type = string
+}
+variable "chart_name" {
+  type = string
+}
+
+variable "chart_tag" {
+  type = string
+}
+
 variable "namespace" {
-  type        = string
-  description = "Kubernetes namespace where the scaler components are deployed"
-  default     = "default"
+  type = string
 }
 
-variable "scaler_time_zone" {
-  type        = string
-  description = "Time zone used by the CronJobs for scheduling execution"
-  # default     = "Europe/Paris"
-}
-
-variable "scale_down_cron_schedule" {
-  type        = string
-  description = "Cron expression for scaling workloads down"
-  # default     = "0 21 * * 1-5"
-}
-
-variable "scale_up_cron_schedule" {
-  type        = string
-  description = "Cron expression for scaling workloads up"
-  # default     = "0 07 * * 1-5"
+variable "chart_prefix_product" {
+  type = string
 }
