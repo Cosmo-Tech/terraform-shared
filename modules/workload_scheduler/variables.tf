@@ -33,3 +33,7 @@ variable "chart_tag" {
 variable "namespace" {
   type = string
 }
+
+variable "chart_prefix_product" {
+  type = string
+}

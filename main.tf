@@ -395,4 +395,5 @@ module "workload_scheduler" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
   kws_image_tag              = var.kws_image_tag
+  chart_prefix_product       = var.chart_prefix_product
 }

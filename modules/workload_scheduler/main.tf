@@ -3,7 +3,7 @@ resource "helm_release" "kubernetes_workload_scaler" {
   name      = "kws"
   namespace = var.namespace
 
-  repository = var.chart_repository
+  repository = "oci://${var.chart_repository}/${var.chart_prefix_product}"
   chart      = var.chart_name
   version    = var.chart_tag
 
