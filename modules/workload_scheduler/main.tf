@@ -1,7 +1,7 @@
 
 resource "helm_release" "kubernetes_workload_scaler" {
   name      = "kws"
-  namespace = "default"
+  namespace = var.namespace
 
   repository = var.chart_repository
   chart      = var.chart_name
@@ -18,6 +18,7 @@ resource "helm_release" "kubernetes_workload_scaler" {
       IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
       IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
       KWS_IMAGE_TAG              = var.kws_image_tag
+      NAMESPACE                  = var.namespace
     })
   ]
 }

@@ -29,3 +29,7 @@ variable "chart_name" {
 variable "chart_tag" {
   type = string
 }
+
+variable "namespace" {
+  type = string
+}
