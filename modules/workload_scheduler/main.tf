@@ -1,55 +1,23 @@
-terraform {
-  required_providers {
-    kubectl = {
-      source  = "alekc/kubectl"
-      version = "~> 2.1.3"
-    }
-  }
-}
 
-locals {
-  objects_values = {
-    NAMESPACE                = var.namespace
-    MAIN_NAME                = "workload-scheduler"
-    SCALER_TIME_ZONE         = var.scaler_time_zone
-    SCALE_UP_CRON_SCHEDULE   = var.scale_up_cron_schedule
-    SCALE_DOWN_CRON_SCHEDULE = var.scale_down_cron_schedule
-    SCALER_IMAGE_TAG         = "alpine/k8s:1.36.0"
-  }
-}
+resource "helm_release" "kubernetes_workload_scaler" {
+  name      = "kws"
+  namespace = "default"
 
+  repository = var.chart_repository
+  chart      = var.chart_name
+  version    = var.chart_tag
 
-resource "kubectl_manifest" "service_account" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/service-account.yaml", local.objects_values)
-}
+  create_namespace = false
+  wait             = true
+  timeout          = 600
 
-
-resource "kubectl_manifest" "cluster_role" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/cluster-role.yaml", local.objects_values)
-}
-
-
-resource "kubectl_manifest" "cluster_role_binding" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/cluster-role-binding.yaml", local.objects_values)
-}
-
-
-resource "kubectl_manifest" "cronjob_scale_down" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/cronjob-scale-down.yaml", local.objects_values)
-}
-
-
-resource "kubectl_manifest" "cronjob_scale_up" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/cronjob-scale-up.yaml", local.objects_values)
-}
-
-
-resource "kubectl_manifest" "pvc" {
-  validate_schema = false
-  yaml_body       = templatefile("${path.module}/templates/pvc.yaml", local.objects_values)
+  values = [
+    templatefile("${path.module}/templates/values.yaml", {
+      KWS_SCALE_DOWN_SCHEDULE    = var.kws_scale_down_schedule
+      KWS_SCALE_UP_SCHEDULE      = var.kws_scale_up_schedule
+      IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
+      IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
+      KWS_IMAGE_TAG              = var.kws_image_tag
+    })
+  ]
 }

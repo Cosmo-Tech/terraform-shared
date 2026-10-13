@@ -1,0 +1,30 @@
+config:
+  cache:
+    configmapName: kws-cache
+    configmapNamespace: default
+  cronjob:
+    failedJobsHistoryLimit: 10
+    scaleDown: ${KWS_SCALE_DOWN_SCHEDULE}
+    scaleUp: ${KWS_SCALE_UP_SCHEDULE}
+    successfulJobsHistoryLimit: 10
+fullnameOverride: ""
+nameOverride: ""
+workload:
+  affinity: {}
+  image:
+    pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: ${IMAGE_REGISTRY_AUTH_SECRET}
+    repository: ${IMAGE_REPOSITORY_PREFIX}/team-devops/kubernetes-workload-scaler
+    tag: ${KWS_IMAGE_TAG}
+  nodeSelector: {}
+  resources:
+    limits:
+      cpu: 100m
+      ephemeral-storage: 2Gi
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      ephemeral-storage: 50Mi
+      memory: 128Mi
+  tolerations: []
