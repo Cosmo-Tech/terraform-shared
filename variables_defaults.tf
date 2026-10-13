@@ -75,7 +75,6 @@ variable "kws_image_tag" { default = "0.0.7" }
 variable "kws_scale_down_schedule" { default = "0 21 * * 1-5" } # Stop monday-friday at 21:00
 variable "kws_scale_up_schedule" { default = "0 07 * * 1-5" }   # Start monday-friday at 07:00
 variable "workload_scheduler_deploy" { default = true }
-variable "workload_scheduler_timezone" { default = "Europe/Paris" }
 
 
 ## Global
