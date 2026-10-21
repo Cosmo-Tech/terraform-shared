@@ -392,6 +392,7 @@ module "workload_scheduler" {
   chart_tag                  = var.kws_chart_tag
   kws_scale_down_schedule    = var.kws_scale_down_schedule
   kws_scale_up_schedule      = var.kws_scale_up_schedule
+  kws_timezone               = var.kws_timezone
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
   kws_image_tag              = var.kws_image_tag

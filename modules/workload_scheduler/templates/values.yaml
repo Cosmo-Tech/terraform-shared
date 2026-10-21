@@ -6,6 +6,7 @@ config:
     failedJobsHistoryLimit: 10
     scaleDown: ${KWS_SCALE_DOWN_SCHEDULE}
     scaleUp: ${KWS_SCALE_UP_SCHEDULE}
+    timeZone: ${KWS_TIMZEONE}
     successfulJobsHistoryLimit: 10
 fullnameOverride: ""
 nameOverride: ""

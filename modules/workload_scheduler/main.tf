@@ -15,6 +15,7 @@ resource "helm_release" "kubernetes_workload_scaler" {
     templatefile("${path.module}/templates/values.yaml", {
       KWS_SCALE_DOWN_SCHEDULE    = var.kws_scale_down_schedule
       KWS_SCALE_UP_SCHEDULE      = var.kws_scale_up_schedule
+      KWS_TIMZEONE               = var.kws_timezone
       IMAGE_REGISTRY_AUTH_SECRET = var.image_registry_auth_secret
       IMAGE_REPOSITORY_PREFIX    = var.image_repository_prefix
       KWS_IMAGE_TAG              = var.kws_image_tag

@@ -7,6 +7,10 @@ variable "kws_scale_up_schedule" {
   type = string
 }
 
+variable "kws_timezone" {
+  type = string
+}
+
 variable "image_registry_auth_secret" {
   type = string
 }
