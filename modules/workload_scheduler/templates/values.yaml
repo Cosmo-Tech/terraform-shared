@@ -6,8 +6,8 @@ config:
     failedJobsHistoryLimit: 10
     scaleDown: ${KWS_SCALE_DOWN_SCHEDULE}
     scaleUp: ${KWS_SCALE_UP_SCHEDULE}
-    timeZone: ${KWS_TIMZEONE}
     successfulJobsHistoryLimit: 10
+    timeZone: ${KWS_TIMZEONE}
 fullnameOverride: ""
 nameOverride: ""
 workload:
@@ -18,7 +18,6 @@ workload:
       - name: ${IMAGE_REGISTRY_AUTH_SECRET}
     repository: ${IMAGE_REPOSITORY_PREFIX}/product/cosmotech-kubernetes-workload-scaler
     tag: ${KWS_IMAGE_TAG}
-  nodeSelector: {}
   resources:
     limits:
       cpu: 100m
@@ -28,4 +27,6 @@ workload:
       cpu: 100m
       ephemeral-storage: 50Mi
       memory: 128Mi
+  nodeSelector:
+    kubernetes.azure.com/agentpool: default
   tolerations: []
