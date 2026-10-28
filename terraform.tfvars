@@ -27,3 +27,7 @@
 ## COMMON VARIABLES EXAMPLE
 # This email can be any email, it will just be used as the contact email for Let's encrypt
 certificate_email = "platform@cosmotech.com"
+
+# ## Need the robot account credentials to access the image registry (Cosmo Tech)
+# export TF_VAR_image_registry_username="changeme"
+# export TF_VAR_image_registry_password="changeme"

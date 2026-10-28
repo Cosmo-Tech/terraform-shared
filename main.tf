@@ -136,7 +136,7 @@ module "chart_traefik" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
 
-  chart_repository  = var.traefik_chart_repository
+  chart_repository  = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_name        = var.traefik_chart_name
   chart_tag         = var.traefik_chart_tag
   chart_release     = "traefik"
@@ -165,7 +165,7 @@ module "chart_cert_manager" {
   image_repository_prefix    = var.image_repository_prefix
 
 
-  chart_repository       = var.cert_manager_chart_repository
+  chart_repository       = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_name             = var.cert_manager_chart_name
   chart_tag              = var.cert_manager_chart_tag
   chart_release          = "cert-manager"
@@ -200,7 +200,7 @@ module "chart_cnpg" {
   image_repository_prefix    = var.image_repository_prefix
 
   chart_cnpg_release    = var.cnpg_chart_name
-  chart_cnpg_repository = var.cnpg_chart_repository
+  chart_cnpg_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_cnpg_name       = var.cnpg_chart_name
   chart_cnpg_tag        = var.cnpg_chart_tag
   cnpg_image_tag        = var.cnpg_image_tag
@@ -223,13 +223,13 @@ module "chart_harbor" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
 
-  chart_harbor_repository = var.harbor_chart_repository
+  chart_harbor_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_harbor_name       = var.harbor_chart_name
   chart_harbor_tag        = var.harbor_chart_tag
   chart_harbor_release    = "harbor"
   harbor_image_tag        = var.harbor_image_tag
 
-  chart_redis_repository = var.harbor_redis_chart_repository
+  chart_redis_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_redis_name       = var.harbor_redis_chart_name
   chart_redis_tag        = var.harbor_redis_chart_tag
   chart_redis_release    = "harbor-redis"
@@ -272,7 +272,7 @@ module "chart_keycloak" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
 
-  chart_keycloak_repository = var.keycloak_chart_repository
+  chart_keycloak_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_keycloak_name       = var.keycloak_chart_name
   chart_keycloak_tag        = var.keycloak_chart_tag
   chart_keycloak_release    = "keycloak"
@@ -309,7 +309,7 @@ module "chart_prometheus_stack" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
 
-  chart_repository = var.prometheusstack_chart_repository
+  chart_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_name       = var.prometheusstack_chart_name
   chart_tag        = var.prometheusstack_chart_tag
   chart_release    = "kube-prometheus-stack"
@@ -346,7 +346,7 @@ module "chart_superset" {
   image_registry_auth_secret = var.image_registry_auth_secret
   image_repository_prefix    = var.image_repository_prefix
 
-  chart_repository = var.superset_chart_repository
+  chart_repository = "oci://${var.image_registry}/${var.chart_repository_prefix}"
   chart_name       = var.superset_chart_name
   chart_tag        = var.superset_chart_tag
   chart_release    = "superset"
