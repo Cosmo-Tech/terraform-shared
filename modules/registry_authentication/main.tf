@@ -39,7 +39,7 @@ resource "kubernetes_secret" "registry_auth" {
   data = {
     ".dockerconfigjson" = jsonencode({
       auths = {
-        var.image_registry = {
+        (var.image_registry) = {
           "username" = local.image_registry_username
           "password" = local.image_registry_password
           "auth"     = base64encode("${local.image_registry_username}:${local.image_registry_password}")
