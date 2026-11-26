@@ -68,7 +68,7 @@ variable "file_storageclass_provisioner_azure" {
 
 variable "file_storageclass_provisioner_aws" {
   type    = string
-  default = "csi.storage.k8s.io/fstype"
+  default = "efs.csi.aws.com"
 }
 
 variable "file_storageclass_provisioner_kob" {
