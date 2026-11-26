@@ -59,6 +59,13 @@ resource "kubernetes_storage_class" "cosmotech_filestore_retain" {
     fileSystemId     = var.aws_efs_file_system_id
   } : null
 
+  lifecycle {
+    precondition {
+      condition     = !local.is_aws || try(length(trimspace(var.aws_efs_file_system_id)) > 0, false)
+      error_message = "aws_efs_file_system_id must identify an existing EFS filesystem when the AWS file StorageClass is enabled."
+    }
+  }
+
   reclaim_policy         = "Retain"
   allow_volume_expansion = true
   volume_binding_mode    = "WaitForFirstConsumer"
