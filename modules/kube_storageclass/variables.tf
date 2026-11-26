@@ -15,6 +15,12 @@ variable "storage_class_nfs" {
   type = string
 }
 
+variable "aws_efs_file_system_id" {
+  description = "ID of the existing AWS EFS file system"
+  type        = string
+  default     = null
+}
+
 
 variable "deploy_storageclass" {
   description = "Whether to deploy the main Retain storage class"

@@ -54,6 +54,11 @@ resource "kubernetes_storage_class" "cosmotech_filestore_retain" {
     "invalid-provisioner"
   )
 
+  parameters = local.is_aws ? {
+    provisioningMode = "efs-ap"
+    fileSystemId     = var.aws_efs_file_system_id
+  } : null
+
   reclaim_policy         = "Retain"
   allow_volume_expansion = true
   volume_binding_mode    = "WaitForFirstConsumer"

@@ -118,6 +118,7 @@ module "storageclass" {
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
   storage_class_nfs       = local.storage_class_name_nfs
+  aws_efs_file_system_id  = var.aws_efs_file_system_id
   deploy_storageclass     = true
   deploy_storageclass_nfs = true
 
