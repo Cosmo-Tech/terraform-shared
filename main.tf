@@ -1,6 +1,7 @@
 locals {
-  cluster_domain     = "${var.cluster_name}.${var.domain_zone}"
-  storage_class_name = "cosmotech-retain"
+  cluster_domain         = "${var.cluster_name}.${var.domain_zone}"
+  storage_class_name     = "cosmotech-retain"
+  storage_class_name_nfs = "cosmotech-file-storage"
   persistences = {
     keycloak-postgresql = {
       namespace  = "keycloak"
@@ -116,6 +117,7 @@ module "storageclass" {
 
   cloud_provider          = var.cloud_provider
   storage_class           = local.storage_class_name
+  storage_class_nfs       = local.storage_class_name_nfs
   deploy_storageclass     = true
   deploy_storageclass_nfs = true
 

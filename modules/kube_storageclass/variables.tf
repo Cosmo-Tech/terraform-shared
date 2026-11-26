@@ -11,6 +11,11 @@ variable "storage_class" {
   type = string
 }
 
+variable "storage_class_nfs" {
+  type = string
+}
+
+
 variable "deploy_storageclass" {
   description = "Whether to deploy the main Retain storage class"
   type        = bool
@@ -20,7 +25,7 @@ variable "deploy_storageclass" {
 variable "deploy_storageclass_nfs" {
   description = "Whether to deploy the NFS/Filestore-style storage class"
   type        = bool
-  default     = false
+  default     = true
 }
 
 # -----------------------------------------------------
@@ -42,6 +47,31 @@ variable "storageclass_provisioner_aws" {
 }
 
 variable "storageclass_provisioner_kob" {
+  description = "Provisioner for kob environments"
+  type        = string
+  # default     = "kubernetes.io/no-provisioner"
+  default = "driver.longhorn.io"
+}
+
+# -----------------------------------------------------
+# File cloud provisioner
+# -----------------------------------------------------
+variable "file_storageclass_provisioner_gcp" {
+  type    = string
+  default = "filestore.csi.storage.gke.io"
+}
+
+variable "file_storageclass_provisioner_azure" {
+  type    = string
+  default = "file.csi.azure.com"
+}
+
+variable "file_storageclass_provisioner_aws" {
+  type    = string
+  default = "csi.storage.k8s.io/fstype"
+}
+
+variable "file_storageclass_provisioner_kob" {
   description = "Provisioner for kob environments"
   type        = string
   # default     = "kubernetes.io/no-provisioner"
