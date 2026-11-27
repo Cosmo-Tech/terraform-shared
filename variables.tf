@@ -8,6 +8,12 @@ variable "cloud_provider" {
   }
 }
 
+variable "aws_efs_file_system_id" {
+  description = "ID of the existing AWS EFS file system used by the file StorageClass"
+  type        = string
+  default     = null
+}
+
 variable "cluster_name" {
   description = "Kubernetes cluster name where to perform installation"
   type        = string
